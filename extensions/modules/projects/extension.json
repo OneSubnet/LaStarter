@@ -1,0 +1,44 @@
+{
+    "identifier": "projects",
+    "name": "Projects",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Project management module for organizing work into projects",
+    "author": "LaStarter",
+    "license": "MIT",
+    "homepage": "https://github.com/OneSubnet/lastarter-module-projects",
+    "provider": "Modules\\Projects\\ProjectServiceProvider",
+    "namespace": "Modules\\Projects",
+    "lastarterVersion": ">=1.0.0",
+    "keywords": ["projects", "management", "organization"],
+    "permissions": [
+        "project.view",
+        "project.create",
+        "project.update",
+        "project.delete"
+    ],
+    "navigation": {
+        "app": [
+            {
+                "title": "Projects",
+                "icon": "FolderKanban",
+                "route": "projects.index",
+                "permission": "project.view",
+                "order": 10
+            }
+        ]
+    },
+    "settings": [
+        {
+            "key": "projects.default_visibility",
+            "label": "Default Visibility",
+            "default": "private",
+            "type": "select",
+            "options": [
+                { "label": "Private", "value": "private" },
+                { "label": "Team", "value": "team" },
+                { "label": "Public", "value": "public" }
+            ]
+        }
+    ]
+}

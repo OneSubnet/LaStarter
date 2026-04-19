@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+          npm ci
+
+      - name: Build Assets
+        run: npm run build
+
+      - name: Create Release Archive
+        run: |
+          tar -czf lastarter-${{ github.ref_name }}.tar.gz \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.claude' \
+            --exclude='tests' \
+            --exclude='phpunit.xml' \
+            --exclude='pnpm-lock.yaml' \
+            .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lastarter-${{ github.ref_name }}.tar.gz
+          generate_release_notes: true

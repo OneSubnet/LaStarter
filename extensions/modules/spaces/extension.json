@@ -1,0 +1,73 @@
+{
+    "identifier": "spaces",
+    "name": "Spaces",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Secure workspace management with document handling, e-signatures, and RGPD compliance for organizations",
+    "author": "LaStarter",
+    "license": "MIT",
+    "homepage": "https://github.com/OneSubnet/lastarter-module-spaces",
+    "provider": "Modules\\Spaces\\SpaceServiceProvider",
+    "namespace": "Modules\\Spaces",
+    "lastarterVersion": ">=1.0.0",
+    "keywords": ["spaces", "secure", "documents", "signatures", "rgpd", "compliance", "workspaces"],
+    "permissions": [
+        "space.view",
+        "space.create",
+        "space.update",
+        "space.delete",
+        "space.manage-members",
+        "document.view",
+        "document.upload",
+        "document.delete",
+        "document.request-signature",
+        "document.sign"
+    ],
+    "navigation": {
+        "app": [
+            {
+                "title": "Spaces",
+                "icon": "Lock",
+                "route": "spaces.index",
+                "permission": "space.view",
+                "order": 15
+            }
+        ]
+    },
+    "settings": [
+        {
+            "key": "spaces.max_upload_size",
+            "label": "Max Upload Size (MB)",
+            "default": "25",
+            "type": "number"
+        },
+        {
+            "key": "spaces.require_signature",
+            "label": "Require Signature for Documents",
+            "default": "optional",
+            "type": "select",
+            "options": [
+                { "label": "Optional", "value": "optional" },
+                { "label": "Required", "value": "required" },
+                { "label": "Disabled", "value": "disabled" }
+            ]
+        },
+        {
+            "key": "spaces.rgpd_retention_days",
+            "label": "RGPD Data Retention (days)",
+            "default": "365",
+            "type": "number"
+        },
+        {
+            "key": "spaces.allow_account_deletion",
+            "label": "Allow User Account Deletion",
+            "default": "true",
+            "type": "select",
+            "options": [
+                { "label": "Yes", "value": "true" },
+                { "label": "No", "value": "false" },
+                { "label": "With Admin Approval", "value": "approval" }
+            ]
+        }
+    ]
+}

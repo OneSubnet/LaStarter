@@ -1,0 +1,44 @@
+{
+    "identifier": "tasks",
+    "name": "Tasks",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Simple task management module with project linking",
+    "author": "LaStarter",
+    "license": "MIT",
+    "homepage": "https://github.com/OneSubnet/lastarter-module-tasks",
+    "provider": "Modules\\Tasks\\TaskServiceProvider",
+    "namespace": "Modules\\Tasks",
+    "lastarterVersion": ">=1.0.0",
+    "keywords": ["tasks", "todo", "management"],
+    "permissions": [
+        "task.view",
+        "task.create",
+        "task.update",
+        "task.delete"
+    ],
+    "navigation": {
+        "app": [
+            {
+                "title": "Tasks",
+                "icon": "CheckSquare",
+                "route": "tasks.index",
+                "permission": "task.view",
+                "order": 20
+            }
+        ]
+    },
+    "settings": [
+        {
+            "key": "tasks.default_status",
+            "label": "Default Status",
+            "default": "todo",
+            "type": "select",
+            "options": [
+                { "label": "To Do", "value": "todo" },
+                { "label": "In Progress", "value": "in_progress" },
+                { "label": "Done", "value": "done" }
+            ]
+        }
+    ]
+}

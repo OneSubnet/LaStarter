@@ -1,0 +1,12 @@
+{
+    "identifier": "default",
+    "name": "Default Theme",
+    "type": "theme",
+    "version": "1.0.0",
+    "description": "The default LaStarter theme with clean dashboard and UI components",
+    "author": "LaStarter",
+    "license": "MIT",
+    "homepage": "https://github.com/OneSubnet/lastarter-theme-default",
+    "lastarterVersion": ">=1.0.0",
+    "keywords": ["theme", "default", "clean"]
+}
