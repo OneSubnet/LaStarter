@@ -150,6 +150,8 @@ class MarketplaceClient
             $headers['Authorization'] = 'Bearer '.$this->githubToken;
         }
 
-        return Http::withHeaders($headers)->timeout(15);
+        return Http::withHeaders($headers)
+            ->timeout(15)
+            ->when(app()->environment('local'), fn ($http) => $http->withoutVerifying());
     }
 }
