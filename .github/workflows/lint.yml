@@ -32,6 +32,9 @@ jobs:
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
           npm install
 
+      - name: Debug bootstrap
+        run: php -r "require 'vendor/autoload.php'; echo 'bound env: ' . var_export(class_exists('Illuminate\Foundation\Application'), true);"
+
       - name: Generate App Key
         run: php artisan key:generate -vvv
 
