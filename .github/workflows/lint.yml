@@ -33,7 +33,7 @@ jobs:
           npm install
 
       - name: Generate App Key
-        run: php artisan key:generate -v
+        run: php artisan key:generate -vvv
 
       - name: Generate Wayfinder Routes
         run: php artisan wayfinder:generate
