@@ -37,6 +37,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Ensure the env binding exists — defensive fallback for CI where
+        // detectEnvironment() may not have run before providers are registered.
+        if (! $this->app->bound('env')) {
+            $this->app->instance('env', $_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? 'production');
+        }
+
         // Register ExtensionManager as singleton
         $this->app->singleton(ExtensionManager::class);
         $this->app->singleton(ExtensionScanner::class);
