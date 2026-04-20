@@ -17,7 +17,7 @@ class UpdateTeamMemberRequest extends FormRequest
      */
     public function rules(): array
     {
-        $teamId = $this->route('team')?->id;
+        $teamId = $this->route('current_team')?->id;
 
         return [
             'role' => ['required', 'string', Rule::in(

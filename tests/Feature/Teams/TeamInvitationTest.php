@@ -4,6 +4,7 @@ use App\Enums\TeamRole;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Role;
 use Tests\Concerns\CreatesTeams;
 
 uses(CreatesTeams::class);
@@ -12,6 +13,8 @@ test('team invitations can be created', function () {
     Notification::fake();
 
     [$owner, $team] = $this->createTeamWithOwner('Test Team');
+
+    Role::firstOrCreate(['name' => TeamRole::Member->value, 'team_id' => $team->id, 'guard_name' => 'web']);
 
     $response = $this
         ->actingAs($owner)
@@ -110,7 +113,7 @@ test('team invitations can be cancelled by owners', function () {
 
     $response = $this
         ->actingAs($owner)
-        ->delete(route('settings.team.invitations.destroy', ['current_team' => $team->slug, 'invitation' => $invitation->id]));
+        ->delete(route('settings.team.invitations.destroy', ['current_team' => $team->slug, 'invitation_code' => $invitation->code]));
 
     $response->assertRedirect();
 
@@ -132,7 +135,7 @@ test('team invitations can be accepted', function () {
 
     $response = $this
         ->actingAs($invitedUser)
-        ->get(route('invitations.accept', $invitation));
+        ->get(route('invitations.accept', $invitation->code));
 
     $response->assertRedirect(route('dashboard', ['current_team' => $team->slug]));
 
@@ -152,7 +155,7 @@ test('team invitations cannot be accepted by uninvited user', function () {
 
     $response = $this
         ->actingAs($uninvitedUser)
-        ->get(route('invitations.accept', $invitation));
+        ->get(route('invitations.accept', $invitation->code));
 
     $response->assertSessionHasErrors('invitation');
 
@@ -171,7 +174,7 @@ test('expired invitations cannot be accepted', function () {
 
     $response = $this
         ->actingAs($invitedUser)
-        ->get(route('invitations.accept', $invitation));
+        ->get(route('invitations.accept', $invitation->code));
 
     $response->assertSessionHasErrors('invitation');
 

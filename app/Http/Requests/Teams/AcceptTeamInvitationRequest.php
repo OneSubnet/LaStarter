@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Teams;
 
+use App\Models\TeamInvitation;
 use App\Rules\ValidTeamInvitation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,8 +26,10 @@ class AcceptTeamInvitationRequest extends FormRequest
      */
     public function validationData(): array
     {
+        $code = $this->route('invitation_code');
+
         return array_merge(parent::validationData(), [
-            'invitation' => $this->route('invitation'),
+            'invitation' => TeamInvitation::where('code', $code)->first(),
         ]);
     }
 }

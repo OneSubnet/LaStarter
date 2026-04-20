@@ -11,6 +11,7 @@ use App\Models\TeamInvitation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 
 class TeamInvitationController extends Controller
 {
@@ -32,9 +33,15 @@ class TeamInvitationController extends Controller
         return back();
     }
 
-    public function destroy(Request $request, TeamInvitation $invitation): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
         $team = $request->user()->currentTeam;
+
+        $invitation = TeamInvitation::where('code', $request->route('invitation_code'))->first();
+        
+        if (!$invitation) {
+            abort(404, 'Invitation not found');
+        }
 
         abort_unless($invitation->team_id === $team->id, 404);
 
@@ -47,8 +54,10 @@ class TeamInvitationController extends Controller
         return back();
     }
 
-    public function accept(AcceptTeamInvitationRequest $request, TeamInvitation $invitation, AcceptTeamInvitation $acceptInvitation): RedirectResponse
+    public function accept(AcceptTeamInvitationRequest $request, AcceptTeamInvitation $acceptInvitation): RedirectResponse
     {
+        $invitation = TeamInvitation::where('code', $request->route('invitation_code'))->firstOrFail();
+
         $acceptInvitation->handle($request->user(), $invitation);
 
         return to_route('dashboard', ['current_team' => $invitation->team->slug]);

@@ -2,6 +2,7 @@
 
 use App\Enums\TeamRole;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Tests\Concerns\CreatesTeams;
 
 uses(CreatesTeams::class);
@@ -10,6 +11,8 @@ test('team member roles can be updated by owners', function () {
     [$owner, $team] = $this->createTeamWithOwner('Test Team');
     $member = User::factory()->create();
     $this->addMemberToTeam($team, $member, TeamRole::Member);
+
+    Role::create(['name' => TeamRole::Admin->value, 'team_id' => $team->id, 'guard_name' => 'web']);
 
     $response = $this
         ->actingAs($owner)
