@@ -27,6 +27,9 @@ jobs:
       - name: Copy Environment File
         run: cp .env.example .env
 
+      - name: Verify Environment
+        run: cat .env | head -5 && echo "---" && php -r "require 'vendor/autoload.php'; echo 'autoload ok';"
+
       - name: Install Dependencies
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
@@ -37,6 +40,9 @@ jobs:
 
       - name: Generate App Key
         run: php artisan key:generate -vvv
+        env:
+          APP_ENV: local
+          APP_DEBUG: "true"
 
       - name: Generate Wayfinder Routes
         run: php artisan wayfinder:generate
