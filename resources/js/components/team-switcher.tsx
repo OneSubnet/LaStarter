@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import CreateTeamModal from '@/components/create-team-modal';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,

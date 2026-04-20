@@ -16,9 +16,9 @@ import {
     Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NavUser } from '@/components/nav-user';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
     Sidebar,
     SidebarContent,
@@ -34,8 +34,11 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import { edit as editAppearance } from '@/routes/appearance';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
+import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editProfile } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
 import {
     extensions,
     general,
@@ -45,9 +48,6 @@ import {
     roles,
     theme,
 } from '@/routes/settings/team';
-import { edit as editProfile } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
-import { cn } from '@/lib/utils';
 
 // ── Types ──────────────────────────────────────────────
 
@@ -121,6 +121,7 @@ function ModulePanel({ module }: { module: NavModule }) {
                     <SidebarMenu>
                         {section.items.map((item) => {
                             const Icon = item.icon;
+
                             return (
                                 <SidebarMenuItem
                                     key={item.label}
@@ -188,6 +189,7 @@ export function AppSidebar() {
 
         // Extensions — with direct links to Modules, Themes, Marketplace
         const extSections: NavSection[] = [];
+
         if (extensionNav.length > 0) {
             extSections.push({
                 title: 'Modules',
@@ -257,7 +259,7 @@ export function AppSidebar() {
         });
 
         return result;
-    }, [teamSlug, extensionNav, permissions]);
+    }, [teamSlug, extensionNav, permissions, can]);
 
     // Derive active module from current URL
     const urlActiveKey = useMemo(() => {
@@ -266,6 +268,7 @@ export function AppSidebar() {
                 return mod.id;
             }
         }
+
         for (const mod of modules) {
             for (const section of mod.sections) {
                 for (const item of section.items) {
@@ -275,17 +278,17 @@ export function AppSidebar() {
                 }
             }
         }
+
         return null;
     }, [currentUrl, modules]);
 
-    const [manualKey, setManualKey] = useState<string | null>(null);
-    const prevUrl = useRef(currentUrl);
-    if (currentUrl !== prevUrl.current) {
-        prevUrl.current = currentUrl;
-        if (urlActiveKey) setManualKey(null);
-    }
+    const [manualOverride, setManualOverride] = useState<{ url: string; key: string } | null>(null);
 
-    const activeKey = manualKey ?? urlActiveKey ?? modules[0]?.id ?? 'dashboard';
+    const setManualKey = (key: string) => setManualOverride({ url: currentUrl, key });
+
+    const effectiveManualKey = manualOverride?.url === currentUrl ? manualOverride.key : null;
+
+    const activeKey = effectiveManualKey ?? urlActiveKey ?? modules[0]?.id ?? 'dashboard';
 
     const activeModule = modules.find((m) => m.id === activeKey) ?? modules[0];
 
@@ -334,6 +337,7 @@ export function AppSidebar() {
                                 )}
                                 {modules.map((module) => {
                                     const Icon = module.icon;
+
                                     return (
                                         <SidebarMenuItem key={module.id}>
                                             <SidebarMenuButton

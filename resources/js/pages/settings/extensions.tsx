@@ -35,7 +35,6 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -251,7 +250,6 @@ export default function Extensions({ extensions }: Props) {
                 id: 'actions',
                 cell: ({ row }) => {
                     const ext = row.original;
-                    const canManage = true; // Guard handles visibility
 
                     return (
                         <div className="flex items-center justify-end">

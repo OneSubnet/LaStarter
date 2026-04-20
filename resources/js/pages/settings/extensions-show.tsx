@@ -1,7 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
-    ArrowLeft,
     ExternalLink,
     Globe,
     Hash,
@@ -12,7 +11,6 @@ import {
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Heading from '@/components/heading';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { extensions as extensionsUrl } from '@/routes/settings/team';
 import {

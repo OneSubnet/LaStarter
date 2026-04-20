@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     flexRender,
     getCoreRowModel,
@@ -12,13 +12,10 @@ import {
     ArrowUpDown,
     ChevronLeft,
     ChevronRight,
-    ChevronsLeft,
-    ChevronsRight,
     ChevronDown,
     Columns3,
     Clock,
     Mail,
-    MoreVertical,
     Search,
     ShieldCheck,
     Trash2,
@@ -38,7 +35,6 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -168,6 +164,7 @@ export default function TeamMembers({
                 header: 'Role',
                 cell: ({ row }) => {
                     const member = row.original;
+
                     if (member.role !== 'owner' && can('member.update')) {
                         return (
                             <DropdownMenu>
@@ -197,6 +194,7 @@ export default function TeamMembers({
                             </DropdownMenu>
                         );
                     }
+
                     return (
                         <Badge variant="secondary">
                             <ShieldCheck className="mr-1 h-3 w-3" />
@@ -214,6 +212,7 @@ export default function TeamMembers({
                         label: status,
                         variant: 'outline' as const,
                     };
+
                     return <Badge variant={config.variant}>{config.label}</Badge>;
                 },
             },
@@ -234,7 +233,11 @@ export default function TeamMembers({
                 ),
                 cell: ({ row }) => {
                     const date = row.original.joined_at;
-                    if (!date) return <span className="text-muted-foreground">—</span>;
+
+                    if (!date) {
+return <span className="text-muted-foreground">—</span>;
+}
+
                     return (
                         <span className="text-sm text-muted-foreground">
                             {new Date(date).toLocaleDateString('fr-FR', {
@@ -251,9 +254,11 @@ export default function TeamMembers({
                 header: 'Permissions',
                 cell: ({ row }) => {
                     const roles = row.original.roles ?? [];
+
                     if (roles.length === 0) {
                         return <span className="text-muted-foreground text-sm">—</span>;
                     }
+
                     return (
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
                             {roles.slice(0, 3).map((r) => (
@@ -277,6 +282,7 @@ export default function TeamMembers({
                 id: 'actions',
                 cell: ({ row }) => {
                     const member = row.original;
+
                     return (
                         <div className="flex items-center justify-end">
                             {member.role !== 'owner' && can('member.remove') && (
@@ -307,7 +313,7 @@ export default function TeamMembers({
                 enableHiding: false,
             },
         ],
-        [availableRoles, updateMemberRole, getInitials, permissions],
+        [availableRoles, updateMemberRole, getInitials, permissions, can],
     );
 
     const table = useReactTable({

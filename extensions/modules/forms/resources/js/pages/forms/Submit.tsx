@@ -1,17 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import {
-    Calendar,
-    CheckSquare,
-    ChevronDown,
     CircleDot,
-    FileText,
-    Mail,
-    Minus,
-    Hash,
-    Radio,
-    Star,
-    TextCursorInput,
-    Type,
     X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';

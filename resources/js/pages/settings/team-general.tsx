@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useForm as useTanStackForm } from '@tanstack/react-form';
 import { Camera, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -59,7 +59,10 @@ export default function TeamGeneral({ team, permissions }: Props) {
 
     const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+
+        if (!file) {
+return;
+}
 
         setUploading(true);
         const formData = new FormData();
@@ -69,7 +72,10 @@ export default function TeamGeneral({ team, permissions }: Props) {
             preserveScroll: true,
             onFinish: () => {
                 setUploading(false);
-                if (fileInputRef.current) fileInputRef.current.value = '';
+
+                if (fileInputRef.current) {
+fileInputRef.current.value = '';
+}
             },
         });
     };

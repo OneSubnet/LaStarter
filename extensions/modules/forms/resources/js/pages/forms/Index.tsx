@@ -164,6 +164,7 @@ export default function FormIndex({ forms }: Props) {
                 header: 'Status',
                 cell: ({ row }) => {
                     const config = statusConfig[row.original.status] ?? statusConfig.draft;
+
                     return <Badge variant={config.variant}>{config.label}</Badge>;
                 },
             },
@@ -209,6 +210,7 @@ export default function FormIndex({ forms }: Props) {
                 id: 'actions',
                 cell: ({ row }) => {
                     const form = row.original;
+
                     return (
                         <div className="flex items-center justify-end">
                             <TooltipProvider>

@@ -1,5 +1,5 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Download, ExternalLink, Star } from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { Download, ExternalLink, Star } from 'lucide-react';
 import { useState } from 'react';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';

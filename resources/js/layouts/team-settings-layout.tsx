@@ -5,7 +5,6 @@ import type { BreadcrumbItem } from '@/types';
 
 export default function TeamSettingsLayout({
     breadcrumbs = [],
-    wide = false,
     children,
 }: {
     breadcrumbs?: BreadcrumbItem[];

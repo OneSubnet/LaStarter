@@ -1,7 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

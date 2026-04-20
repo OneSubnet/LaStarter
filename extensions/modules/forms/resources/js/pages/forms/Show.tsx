@@ -139,11 +139,13 @@ const questionTypes = [
 
 function getQuestionIcon(type: string) {
     const found = questionTypes.find((qt) => qt.value === type);
+
     return found ? found.icon : FileText;
 }
 
 function getQuestionTypeLabel(type: string) {
     const found = questionTypes.find((qt) => qt.value === type);
+
     return found ? found.label : type;
 }
 
@@ -335,6 +337,7 @@ export default function FormShow({ form }: Props) {
 
     const handleQuestionTypeChange = (type: string) => {
         questionForm.setData('type', type);
+
         if (
             type === 'select' ||
             type === 'radio' ||
@@ -379,7 +382,11 @@ export default function FormShow({ form }: Props) {
     const handleMoveQuestion = (currentIndex: number, direction: 'up' | 'down') => {
         const questions = [...form.questions];
         const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-        if (targetIndex < 0 || targetIndex >= questions.length) return;
+
+        if (targetIndex < 0 || targetIndex >= questions.length) {
+return;
+}
+
         [questions[currentIndex], questions[targetIndex]] = [questions[targetIndex], questions[currentIndex]];
         router.post(
             `/${teamSlug}/forms/${form.id}/questions/reorder`,
@@ -653,6 +660,7 @@ export default function FormShow({ form }: Props) {
                                         <TableBody>
                                             {form.questions.map((question, index) => {
                                                 const Icon = getQuestionIcon(question.type);
+
                                                 return (
                                                     <TableRow key={question.id}>
                                                         <TableCell className="font-mono text-muted-foreground">
@@ -788,6 +796,7 @@ export default function FormShow({ form }: Props) {
                                                     {questionTypes.map((qt) => {
                                                         const QIcon =
                                                             qt.icon;
+
                                                         return (
                                                             <SelectItem
                                                                 key={qt.value}
