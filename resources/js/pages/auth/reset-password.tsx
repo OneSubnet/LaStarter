@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@tanstack/react-form';
+import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default function ResetPassword({ token, email }: Props) {
+    const { t } = useTranslation();
     const form = useForm({
         defaultValues: {
             email,
@@ -33,10 +35,10 @@ export default function ResetPassword({ token, email }: Props) {
 
     return (
         <AuthLayout
-            title="Reset password"
-            description="Please enter your new password below"
+            title={t('auth.reset_password.title')}
+            description={t('auth.reset_password.description')}
         >
-            <Head title="Reset password" />
+            <Head title={t('auth.reset_password.title')} />
 
             <form
                 onSubmit={(e) => {
@@ -46,7 +48,7 @@ export default function ResetPassword({ token, email }: Props) {
             >
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t('auth.reset_password.email_label')}</Label>
                         <form.Field name="email">
                             {(field) => (
                                 <>
@@ -76,7 +78,7 @@ export default function ResetPassword({ token, email }: Props) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t('auth.reset_password.password_label')}</Label>
                         <form.Field name="password">
                             {(field) => (
                                 <>
@@ -90,7 +92,7 @@ export default function ResetPassword({ token, email }: Props) {
                                         autoComplete="new-password"
                                         className="mt-1 block w-full"
                                         autoFocus
-                                        placeholder="Password"
+                                        placeholder={t('auth.reset_password.password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -106,7 +108,7 @@ export default function ResetPassword({ token, email }: Props) {
 
                     <div className="grid gap-2">
                         <Label htmlFor="password_confirmation">
-                            Confirm password
+                            {t('auth.reset_password.confirm_password_label')}
                         </Label>
                         <form.Field name="password_confirmation">
                             {(field) => (
@@ -120,7 +122,7 @@ export default function ResetPassword({ token, email }: Props) {
                                         onBlur={field.handleBlur}
                                         autoComplete="new-password"
                                         className="mt-1 block w-full"
-                                        placeholder="Confirm password"
+                                        placeholder={t('auth.reset_password.confirm_password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -146,7 +148,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 data-test="reset-password-button"
                             >
                                 {isSubmitting && <Spinner />}
-                                Reset password
+                                {t('auth.reset_password.submit')}
                             </Button>
                         )}
                     </form.Subscribe>

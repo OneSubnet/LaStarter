@@ -3,6 +3,8 @@ import type {ResolvedComponent} from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+import '@/lib/i18n';
+import i18n from 'i18next';
 import QueryProvider from '@/lib/query-client';
 import { setUrlDefaults } from '@/wayfinder';
 
@@ -94,6 +96,11 @@ router.on('navigate', (event) => {
     if (team?.slug) {
         setUrlDefaults({ current_team: team.slug, team: team.slug });
     }
+
+    const locale = event.detail.page.props.locale as string | undefined;
+    if (locale && i18n.language !== locale) {
+        i18n.changeLanguage(locale);
+    }
 });
 
 // Also set on initial load
@@ -107,6 +114,11 @@ if (typeof document !== 'undefined') {
 
             if (team?.slug) {
                 setUrlDefaults({ current_team: team.slug, team: team.slug });
+            }
+
+            const locale = page.props?.locale as string | undefined;
+            if (locale && i18n.language !== locale) {
+                i18n.changeLanguage(locale);
             }
         } catch {
             // ignore

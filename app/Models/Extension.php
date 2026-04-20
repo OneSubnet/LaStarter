@@ -78,7 +78,7 @@ class Extension extends Model
     {
         $this->update([
             'state' => ExtensionState::Incompatible,
-            'error_message' => 'This extension is not compatible with the current version of LaStarter.',
+            'error_message' => __('This extension is not compatible with the current version of LaStarter.'),
         ]);
     }
 }

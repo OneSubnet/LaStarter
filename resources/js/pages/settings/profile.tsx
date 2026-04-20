@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useForm as useTanStackForm } from '@tanstack/react-form';
+import { useTranslation } from 'react-i18next';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -7,6 +8,13 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AccountLayout from '@/layouts/account-layout';
 import { inertiaSubmit, zodValidator } from '@/lib/inertia-form';
 import { profileSchema } from '@/lib/schemas';
@@ -20,12 +28,19 @@ export default function Profile({
     mustVerifyEmail: boolean;
     status?: string;
 }) {
+    const { t, i18n } = useTranslation();
     const { auth } = usePage().props;
+
+    const availableLocales = [
+        { value: 'en', label: 'English' },
+        { value: 'fr', label: 'Français' },
+    ];
 
     const form = useTanStackForm({
         defaultValues: {
             name: auth.user.name as string,
             email: auth.user.email as string,
+            locale: (auth.user as { locale?: string }).locale || i18n.language || 'en',
         },
         validators: { onChange: zodValidator(profileSchema) },
         onSubmit: ({ value }) => {
@@ -40,17 +55,17 @@ export default function Profile({
     return (
         <AccountLayout
             breadcrumbs={[
-                { title: 'Profile settings', href: edit().url },
+                { title: t('settings.profile.title'), href: edit().url },
             ]}
         >
-            <Head title="Profile settings" />
-            <h1 className="sr-only">Profile settings</h1>
+            <Head title={t('settings.profile.title')} />
+            <h1 className="sr-only">{t('settings.profile.title')}</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile information"
-                    description="Update your name and email address"
+                    title={t('settings.profile.info_title')}
+                    description={t('settings.profile.info_description')}
                 />
 
                 <form
@@ -61,7 +76,7 @@ export default function Profile({
                     className="space-y-6"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">{t('settings.profile.name_label')}</Label>
                         <form.Field name="name">
                             {(field) => (
                                 <>
@@ -74,7 +89,7 @@ export default function Profile({
                                         }
                                         onBlur={field.handleBlur}
                                         autoComplete="name"
-                                        placeholder="Full name"
+                                        placeholder={t('settings.profile.name_placeholder')}
                                     />
                                     <InputError
                                         className="mt-2"
@@ -90,7 +105,7 @@ export default function Profile({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">{t('settings.profile.email_label')}</Label>
                         <form.Field name="email">
                             {(field) => (
                                 <>
@@ -104,7 +119,7 @@ export default function Profile({
                                         }
                                         onBlur={field.handleBlur}
                                         autoComplete="username"
-                                        placeholder="Email address"
+                                        placeholder={t('settings.profile.email_placeholder')}
                                     />
                                     <InputError
                                         className="mt-2"
@@ -119,24 +134,51 @@ export default function Profile({
                         </form.Field>
                     </div>
 
+                    <div className="grid gap-2">
+                        <Label htmlFor="locale">{t('settings.profile.locale_label')}</Label>
+                        <form.Field name="locale">
+                            {(field) => (
+                                <Select
+                                    value={field.state.value}
+                                    onValueChange={(value) => {
+                                        field.handleChange(value);
+                                        i18n.changeLanguage(value);
+                                    }}
+                                >
+                                    <SelectTrigger className="mt-1 w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableLocales.map((loc) => (
+                                            <SelectItem key={loc.value} value={loc.value}>
+                                                {loc.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        </form.Field>
+                        <p className="text-xs text-muted-foreground">
+                            {t('settings.profile.locale_description')}
+                        </p>
+                    </div>
+
                     {mustVerifyEmail &&
                         auth.user.email_verified_at === null && (
                             <div>
                                 <p className="-mt-4 text-sm text-muted-foreground">
-                                    Your email address is unverified.{' '}
+                                    {t('settings.profile.unverified')}{' '}
                                     <Link
                                         href={send()}
                                         as="button"
                                         className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                     >
-                                        Click here to resend the verification
-                                        email.
+                                        {t('settings.profile.resend_verification')}
                                     </Link>
                                 </p>
                                 {status === 'verification-link-sent' && (
                                     <div className="mt-2 text-sm font-medium text-primary">
-                                        A new verification link has been sent to
-                                        your email address.
+                                        {t('settings.profile.verification_sent')}
                                     </div>
                                 )}
                             </div>
@@ -152,7 +194,7 @@ export default function Profile({
                                     disabled={!canSubmit || isSubmitting}
                                     data-test="update-profile-button"
                                 >
-                                    {isSubmitting ? 'Saving...' : 'Save'}
+                                    {isSubmitting ? t('settings.profile.saving') : t('settings.profile.save')}
                                 </Button>
                             </div>
                         )}

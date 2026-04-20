@@ -40,7 +40,7 @@ class TeamInvitationController extends Controller
         $invitation = TeamInvitation::where('code', $request->route('invitation_code'))->first();
 
         if (! $invitation) {
-            abort(404, 'Invitation not found');
+            abort(404, __('Invitation not found'));
         }
 
         abort_unless($invitation->team_id === $team->id, 404);

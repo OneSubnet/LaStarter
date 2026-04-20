@@ -1,0 +1,488 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "hide": "Hide",
+    "view": "View",
+    "log_out": "Log out",
+    "profile": "Profile",
+    "create": "Create",
+    "edit": "Edit",
+    "settings": "Settings",
+    "members": "Members",
+    "roles": "Roles",
+    "mail": "Mail",
+    "general": "General",
+    "team": "Team",
+    "account": "Account",
+    "extensions": "Extensions",
+    "marketplace": "Marketplace",
+    "dashboard": "Dashboard",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "more": "More",
+    "details": "Details",
+    "online": "Online",
+    "active": "Active",
+    "invited": "Invited",
+    "suspended": "Suspended",
+    "disabled": "Disabled",
+    "installed": "Installed",
+    "not_installed": "Not Installed",
+    "error": "Error",
+    "search": "Search",
+    "rows_per_page": "Rows per page",
+    "selected_rows": "{{selected}} of {{total}} row(s) selected.",
+    "no_results": "No results found.",
+    "something_went_wrong": "Something went wrong.",
+    "navigation_menu": "Navigation menu",
+    "app_name": "Laravel Starter Kit",
+    "by": "by",
+    "default": "(default)"
+  },
+  "auth": {
+    "login": {
+      "title": "Log in to your account",
+      "description": "Enter your email and password below to log in",
+      "head_title": "Log in",
+      "email_label": "Email address",
+      "email_placeholder": "email@example.com",
+      "password_label": "Password",
+      "password_placeholder": "Password",
+      "remember_me": "Remember me",
+      "submit": "Log in",
+      "forgot_password": "Forgot password?",
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign up",
+      "verification_sent": "A new verification link has been sent to the email address you provided during registration."
+    },
+    "register": {
+      "title": "Create an account",
+      "description": "Enter your details below to create your account",
+      "head_title": "Register",
+      "name_label": "Name",
+      "name_placeholder": "Full name",
+      "email_label": "Email address",
+      "email_placeholder": "email@example.com",
+      "password_label": "Password",
+      "password_placeholder": "Password",
+      "confirm_password_label": "Confirm password",
+      "confirm_password_placeholder": "Confirm password",
+      "submit": "Create account",
+      "already_have_account": "Already have an account?",
+      "log_in": "Log in"
+    },
+    "forgot_password": {
+      "title": "Forgot password",
+      "description": "Enter your email to receive a password reset link",
+      "email_label": "Email address",
+      "email_placeholder": "email@example.com",
+      "submit": "Email password reset link",
+      "return_to": "Or, return to",
+      "login_link": "log in"
+    },
+    "reset_password": {
+      "title": "Reset password",
+      "description": "Please enter your new password below",
+      "email_label": "Email",
+      "password_label": "Password",
+      "password_placeholder": "Password",
+      "confirm_password_label": "Confirm password",
+      "confirm_password_placeholder": "Confirm password",
+      "submit": "Reset password"
+    },
+    "confirm_password": {
+      "title": "Confirm your password",
+      "description": "This is a secure area of the application. Please confirm your password before continuing.",
+      "head_title": "Confirm password",
+      "password_label": "Password",
+      "password_placeholder": "Password",
+      "submit": "Confirm password"
+    },
+    "verify_email": {
+      "title": "Verify email",
+      "description": "Please verify your email address by clicking on the link we just emailed to you.",
+      "head_title": "Email verification",
+      "resend": "Resend verification email",
+      "logout": "Log out",
+      "verification_sent": "A new verification link has been sent to the email address you provided during registration."
+    },
+    "two_factor": {
+      "title_code": "Authentication code",
+      "title_recovery": "Recovery code",
+      "description_code": "Enter the authentication code provided by your authenticator application.",
+      "description_recovery": "Please confirm access to your account by entering one of your emergency recovery codes.",
+      "toggle_code": "login using an authentication code",
+      "toggle_recovery": "login using a recovery code",
+      "continue": "Continue",
+      "recovery_placeholder": "Enter recovery code",
+      "or_you_can": "or you can"
+    }
+  },
+  "welcome": {
+    "head_title": "Welcome",
+    "dashboard": "Dashboard",
+    "login": "Log in",
+    "register": "Register",
+    "heading": "Let's get started",
+    "description": "Laravel has an incredibly rich ecosystem. We suggest starting with the following.",
+    "documentation": "Documentation",
+    "read_the": "Read the",
+    "watch_tutorials": "Watch video tutorials at",
+    "laracasts": "Laracasts",
+    "deploy": "Deploy now"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "breadcrumb": "Dashboard"
+  },
+  "settings": {
+    "profile": {
+      "title": "Profile settings",
+      "info_title": "Profile information",
+      "info_description": "Update your name and email address",
+      "name_label": "Name",
+      "name_placeholder": "Full name",
+      "email_label": "Email address",
+      "email_placeholder": "Email address",
+      "unverified": "Your email address is unverified.",
+      "resend_verification": "Click here to resend the verification email.",
+      "verification_sent": "A new verification link has been sent to your email address.",
+      "save": "Save",
+      "saving": "Saving...",
+      "locale_label": "Language",
+      "locale_description": "Choose your preferred language. This will apply across the entire app."
+    },
+    "security": {
+      "title": "Security settings",
+      "password_title": "Update password",
+      "password_description": "Ensure your account is using a long, random password to stay secure",
+      "current_password_label": "Current password",
+      "current_password_placeholder": "Current password",
+      "new_password_label": "New password",
+      "new_password_placeholder": "New password",
+      "confirm_password_label": "Confirm password",
+      "confirm_password_placeholder": "Confirm password",
+      "save": "Save password",
+      "saving": "Saving...",
+      "two_factor_title": "Two-factor authentication",
+      "two_factor_description": "Manage your two-factor authentication settings",
+      "two_factor_enabled": "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.",
+      "two_factor_disabled": "When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.",
+      "enable_2fa": "Enable 2FA",
+      "disable_2fa": "Disable 2FA",
+      "continue_setup": "Continue setup"
+    },
+    "appearance": {
+      "title": "Appearance settings",
+      "description": "Update your account's appearance settings"
+    },
+    "team": {
+      "general": {
+        "title": "Team settings",
+        "description": "Update your team name and icon",
+        "name_label": "Team name",
+        "change_icon": "Change icon",
+        "upload_icon": "Upload icon",
+        "uploading": "Uploading...",
+        "remove": "Remove",
+        "save": "Save",
+        "saving": "Saving...",
+        "delete_title": "Delete team",
+        "delete_description": "Permanently delete your team",
+        "warning": "Warning",
+        "warning_message": "Please proceed with caution, this cannot be undone.",
+        "delete_button": "Delete team"
+      },
+      "members": {
+        "search_placeholder": "Search members...",
+        "columns": "Columns",
+        "customize_tooltip": "Customize columns",
+        "invite_button": "Invite member",
+        "table_member": "Member",
+        "table_role": "Role",
+        "table_status": "Status",
+        "table_joined": "Joined",
+        "table_permissions": "Permissions",
+        "table_email": "Email",
+        "table_invited_by": "Invited by",
+        "table_sent": "Sent",
+        "no_members": "No members found.",
+        "member_count": "{{count}} member(s)",
+        "selected_rows": "{{selected}} of {{total}} row(s) selected.",
+        "pending_invitations": "Pending invitations",
+        "cancel_invitation": "Cancel invitation"
+      },
+      "roles": {
+        "create_button": "Create role",
+        "search_placeholder": "Search roles...",
+        "columns": "Columns",
+        "customize_tooltip": "Customize columns",
+        "table_name": "Name",
+        "table_members": "Members",
+        "table_permissions": "Permissions",
+        "table_status": "Status",
+        "no_roles": "No roles found.",
+        "member_count": "{{count}} member(s)",
+        "selected_rows": "{{selected}} of {{total}} row(s) selected.",
+        "toggle_all": "Select all",
+        "remove_all": "Remove all",
+        "delete_title": "Delete role",
+        "delete_message": "Are you sure you want to delete this role? Members with this role will lose its permissions. This cannot be undone.",
+        "delete_confirm": "Delete role",
+        "create_title": "Create new role",
+        "name_label": "Role name",
+        "name_placeholder": "e.g. Manager, Tech Lead",
+        "creating": "Creating...",
+        "create_button_dialog": "Create role",
+        "permissions_toggle_all": "Toggle all",
+        "permissions_summary_title": "Permissions summary",
+        "permissions_summary_message": "This role has all permissions and cannot be modified.",
+        "permissions_title": "Permissions",
+        "permissions_count": "Permissions",
+        "members_title": "Members",
+        "badge_system": "System",
+        "badge_custom": "Custom"
+      },
+      "mail": {
+        "title": "Mail Settings",
+        "server_title": "Mail server",
+        "server_description": "Configure the SMTP server for outgoing emails from this team",
+        "host_label": "Host",
+        "host_placeholder": "smtp.example.com",
+        "port_label": "Port",
+        "port_placeholder": "587",
+        "encryption_label": "Encryption",
+        "encryption_tls": "TLS",
+        "encryption_ssl": "SSL",
+        "encryption_none": "None",
+        "username_label": "Username",
+        "username_placeholder": "smtp username",
+        "password_label": "Password",
+        "password_placeholder": "••••••••",
+        "from_address_label": "From address",
+        "from_address_placeholder": "noreply@example.com",
+        "from_name_label": "From name",
+        "from_name_placeholder": "My Team",
+        "save": "Save",
+        "saving": "Saving...",
+        "test_button": "Send test email",
+        "test_sending": "Sending..."
+      }
+    },
+    "theme": {
+      "title": "Theme",
+      "description": "Choose a theme for your team",
+      "apply": "Apply theme",
+      "no_themes": "No themes available.",
+      "active_tooltip": "Active theme"
+    },
+    "extensions": {
+      "title": "Extensions",
+      "no_extensions": "No extensions available.",
+      "search_placeholder": "Search extensions...",
+      "columns": "Columns",
+      "customize_tooltip": "Customize columns",
+      "table_name": "Name",
+      "table_type": "Type",
+      "table_author": "Author",
+      "table_version": "Version",
+      "table_status": "Status",
+      "no_results": "No extensions found.",
+      "details": "View details",
+      "view_details_tooltip": "View details",
+      "more_actions_tooltip": "More actions",
+      "install": "Install",
+      "enable": "Enable",
+      "disable": "Disable",
+      "uninstall": "Uninstall",
+      "toggle_all": "Toggle all",
+      "permissions_title": "Permissions",
+      "permissions_description": "These permissions are added when the module is enabled. Assign them to roles to control access.",
+      "settings_title": "Configurable settings",
+      "settings_description": "These settings can be adjusted per team when the module is active.",
+      "settings_default": "Default:",
+      "about_module": "About this module",
+      "about_theme": "About this theme",
+      "what_you_can_do": "What you can do",
+      "type": "Type",
+      "version": "Version",
+      "author": "Author",
+      "license": "License",
+      "installed": "Installed",
+      "requires": "Requires",
+      "homepage": "Homepage",
+      "keywords": "Keywords",
+      "identifier": "Identifier",
+      "type_module": "module",
+      "type_theme": "theme",
+      "status_active": "Active",
+      "status_disabled": "Disabled",
+      "status_not_installed": "Not Installed",
+      "status_error": "Error",
+      "status_incompatible": "Incompatible",
+      "error_message": "Error",
+      "error_description": "{{message}}",
+      "requires_version": "LaStarter {{version}}",
+      "default_badge": "(default)",
+      "features": {
+        "projects": {
+          "about": "Full project management for your team. Create, organize and track projects with customizable visibility settings. Each project is scoped to your team so data stays isolated.",
+          "items": [
+            "Create and manage team projects",
+            "Customizable default visibility (private, team, public)",
+            "Project listing with search and filters",
+            "Full CRUD operations with permission controls"
+          ]
+        },
+        "tasks": {
+          "about": "Lightweight task management with project linking. Create tasks, assign statuses, and keep your team on track. Tasks can be linked to projects from the Projects module.",
+          "items": [
+            "Create and assign tasks to team members",
+            "Track task status (To Do, In Progress, Done)",
+            "Link tasks to projects",
+            "Configurable default task status"
+          ]
+        },
+        "default": {
+          "about": "The default LaStarter theme. Provides a clean, modern dashboard and consistent UI components across the platform. This theme can be overridden by installing a custom theme.",
+          "items": [
+            "Clean dashboard layout",
+            "Consistent UI component styling",
+            "Responsive design for all screen sizes",
+            "Dark mode support"
+          ]
+        }
+      }
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "search_placeholder": "Search extensions...",
+      "type_all": "All types",
+      "type_module": "Modules",
+      "type_theme": "Themes",
+      "search_button": "Search",
+      "no_results": "No extensions found matching your search.",
+      "empty_message": "Search for extensions from the GitHub marketplace.",
+      "installed": "Installed",
+      "install": "Install",
+      "installing": "Installing...",
+      "github": "GitHub",
+      "version": "Version",
+      "latest_release": "Latest Release",
+      "stars": "Stars",
+      "requires": "Requires",
+      "readme": "README",
+      "release_notes": "Latest Release Notes"
+    },
+    "teams": {
+      "title": "Teams",
+      "description": "Manage your teams and team memberships",
+      "new_team": "New team",
+      "no_teams": "You don't belong to any teams yet.",
+      "personal": "Personal",
+      "view_tooltip": "View team",
+      "edit_tooltip": "Edit team"
+    }
+  },
+  "components": {
+    "delete_user": {
+      "title": "Delete account",
+      "description": "Delete your account and all of its resources",
+      "warning": "Warning",
+      "warning_description": "Please proceed with caution, this cannot be undone.",
+      "password_label": "Password",
+      "confirm_title": "Are you sure you want to delete your account?",
+      "confirm_description": "Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you would like to permanently delete your account."
+    },
+    "delete_team": {
+      "title": "Are you sure?",
+      "description": "This action cannot be undone. This will permanently delete the team",
+      "confirm_label": "Type",
+      "confirm_text": "to confirm",
+      "placeholder": "Enter team name"
+    },
+    "create_team": {
+      "title": "Create a new team",
+      "description": "Create a new team to collaborate with others.",
+      "name_label": "Team name",
+      "placeholder": "My team"
+    },
+    "invite_member": {
+      "title": "Invite a team member",
+      "description": "Send an invitation to join this team.",
+      "email_label": "Email address",
+      "email_placeholder": "colleague@example.com",
+      "role_label": "Role",
+      "select_role": "Select a role",
+      "send_invitation": "Send invitation"
+    },
+    "remove_member": {
+      "title": "Remove team member",
+      "description": "Are you sure you want to remove",
+      "from_team": "from this team?",
+      "confirm": "Remove member"
+    },
+    "cancel_invitation": {
+      "title": "Cancel invitation",
+      "description": "Are you sure you want to cancel the invitation for",
+      "confirm": "Cancel invitation",
+      "keep": "Keep invitation"
+    },
+    "two_factor_recovery": {
+      "title": "2FA recovery codes",
+      "description": "Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.",
+      "view": "View recovery codes",
+      "hide": "Hide recovery codes",
+      "regenerate": "Regenerate codes",
+      "code_used": "Each recovery code can be used once to access your account and will be removed after use."
+    },
+    "app_sidebar": {
+      "overview": "Overview",
+      "platform": "Platform",
+      "manage": "Manage"
+    },
+    "sidebar_right": {
+      "members": "Members",
+      "recent_activity": "Recent Activity",
+      "no_activity": "No activity recorded yet.",
+      "new_team": "New team",
+      "activity_detail": "Activity Detail"
+    },
+    "password_input": {
+      "show": "Show password",
+      "hide": "Hide password"
+    },
+    "team_switcher": {
+      "select_team": "Select team",
+      "teams": "Teams",
+      "new_team": "New team"
+    },
+    "two_factor_setup": {
+      "enabled_title": "Two-factor authentication enabled",
+      "enabled_description": "Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.",
+      "verify_title": "Verify authentication code",
+      "verify_description": "Enter the 6-digit code from your authenticator app",
+      "enable_title": "Enable two-factor authentication",
+      "enable_description": "To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app",
+      "manual_code": "or, enter the code manually"
+    }
+  },
+  "layouts": {
+    "account": {
+      "title": "Account",
+      "description": "Manage your account settings"
+    },
+    "team_settings": {
+      "description": "Manage your team settings"
+    }
+  }
+}

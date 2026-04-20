@@ -1,0 +1,62 @@
+[
+  {
+    "identifier": "projects",
+    "name": "Projects",
+    "type": "module",
+    "description": "Project management module for organizing work into projects",
+    "path": "modules/projects",
+    "author": "LaStarter",
+    "version": "1.0.0",
+    "license": "MIT",
+    "topics": ["lastarter-module"],
+    "stargazers_count": 0
+  },
+  {
+    "identifier": "tasks",
+    "name": "Tasks",
+    "type": "module",
+    "description": "Simple task management module with project linking",
+    "path": "modules/tasks",
+    "author": "LaStarter",
+    "version": "1.0.0",
+    "license": "MIT",
+    "topics": ["lastarter-module"],
+    "stargazers_count": 0
+  },
+  {
+    "identifier": "spaces",
+    "name": "Spaces",
+    "type": "module",
+    "description": "Secure workspace management with document handling, e-signatures, and RGPC compliance for organizations",
+    "path": "modules/spaces",
+    "author": "LaStarter",
+    "version": "1.0.0",
+    "license": "MIT",
+    "topics": ["lastarter-module"],
+    "stargazers_count": 0
+  },
+  {
+    "identifier": "forms",
+    "name": "Forms",
+    "type": "module",
+    "description": "Create custom forms with live preview, collect responses, and analyze results — like Google Forms for your team",
+    "path": "modules/forms",
+    "author": "LaStarter",
+    "version": "1.0.0",
+    "license": "MIT",
+    "topics": ["lastarter-module"],
+    "stargazers_count": 0
+  },
+  {
+    "identifier": "default",
+    "name": "Default Theme",
+    "type": "theme",
+    "description": "The default LaStarter theme with clean dashboard and UI components",
+    "path": "themes/default",
+    "author": "LaStarter",
+    "version": "1.0.0",
+    "license": "MIT",
+    "topics": ["lastarter-theme"],
+    "stargazers_count": 0
+  }
+]

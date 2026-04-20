@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -35,6 +36,7 @@ export default function InviteMemberModal({
     open,
     onOpenChange,
 }: Props) {
+    const { t } = useTranslation();
     const [inviteRole, setInviteRole] = useState<RoleOption['value']>('member');
 
     const handleOpenChange = (nextOpen: boolean) => {
@@ -62,27 +64,27 @@ export default function InviteMemberModal({
                     className="space-y-6"
                 >
                     <DialogHeader>
-                        <DialogTitle>Invite a team member</DialogTitle>
+                        <DialogTitle>{t('components.invite_member.title')}</DialogTitle>
                         <DialogDescription>
-                            Send an invitation to join this team.
+                            {t('components.invite_member.description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email address</Label>
+                            <Label htmlFor="email">{t('components.invite_member.email_label')}</Label>
                             <Input
                                 id="email"
                                 name="email"
                                 type="email"
                                 data-test="invite-email"
-                                placeholder="colleague@example.com"
+                                placeholder={t('components.invite_member.email_placeholder')}
                                 required
                             />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="role">Role</Label>
+                            <Label htmlFor="role">{t('components.invite_member.role_label')}</Label>
                             <Select
                                 name="role"
                                 data-test="invite-role"
@@ -94,7 +96,7 @@ export default function InviteMemberModal({
                                 }
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select a role" />
+                                    <SelectValue placeholder={t('components.invite_member.select_role')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableRoles.map((role) => (
@@ -112,14 +114,14 @@ export default function InviteMemberModal({
 
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="secondary">{t('common.cancel')}</Button>
                         </DialogClose>
 
                         <Button
                             type="submit"
                             data-test="invite-submit"
                         >
-                            Send invitation
+                            {t('components.invite_member.send_invitation')}
                         </Button>
                     </DialogFooter>
                 </form>

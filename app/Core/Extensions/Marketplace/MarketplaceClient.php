@@ -9,53 +9,56 @@ class MarketplaceClient
 {
     public function __construct(
         private string $githubOrg,
+        private string $marketplaceRepo,
         private ?string $githubToken = null,
     ) {}
 
     /**
-     * Search GitHub repos by topic in the configured organization.
+     * Fetch and parse the index.json from the marketplace monorepo.
      *
-     * @return Collection<array{name: string, full_name: string, description: ?string, html_url: string, stargazers_count: int, topics: string[], updated_at: string}>
+     * @return Collection<array{name: string, full_name: string, description: ?string, html_url: string, stargazers_count: int, topics: string[], updated_at: string, type: string, identifier: string, path: string}>
      */
     public function search(string $query = '', string $type = ''): Collection
     {
-        $topic = 'lastarter-extension';
+        $index = $this->fetchIndex();
 
-        $q = "org:{$this->githubOrg} topic:{$topic}";
-
-        if ($query) {
-            $q .= " {$query} in:name,description";
-        }
-
-        $response = $this->http()
-            ->get('https://api.github.com/search/repositories', [
-                'q' => $q,
-                'sort' => 'stars',
-                'order' => 'desc',
-                'per_page' => 30,
-            ]);
-
-        if (! $response->successful()) {
+        if ($index === null) {
             return new Collection;
         }
 
-        return collect($response->json('items', []))
-            ->map(fn (array $repo) => [
-                'name' => $repo['name'],
-                'full_name' => $repo['full_name'],
-                'description' => $repo['description'],
-                'html_url' => $repo['html_url'],
-                'stargazers_count' => $repo['stargazers_count'],
-                'topics' => $repo['topics'] ?? [],
-                'updated_at' => $repo['updated_at'],
-            ]);
+        return collect($index)
+            ->when($type, fn ($c) => $c->where('type', $type))
+            ->when($query, fn ($c) => $c->filter(function (array $item) use ($query) {
+                $q = strtolower($query);
+
+                return str_contains(strtolower($item['name'] ?? ''), $q)
+                    || str_contains(strtolower($item['description'] ?? ''), $q)
+                    || str_contains(strtolower($item['identifier'] ?? ''), $q);
+            }))
+            ->map(fn (array $item) => [
+                'name' => $item['name'] ?? $item['identifier'],
+                'full_name' => "{$this->githubOrg}/{$this->marketplaceRepo}",
+                'description' => $item['description'] ?? null,
+                'html_url' => "https://github.com/{$this->githubOrg}/{$this->marketplaceRepo}/tree/main/{$item['path']}",
+                'stargazers_count' => $item['stargazers_count'] ?? 0,
+                'topics' => $item['topics'] ?? ["lastarter-{$item['type']}"],
+                'updated_at' => $item['updated_at'] ?? now()->toISOString(),
+                'type' => $item['type'],
+                'identifier' => $item['identifier'],
+                'path' => $item['path'],
+            ])
+            ->values();
     }
 
     /**
-     * Get details for a specific repo.
+     * Get details for a specific extension from the index.
      */
     public function getDetails(string $owner, string $repo): ?array
     {
+        if ($owner !== $this->githubOrg || $repo !== $this->marketplaceRepo) {
+            return null;
+        }
+
         $response = $this->http()
             ->get("https://api.github.com/repos/{$owner}/{$repo}");
 
@@ -79,13 +82,17 @@ class MarketplaceClient
     }
 
     /**
-     * Get the README content for a repo.
+     * Get the README content for an extension subdirectory.
      */
-    public function getReadme(string $owner, string $repo): ?string
+    public function getReadme(string $owner, string $repo, string $path = ''): ?string
     {
+        $url = $path
+            ? "https://api.github.com/repos/{$owner}/{$repo}/contents/{$path}/README.md"
+            : "https://api.github.com/repos/{$owner}/{$repo}/readme";
+
         $response = $this->http()
             ->accept('application/vnd.github.raw')
-            ->get("https://api.github.com/repos/{$owner}/{$repo}/readme");
+            ->get($url);
 
         if (! $response->successful()) {
             return null;
@@ -95,7 +102,7 @@ class MarketplaceClient
     }
 
     /**
-     * Get the latest release for a repo.
+     * Get the latest release for the monorepo.
      */
     public function getLatestRelease(string $owner, string $repo): ?array
     {
@@ -107,7 +114,6 @@ class MarketplaceClient
         }
 
         $data = $response->json();
-
         $zipAsset = collect($data['assets'] ?? [])
             ->first(fn (array $asset) => str_ends_with($asset['name'], '.zip'));
 
@@ -122,21 +128,59 @@ class MarketplaceClient
     }
 
     /**
-     * Fetch the extension.json manifest from a repo.
+     * Fetch the extension.json manifest from a subdirectory.
      */
-    public function getManifest(string $owner, string $repo, string $ref = 'main'): ?array
+    public function getManifest(string $owner, string $repo, string $ref = 'main', string $path = ''): ?array
     {
+        $url = $path
+            ? "https://api.github.com/repos/{$owner}/{$repo}/contents/{$path}/extension.json"
+            : "https://api.github.com/repos/{$owner}/{$repo}/contents/extension.json";
+
         $response = $this->http()
             ->accept('application/vnd.github.raw')
-            ->get("https://api.github.com/repos/{$owner}/{$repo}/contents/extension.json", [
-                'ref' => $ref,
-            ]);
+            ->get($url, ['ref' => $ref]);
 
         if (! $response->successful()) {
             return null;
         }
 
         return json_decode($response->body(), true);
+    }
+
+    /**
+     * Find an extension by identifier from the index.
+     */
+    public function findByIdentifier(string $identifier): ?array
+    {
+        return $this->fetchIndex()?->first(
+            fn (array $item) => ($item['identifier'] ?? '') === $identifier,
+        );
+    }
+
+    /**
+     * Fetch the index.json from the monorepo (with caching).
+     *
+     * @return Collection<array>|null
+     */
+    protected function fetchIndex(): ?Collection
+    {
+        return cache()->remember('marketplace.index', now()->addHour(), function () {
+            $response = $this->http()
+                ->accept('application/vnd.github.raw')
+                ->get("https://api.github.com/repos/{$this->githubOrg}/{$this->marketplaceRepo}/contents/index.json");
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $data = json_decode($response->body(), true);
+
+            if (! is_array($data)) {
+                return null;
+            }
+
+            return collect($data);
+        });
     }
 
     private function http()

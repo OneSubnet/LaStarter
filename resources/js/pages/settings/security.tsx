@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { useForm } from '@tanstack/react-form';
 import { ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -28,6 +29,7 @@ export default function Security({
     requiresConfirmation = false,
     twoFactorEnabled = false,
 }: Props) {
+    const { t } = useTranslation();
     const currentPasswordInput = useRef<HTMLInputElement>(null);
     const {
         qrCodeSvg,
@@ -78,17 +80,17 @@ currentPasswordInput.current?.focus();
     return (
         <AccountLayout
             breadcrumbs={[
-                { title: 'Security settings', href: edit().url },
+                { title: t('settings.security.title'), href: edit().url },
             ]}
         >
-            <Head title="Security settings" />
-            <h1 className="sr-only">Security settings</h1>
+            <Head title={t('settings.security.title')} />
+            <h1 className="sr-only">{t('settings.security.title')}</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title={t('settings.security.password_title')}
+                    description={t('settings.security.password_description')}
                 />
 
                 <form
@@ -99,7 +101,7 @@ currentPasswordInput.current?.focus();
                     className="space-y-6"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="current_password">Current password</Label>
+                        <Label htmlFor="current_password">{t('settings.security.current_password_label')}</Label>
                         <form.Field name="current_password">
                             {(field) => (
                                 <>
@@ -113,7 +115,7 @@ currentPasswordInput.current?.focus();
                                         onBlur={field.handleBlur}
                                         className="mt-1 block w-full"
                                         autoComplete="current-password"
-                                        placeholder="Current password"
+                                        placeholder={t('settings.security.current_password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -127,7 +129,7 @@ currentPasswordInput.current?.focus();
                         </form.Field>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="password">New password</Label>
+                        <Label htmlFor="password">{t('settings.security.new_password_label')}</Label>
                         <form.Field name="password">
                             {(field) => (
                                 <>
@@ -140,7 +142,7 @@ currentPasswordInput.current?.focus();
                                         onBlur={field.handleBlur}
                                         className="mt-1 block w-full"
                                         autoComplete="new-password"
-                                        placeholder="New password"
+                                        placeholder={t('settings.security.new_password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -155,7 +157,7 @@ currentPasswordInput.current?.focus();
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="password_confirmation">
-                            Confirm password
+                            {t('settings.security.confirm_password_label')}
                         </Label>
                         <form.Field name="password_confirmation">
                             {(field) => (
@@ -169,7 +171,7 @@ currentPasswordInput.current?.focus();
                                         onBlur={field.handleBlur}
                                         className="mt-1 block w-full"
                                         autoComplete="new-password"
-                                        placeholder="Confirm password"
+                                        placeholder={t('settings.security.confirm_password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -192,7 +194,7 @@ currentPasswordInput.current?.focus();
                                     disabled={!canSubmit || isSubmitting}
                                     data-test="update-password-button"
                                 >
-                                    {isSubmitting ? 'Saving...' : 'Save password'}
+                                    {isSubmitting ? t('settings.security.saving') : t('settings.security.save')}
                                 </Button>
                             </div>
                         )}
@@ -204,15 +206,13 @@ currentPasswordInput.current?.focus();
                 <div className="space-y-6">
                     <Heading
                         variant="small"
-                        title="Two-factor authentication"
-                        description="Manage your two-factor authentication settings"
+                        title={t('settings.security.two_factor_title')}
+                        description={t('settings.security.two_factor_description')}
                     />
                     {twoFactorEnabled ? (
                         <div className="flex flex-col items-start justify-start space-y-4">
                             <p className="text-sm text-muted-foreground">
-                                You will be prompted for a secure, random pin
-                                during login, which you can retrieve from the
-                                TOTP-supported application on your phone.
+                                {t('settings.security.two_factor_enabled')}
                             </p>
                             <div className="relative inline">
                                 <form
@@ -222,7 +222,7 @@ currentPasswordInput.current?.focus();
                                     }}
                                 >
                                     <Button variant="destructive" type="submit">
-                                        Disable 2FA
+                                        {t('settings.security.disable_2fa')}
                                     </Button>
                                 </form>
                             </div>
@@ -235,10 +235,7 @@ currentPasswordInput.current?.focus();
                     ) : (
                         <div className="flex flex-col items-start justify-start space-y-4">
                             <p className="text-sm text-muted-foreground">
-                                When you enable two-factor authentication, you
-                                will be prompted for a secure pin during login.
-                                This pin can be retrieved from a TOTP-supported
-                                application on your phone.
+                                {t('settings.security.two_factor_disabled')}
                             </p>
                             <div>
                                 {hasSetupData ? (
@@ -246,7 +243,7 @@ currentPasswordInput.current?.focus();
                                         onClick={() => setShowSetupModal(true)}
                                     >
                                         <ShieldCheck />
-                                        Continue setup
+                                        {t('settings.security.continue_setup')}
                                     </Button>
                                 ) : (
                                     <form
@@ -262,7 +259,7 @@ currentPasswordInput.current?.focus();
                                             );
                                         }}
                                     >
-                                        <Button type="submit">Enable 2FA</Button>
+                                        <Button type="submit">{t('settings.security.enable_2fa')}</Button>
                                     </form>
                                 )}
                             </div>

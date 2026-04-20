@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { NavUser } from '@/components/nav-user';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -150,6 +151,7 @@ function ModulePanel({ module }: { module: NavModule }) {
 // ── App Sidebar (dual-panel) ───────────────────────────
 
 export function AppSidebar() {
+    const { t } = useTranslation();
     const page = usePage();
     const { setOpen, isMobile } = useSidebar();
     const { state } = useSidebar();
@@ -157,7 +159,7 @@ export function AppSidebar() {
 
     const teamSlug = (page.props.currentTeam as { slug: string } | null)?.slug ?? '';
     const teamIconUrl = (page.props.currentTeam as { iconUrl?: string } | null)?.iconUrl ?? null;
-    const teamName = page.props.currentTeam ? (page.props.currentTeam as { name: string }).name : 'Team';
+    const teamName = page.props.currentTeam ? (page.props.currentTeam as { name: string }).name : t('common.team');
     const permissions = (page.props.auth?.permissions as string[]) ?? [];
     const can = (perm: string | undefined) => !perm || permissions.includes(perm);
 
@@ -174,13 +176,13 @@ export function AppSidebar() {
         const dashUrl = teamSlug ? dashboard(teamSlug).url : '/';
         result.push({
             id: 'dashboard',
-            label: 'Dashboard',
+            label: t('common.dashboard'),
             icon: LayoutGrid,
             urlPatterns: [dashUrl],
             sections: [{
-                title: 'Overview',
+                title: t('components.app_sidebar.overview'),
                 items: [{
-                    label: 'Dashboard',
+                    label: t('common.dashboard'),
                     icon: LayoutGrid,
                     href: dashUrl,
                 }],
@@ -192,7 +194,7 @@ export function AppSidebar() {
 
         if (extensionNav.length > 0) {
             extSections.push({
-                title: 'Modules',
+                title: t('common.extensions'),
                 items: extensionNav.map((ext) => ({
                     label: ext.title,
                     icon: ext.icon ? iconMap[ext.icon] ?? Puzzle : Puzzle,
@@ -202,18 +204,18 @@ export function AppSidebar() {
         }
 
         const manageItems: NavItem[] = [
-            { label: 'Extensions', icon: Puzzle, href: extensions(teamSlug).url, permission: 'extension.view' },
+            { label: t('common.extensions'), icon: Puzzle, href: extensions(teamSlug).url, permission: 'extension.view' },
             { label: 'Themes', icon: Palette, href: theme(teamSlug).url, permission: 'extension.view' },
-            { label: 'Marketplace', icon: Store, href: marketplace(teamSlug).url, permission: 'extension.view' },
+            { label: t('common.marketplace'), icon: Store, href: marketplace(teamSlug).url, permission: 'extension.view' },
         ].filter((item) => can(item.permission));
 
         if (manageItems.length > 0) {
-            extSections.push({ title: 'Manage', items: manageItems });
+            extSections.push({ title: t('components.app_sidebar.manage'), items: manageItems });
         }
 
         result.push({
             id: 'extensions',
-            label: 'Extensions',
+            label: t('common.extensions'),
             icon: Puzzle,
             urlPatterns: [
                 extensions(teamSlug).url,
@@ -226,21 +228,21 @@ export function AppSidebar() {
 
         // Settings
         const settingsItems: NavItem[] = [
-            { label: 'General', icon: Settings, href: general(teamSlug).url },
-            { label: 'Members', icon: Users, href: members(teamSlug).url, permission: 'member.view' },
-            { label: 'Roles', icon: ShieldCheck, href: roles(teamSlug).url, permission: 'role.view' },
-            { label: 'Mail', icon: Mail, href: mail(teamSlug).url, permission: 'team.update' },
+            { label: t('common.general'), icon: Settings, href: general(teamSlug).url },
+            { label: t('common.members'), icon: Users, href: members(teamSlug).url, permission: 'member.view' },
+            { label: t('common.roles'), icon: ShieldCheck, href: roles(teamSlug).url, permission: 'role.view' },
+            { label: t('common.mail'), icon: Mail, href: mail(teamSlug).url, permission: 'team.update' },
         ].filter((item) => can(item.permission));
 
         const accountItems: NavItem[] = [
-            { label: 'Profile', icon: Users, href: editProfile().url },
+            { label: t('common.profile'), icon: Users, href: editProfile().url },
             { label: 'Security', icon: Shield, href: editSecurity().url },
             { label: 'Appearance', icon: Palette, href: editAppearance().url },
         ];
 
         result.push({
             id: 'settings',
-            label: 'Settings',
+            label: t('common.settings'),
             icon: Settings,
             urlPatterns: [
                 general(teamSlug).url,
@@ -253,8 +255,8 @@ export function AppSidebar() {
                 '/settings',
             ],
             sections: [
-                ...(settingsItems.length > 0 ? [{ title: 'Team', items: settingsItems }] : []),
-                { title: 'Account', items: accountItems },
+                ...(settingsItems.length > 0 ? [{ title: t('common.team'), items: settingsItems }] : []),
+                { title: t('common.account'), items: accountItems },
             ],
         });
 

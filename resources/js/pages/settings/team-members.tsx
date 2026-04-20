@@ -10,6 +10,8 @@ import {
 import type { ColumnDef, SortingState, VisibilityState } from '@tanstack/react-table';
 import {
     ArrowUpDown,
+    ChevronsLeft,
+    ChevronsRight,
     ChevronLeft,
     ChevronRight,
     ChevronDown,
@@ -23,6 +25,7 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import Guard from '@/components/guard';
 import InviteMemberModal from '@/components/invite-member-modal';
@@ -30,6 +33,7 @@ import RemoveMemberModal from '@/components/remove-member-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -79,12 +83,6 @@ type Props = {
     availableRoles: RoleOption[];
 };
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    active: { label: 'Active', variant: 'default' },
-    invited: { label: 'Invited', variant: 'outline' },
-    suspended: { label: 'Suspended', variant: 'destructive' },
-};
-
 export default function TeamMembers({
     team,
     members,
@@ -92,7 +90,14 @@ export default function TeamMembers({
     permissions,
     availableRoles,
 }: Props) {
+    const { t } = useTranslation();
     const getInitials = useInitials();
+
+    const statusConfig = useMemo<Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }>>(() => ({
+        active: { label: t('common.active'), variant: 'default' },
+        invited: { label: t('common.invited'), variant: 'outline' },
+        suspended: { label: t('common.suspended'), variant: 'destructive' },
+    }), [t]);
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const [removeMemberDialogOpen, setRemoveMemberDialogOpen] = useState(false);
     const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
@@ -101,6 +106,7 @@ export default function TeamMembers({
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [rowSelection, setRowSelection] = useState({});
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
     const can = (permission: string) => permissions.includes(permission);
@@ -122,6 +128,36 @@ export default function TeamMembers({
     const columns = useMemo<ColumnDef<TeamMember>[]>(
         () => [
             {
+                id: 'select',
+                header: ({ table }) => (
+                    <div className="flex items-center justify-center">
+                        <Checkbox
+                            checked={
+                                table.getIsAllPageRowsSelected() ||
+                                (table.getIsSomePageRowsSelected() && 'indeterminate')
+                            }
+                            onCheckedChange={(value) =>
+                                table.toggleAllPageRowsSelected(!!value)
+                            }
+                            aria-label="Select all"
+                        />
+                    </div>
+                ),
+                cell: ({ row }) => (
+                    <div className="flex items-center justify-center">
+                        <Checkbox
+                            checked={row.getIsSelected()}
+                            onCheckedChange={(value) =>
+                                row.toggleSelected(!!value)
+                            }
+                            aria-label="Select row"
+                        />
+                    </div>
+                ),
+                enableSorting: false,
+                enableHiding: false,
+            },
+            {
                 accessorKey: 'name',
                 header: ({ column }) => (
                     <Button
@@ -132,7 +168,7 @@ export default function TeamMembers({
                             column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
-                        Member
+                        {t('settings.team.members.table_member')}
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 ),
@@ -161,7 +197,7 @@ export default function TeamMembers({
             },
             {
                 accessorKey: 'role',
-                header: 'Role',
+                header: t('settings.team.members.table_role'),
                 cell: ({ row }) => {
                     const member = row.original;
 
@@ -205,7 +241,7 @@ export default function TeamMembers({
             },
             {
                 accessorKey: 'status',
-                header: 'Status',
+                header: t('settings.team.members.table_status'),
                 cell: ({ row }) => {
                     const status = row.original.status;
                     const config = statusConfig[status] ?? {
@@ -227,7 +263,7 @@ export default function TeamMembers({
                             column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
-                        Joined
+                        {t('settings.team.members.table_joined')}
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 ),
@@ -235,8 +271,8 @@ export default function TeamMembers({
                     const date = row.original.joined_at;
 
                     if (!date) {
-return <span className="text-muted-foreground">—</span>;
-}
+                        return <span className="text-muted-foreground">—</span>;
+                    }
 
                     return (
                         <span className="text-sm text-muted-foreground">
@@ -251,7 +287,7 @@ return <span className="text-muted-foreground">—</span>;
             },
             {
                 accessorKey: 'roles',
-                header: 'Permissions',
+                header: t('settings.team.members.table_permissions'),
                 cell: ({ row }) => {
                     const roles = row.original.roles ?? [];
 
@@ -300,10 +336,10 @@ return <span className="text-muted-foreground">—</span>;
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">Remove</span>
+                                                <span className="sr-only">{t('common.delete')}</span>
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent>Remove member</TooltipContent>
+                                        <TooltipContent>{t('settings.team.members.cancel_invitation')}</TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             )}
@@ -313,17 +349,19 @@ return <span className="text-muted-foreground">—</span>;
                 enableHiding: false,
             },
         ],
-        [availableRoles, updateMemberRole, getInitials, permissions, can],
+        [availableRoles, updateMemberRole, getInitials, permissions, can, t, statusConfig],
     );
 
     const table = useReactTable({
         data: members,
         columns,
-        state: { sorting, globalFilter, columnVisibility },
+        state: { sorting, globalFilter, rowSelection, columnVisibility },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
+        onRowSelectionChange: setRowSelection,
         onColumnVisibilityChange: setColumnVisibility,
         getRowId: (row) => row.id.toString(),
+        enableRowSelection: true,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -341,18 +379,29 @@ return <span className="text-muted-foreground">—</span>;
                 },
             ]}
         >
-            <Head title={`Members - ${team.name}`} />
-            <h1 className="sr-only">Team members</h1>
+            <Head title={`${t('common.members')} - ${team.name}`} />
+            <h1 className="sr-only">{t('common.members')}</h1>
 
             <div className="flex flex-col space-y-10">
                 {/* Members DataTable */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
+                        <Guard permission="invitation.create">
+                            <Button
+                                size="sm"
+                                data-test="invite-member-button"
+                                onClick={() => setInviteDialogOpen(true)}
+                            >
+                                <UserPlus className="mr-2 h-4 w-4" />
+                                {t('settings.team.members.invite_button')}
+                            </Button>
+                        </Guard>
+
                         <div className="flex items-center gap-2">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search members..."
+                                    placeholder={t('settings.team.members.search_placeholder')}
                                     value={globalFilter}
                                     onChange={(e) => setGlobalFilter(e.target.value)}
                                     className="h-9 w-[200px] pl-9 lg:w-[260px]"
@@ -365,12 +414,12 @@ return <span className="text-muted-foreground">—</span>;
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="outline" size="sm">
                                                     <Columns3 className="h-4 w-4" />
-                                                    <span className="hidden lg:inline">Columns</span>
+                                                    <span className="hidden lg:inline">{t('settings.team.members.columns')}</span>
                                                     <ChevronDown className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                         </TooltipTrigger>
-                                        <TooltipContent>Customize columns</TooltipContent>
+                                        <TooltipContent>{t('settings.team.members.customize_tooltip')}</TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                                 <DropdownMenuContent align="end" className="w-48">
@@ -390,22 +439,20 @@ return <span className="text-muted-foreground">—</span>;
                                                     col.toggleVisibility(!!v)
                                                 }
                                             >
-                                                {col.id}
+                                                {col.id === 'role'
+                                                    ? t('settings.team.members.table_role')
+                                                    : col.id === 'status'
+                                                      ? t('settings.team.members.table_status')
+                                                      : col.id === 'joined_at'
+                                                        ? t('settings.team.members.table_joined')
+                                                        : col.id === 'roles'
+                                                          ? t('settings.team.members.table_permissions')
+                                                          : col.id}
                                             </DropdownMenuCheckboxItem>
                                         ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <Guard permission="invitation.create">
-                            <Button
-                                size="sm"
-                                data-test="invite-member-button"
-                                onClick={() => setInviteDialogOpen(true)}
-                            >
-                                <UserPlus className="mr-2 h-4 w-4" />
-                                Invite member
-                            </Button>
-                        </Guard>
                     </div>
 
                     <div className="rounded-lg border">
@@ -432,7 +479,12 @@ return <span className="text-muted-foreground">—</span>;
                             <TableBody>
                                 {table.getRowModel().rows.length > 0 ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow key={row.id}>
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={
+                                                row.getIsSelected() && 'selected'
+                                            }
+                                        >
                                             {row.getVisibleCells().map((cell) => (
                                                 <TableCell key={cell.id}>
                                                     {flexRender(
@@ -449,7 +501,7 @@ return <span className="text-muted-foreground">—</span>;
                                             colSpan={columns.length}
                                             className="h-24 text-center text-muted-foreground"
                                         >
-                                            No members found.
+                                            {t('settings.team.members.no_members')}
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -459,13 +511,16 @@ return <span className="text-muted-foreground">—</span>;
 
                     {/* Pagination */}
                     <div className="flex items-center justify-between px-1">
-                        <div className="text-sm text-muted-foreground">
-                            {members.length} member{members.length !== 1 ? 's' : ''}
+                        <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
+                            {t('settings.team.members.selected_rows', {
+                                selected: table.getFilteredSelectedRowModel().rows.length,
+                                total: table.getFilteredRowModel().rows.length,
+                            })}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex w-full items-center gap-8 lg:w-fit">
                             <div className="hidden items-center gap-2 lg:flex">
                                 <Label htmlFor="members-rows" className="text-sm font-medium">
-                                    Rows per page
+                                    {t('common.rows_per_page')}
                                 </Label>
                                 <Select
                                     value={`${table.getState().pagination.pageSize}`}
@@ -475,7 +530,7 @@ return <span className="text-muted-foreground">—</span>;
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent side="top">
-                                        {[10, 20, 30, 50].map((ps) => (
+                                        {[10, 20, 30, 40, 50].map((ps) => (
                                             <SelectItem key={ps} value={`${ps}`}>
                                                 {ps}
                                             </SelectItem>
@@ -483,29 +538,79 @@ return <span className="text-muted-foreground">—</span>;
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="text-sm font-medium">
+                            <div className="flex w-fit items-center justify-center text-sm font-medium">
                                 Page {table.getState().pagination.pageIndex + 1} of{' '}
                                 {table.getPageCount()}
                             </div>
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="size-8"
-                                    onClick={() => table.previousPage()}
-                                    disabled={!table.getCanPreviousPage()}
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="size-8"
-                                    onClick={() => table.nextPage()}
-                                    disabled={!table.getCanNextPage()}
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
+                            <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="hidden size-8 lg:flex"
+                                                size="icon"
+                                                onClick={() => table.setPageIndex(0)}
+                                                disabled={!table.getCanPreviousPage()}
+                                            >
+                                                <ChevronsLeft className="h-4 w-4" />
+                                                <span className="sr-only">First page</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>First page</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="size-8"
+                                                onClick={() => table.previousPage()}
+                                                disabled={!table.getCanPreviousPage()}
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                                <span className="sr-only">Previous page</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Previous page</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="size-8"
+                                                onClick={() => table.nextPage()}
+                                                disabled={!table.getCanNextPage()}
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                                <span className="sr-only">Next page</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Next page</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="hidden size-8 lg:flex"
+                                                size="icon"
+                                                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                                disabled={!table.getCanNextPage()}
+                                            >
+                                                <ChevronsRight className="h-4 w-4" />
+                                                <span className="sr-only">Last page</span>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Last page</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </div>
                         </div>
                     </div>
@@ -517,17 +622,17 @@ return <span className="text-muted-foreground">—</span>;
                         <div className="flex items-center gap-2 px-1">
                             <Clock className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm font-medium">
-                                Pending invitations ({invitations.length})
+                                {t('settings.team.members.pending_invitations')} ({invitations.length})
                             </span>
                         </div>
                         <div className="rounded-lg border">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Email</TableHead>
-                                        <TableHead>Role</TableHead>
-                                        <TableHead>Invited by</TableHead>
-                                        <TableHead>Sent</TableHead>
+                                        <TableHead>{t('settings.team.members.table_email')}</TableHead>
+                                        <TableHead>{t('settings.team.members.table_role')}</TableHead>
+                                        <TableHead>{t('settings.team.members.table_invited_by')}</TableHead>
+                                        <TableHead>{t('settings.team.members.table_sent')}</TableHead>
                                         <TableHead className="w-12" />
                                     </TableRow>
                                 </TableHeader>
@@ -582,7 +687,7 @@ return <span className="text-muted-foreground">—</span>;
                                                                 </Button>
                                                             </TooltipTrigger>
                                                             <TooltipContent>
-                                                                Cancel invitation
+                                                                {t('settings.team.members.cancel_invitation')}
                                                             </TooltipContent>
                                                         </Tooltip>
                                                     </TooltipProvider>

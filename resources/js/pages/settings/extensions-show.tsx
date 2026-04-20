@@ -8,6 +8,8 @@ import {
     Shield,
     Tag,
 } from 'lucide-react';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,23 +54,25 @@ type Props = {
     extension: Extension;
 };
 
-const stateConfig: Record<
-    ExtensionState,
-    {
-        label: string;
-        variant: 'default' | 'secondary' | 'destructive' | 'outline';
-    }
-> = {
-    enabled: { label: 'Active', variant: 'default' },
-    disabled: { label: 'Disabled', variant: 'secondary' },
-    not_installed: { label: 'Not Installed', variant: 'outline' },
-    errored: { label: 'Error', variant: 'destructive' },
-    incompatible: { label: 'Incompatible', variant: 'destructive' },
-};
-
 export default function ExtensionsShow({ extension }: Props) {
+    const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+
+    const stateConfig = useMemo<Record<
+        ExtensionState,
+        {
+            label: string;
+            variant: 'default' | 'secondary' | 'destructive' | 'outline';
+        }
+    >>(() => ({
+        enabled: { label: t('settings.extensions.status_active'), variant: 'default' },
+        disabled: { label: t('settings.extensions.status_disabled'), variant: 'secondary' },
+        not_installed: { label: t('settings.extensions.status_not_installed'), variant: 'outline' },
+        errored: { label: t('settings.extensions.status_error'), variant: 'destructive' },
+        incompatible: { label: t('settings.extensions.status_incompatible'), variant: 'destructive' },
+    }), [t]);
+
     const config = stateConfig[extension.state];
 
     const postAction = (url: string) => {
@@ -81,7 +85,7 @@ export default function ExtensionsShow({ extension }: Props) {
             wide
             breadcrumbs={[
                 {
-                    title: 'Extensions',
+                    title: t('settings.extensions.title'),
                     href: extensionsUrl(teamSlug).url,
                 },
                 { title: extension.name, href: '#' },
@@ -121,7 +125,7 @@ export default function ExtensionsShow({ extension }: Props) {
                                         )
                                     }
                                 >
-                                    Install
+                                    {t('settings.extensions.install')}
                                 </Button>
                             )}
                             {extension.state !== 'not_installed' &&
@@ -142,7 +146,7 @@ export default function ExtensionsShow({ extension }: Props) {
                                                     )
                                                 }
                                             >
-                                                Disable
+                                                {t('settings.extensions.disable')}
                                             </Button>
                                         ) : (
                                             <Button
@@ -157,7 +161,7 @@ export default function ExtensionsShow({ extension }: Props) {
                                                     )
                                                 }
                                             >
-                                                Enable
+                                                {t('settings.extensions.enable')}
                                             </Button>
                                         )}
                                         <Button
@@ -172,7 +176,7 @@ export default function ExtensionsShow({ extension }: Props) {
                                                 )
                                             }
                                         >
-                                            Uninstall
+                                            {t('settings.extensions.uninstall')}
                                         </Button>
                                     </>
                                 )}
@@ -185,7 +189,7 @@ export default function ExtensionsShow({ extension }: Props) {
                         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                         <div>
                             <p className="font-medium text-destructive">
-                                Error
+                                {t('settings.extensions.error_message')}
                             </p>
                             <p className="mt-1 text-sm text-destructive/80">
                                 {extension.error_message}
@@ -198,7 +202,7 @@ export default function ExtensionsShow({ extension }: Props) {
                     <div className="rounded-lg border p-4">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Tag className="h-4 w-4" />
-                            Version
+                            {t('settings.extensions.version')}
                         </div>
                         <p className="mt-1 font-medium">
                             v{extension.version}
@@ -209,7 +213,7 @@ export default function ExtensionsShow({ extension }: Props) {
                         <div className="rounded-lg border p-4">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Globe className="h-4 w-4" />
-                                Author
+                                {t('settings.extensions.author')}
                             </div>
                             <p className="mt-1 font-medium">
                                 {extension.author}
@@ -221,7 +225,7 @@ export default function ExtensionsShow({ extension }: Props) {
                         <div className="rounded-lg border p-4">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Shield className="h-4 w-4" />
-                                License
+                                {t('settings.extensions.license')}
                             </div>
                             <p className="mt-1 font-medium">
                                 {extension.license}
@@ -233,7 +237,7 @@ export default function ExtensionsShow({ extension }: Props) {
                         <div className="rounded-lg border p-4">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Package className="h-4 w-4" />
-                                Installed
+                                {t('settings.extensions.installed')}
                             </div>
                             <p className="mt-1 font-medium">
                                 {new Date(extension.installed_at).toLocaleDateString()}
@@ -245,7 +249,7 @@ export default function ExtensionsShow({ extension }: Props) {
                         <div className="rounded-lg border p-4">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Hash className="h-4 w-4" />
-                                Requires
+                                {t('settings.extensions.requires')}
                             </div>
                             <p className="mt-1 font-medium">
                                 LaStarter {extension.lastarter_version}
@@ -257,7 +261,7 @@ export default function ExtensionsShow({ extension }: Props) {
                         <div className="rounded-lg border p-4">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <ExternalLink className="h-4 w-4" />
-                                Homepage
+                                {t('settings.extensions.homepage')}
                             </div>
                             <a
                                 href={extension.homepage}
@@ -274,7 +278,7 @@ export default function ExtensionsShow({ extension }: Props) {
                 {extension.keywords.length > 0 && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
-                            Keywords
+                            {t('settings.extensions.keywords')}
                         </h3>
                         <div className="flex flex-wrap gap-1.5">
                             {extension.keywords.map((keyword) => (
@@ -288,7 +292,7 @@ export default function ExtensionsShow({ extension }: Props) {
 
                 <div className="space-y-2">
                     <h3 className="text-sm font-medium text-muted-foreground">
-                        Identifier
+                        {t('settings.extensions.identifier')}
                     </h3>
                     <code className="rounded bg-muted px-2 py-1 text-sm">
                         {extension.identifier}

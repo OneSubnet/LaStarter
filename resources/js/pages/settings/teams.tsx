@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Eye, Pencil, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import CreateTeamModal from '@/components/create-team-modal';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export default function TeamsIndex({ teams }: Props) {
+    const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = currentTeam?.slug ?? '';
 
@@ -27,25 +29,25 @@ export default function TeamsIndex({ teams }: Props) {
         <AppLayout
             breadcrumbs={[
                 {
-                    title: 'Teams',
+                    title: t('settings.teams.title'),
                     href: index(teamSlug).url,
                 },
             ]}
         >
-            <Head title="Teams" />
-            <h1 className="sr-only">Teams</h1>
+            <Head title={t('settings.teams.title')} />
+            <h1 className="sr-only">{t('settings.teams.title')}</h1>
 
             <div className="flex flex-col space-y-6">
                 <div className="flex items-center justify-between">
                     <Heading
                         variant="small"
-                        title="Teams"
-                        description="Manage your teams and team memberships"
+                        title={t('settings.teams.title')}
+                        description={t('settings.teams.description')}
                     />
 
                     <CreateTeamModal>
                         <Button data-test="teams-new-team-button">
-                            <Plus /> New team
+                            <Plus /> {t('settings.teams.new_team')}
                         </Button>
                     </CreateTeamModal>
                 </div>
@@ -65,7 +67,7 @@ export default function TeamsIndex({ teams }: Props) {
                                         </span>
                                         {team.isPersonal ? (
                                             <Badge variant="secondary">
-                                                Personal
+                                                {t('settings.teams.personal')}
                                             </Badge>
                                         ) : null}
                                     </div>
@@ -96,7 +98,7 @@ export default function TeamsIndex({ teams }: Props) {
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>View team</p>
+                                                <p>{t('settings.teams.view_tooltip')}</p>
                                             </TooltipContent>
                                         </Tooltip>
                                     ) : (
@@ -118,7 +120,7 @@ export default function TeamsIndex({ teams }: Props) {
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>Edit team</p>
+                                                <p>{t('settings.teams.edit_tooltip')}</p>
                                             </TooltipContent>
                                         </Tooltip>
                                     )}
@@ -129,7 +131,7 @@ export default function TeamsIndex({ teams }: Props) {
 
                     {teams.length === 0 ? (
                         <p className="py-8 text-center text-muted-foreground">
-                            You don't belong to any teams yet.
+                            {t('settings.teams.no_teams')}
                         </p>
                     ) : null}
                 </div>
