@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Spaces\Controllers\SpaceController;
-use Modules\Spaces\Controllers\SpaceDocumentController;
 use Modules\Spaces\Controllers\SpaceDeletionRequestController;
+use Modules\Spaces\Controllers\SpaceDocumentController;
 
 if (class_exists(SpaceController::class)) {
     Route::resource('spaces', SpaceController::class)

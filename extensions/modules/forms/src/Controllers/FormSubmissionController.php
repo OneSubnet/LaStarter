@@ -13,6 +13,31 @@ use Modules\Forms\Models\FormSubmission;
 
 class FormSubmissionController
 {
+    public function show(Request $request): Response
+    {
+        $form = Form::with('questions')->findOrFail((int) $request->route('form'));
+
+        if ($form->status !== 'published') {
+            abort(404);
+        }
+
+        return Inertia::render('forms/Submit', [
+            'form' => [
+                'id' => $form->id,
+                'title' => $form->title,
+                'description' => $form->description,
+                'questions' => $form->questions->sortBy('order')->map(fn ($q) => [
+                    'id' => $q->id,
+                    'type' => $q->type,
+                    'label' => $q->label,
+                    'description' => $q->description,
+                    'options' => $q->options,
+                    'required' => $q->required,
+                ])->values()->all(),
+            ],
+        ]);
+    }
+
     public function submit(SubmitFormRequest $request): RedirectResponse
     {
         $form = Form::with('questions')->findOrFail((int) $request->route('form'));

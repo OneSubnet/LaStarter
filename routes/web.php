@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Extensions\ExtensionManager;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Settings\ExtensionController;
 use App\Http\Controllers\Settings\MarketplaceController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -43,7 +44,7 @@ Route::prefix('settings')
 Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
-        Route::inertia('dashboard', 'dashboard')->name('dashboard');
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         // Settings
         Route::prefix('settings')->group(function () {
@@ -57,6 +58,8 @@ Route::prefix('{current_team}')
             // Team settings
             Route::get('general', [TeamSettingsController::class, 'edit'])->name('settings.team.general');
             Route::patch('general', [TeamSettingsController::class, 'update'])->name('settings.team.update');
+            Route::post('general/icon', [TeamSettingsController::class, 'updateIcon'])->name('settings.team.icon');
+            Route::delete('general/icon', [TeamSettingsController::class, 'removeIcon'])->name('settings.team.icon.remove');
             Route::delete('general', [TeamController::class, 'destroy'])->name('settings.team.destroy');
 
             // Members

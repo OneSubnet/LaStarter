@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Settings;
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Themes\ComponentResolver;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\UpdateTeamThemeRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,13 +42,9 @@ class ThemeController extends Controller
     /**
      * Update the active theme for the current team.
      */
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateTeamThemeRequest $request): RedirectResponse
     {
-        Gate::authorize('update', $request->user()->currentTeam);
-
-        $validated = $request->validate([
-            'theme' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $resolver = app(ComponentResolver::class);
         $resolver->setActiveTheme($request->user()->currentTeam->id, $validated['theme']);

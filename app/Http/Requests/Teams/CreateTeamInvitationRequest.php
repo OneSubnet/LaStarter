@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Teams;
 
+use App\Enums\TeamRole;
 use App\Rules\UniqueTeamInvitation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,7 +25,7 @@ class CreateTeamInvitationRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', new UniqueTeamInvitation($team)],
             'role' => ['required', 'string', Rule::in(
                 Role::where('team_id', $teamId)
-                    ->where('name', '!=', 'owner')
+                    ->where('name', '!=', TeamRole::Owner->value)
                     ->pluck('name')
                     ->toArray()
             )],

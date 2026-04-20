@@ -32,3 +32,7 @@ database/database.sqlite
 pnpm-lock.yaml
 extensions/*/node_modules/
 extensions/*/.env
+
+# Internal/planning docs
+/Cahier_des_charges.md
+/ex_pelican_modules.md

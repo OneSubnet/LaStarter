@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -21,6 +22,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
+import * as taskRoutes from '@/routes/tasks';
 
 type Task = {
     id: number;
@@ -33,9 +35,9 @@ type Task = {
 };
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-    todo: { label: 'To Do', color: 'bg-slate-100 text-slate-700' },
-    in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-700' },
-    done: { label: 'Done', color: 'bg-green-100 text-green-700' },
+    todo: { label: 'To Do', color: 'bg-muted text-muted-foreground' },
+    in_progress: { label: 'In Progress', color: 'bg-secondary/10 text-secondary' },
+    done: { label: 'Done', color: 'bg-primary/10 text-primary' },
 };
 
 const priorityConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -45,43 +47,39 @@ const priorityConfig: Record<string, { label: string; variant: 'default' | 'seco
 };
 
 export default function TaskIndex({ tasks }: { tasks: Task[] }) {
-    const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string })?.slug ?? '';
+    const page = usePage();
+    const team = page.props.currentTeam as { slug: string } | null;
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [priority, setPriority] = useState('medium');
 
     const handleCreate = () => {
-        router.post(
-            `/${teamSlug}/tasks`,
-            { title, description, priority },
-            {
-                onSuccess: () => {
-                    setOpen(false);
-                    setTitle('');
-                    setDescription('');
-                    setPriority('medium');
-                },
+        router.post(taskRoutes.store({ current_team: team?.slug ?? '' }).url, { title, description, priority }, {
+            onSuccess: () => {
+                setOpen(false);
+                setTitle('');
+                setDescription('');
+                setPriority('medium');
             },
-        );
+        });
     };
 
     const handleStatusToggle = (task: Task) => {
         const nextStatus = task.status === 'done' ? 'todo' : 'done';
-        router.patch(`/${teamSlug}/tasks/${task.id}`, { status: nextStatus }, {
+        router.patch(taskRoutes.update({ current_team: team?.slug ?? '', task: task.id }).url, { status: nextStatus }, {
             preserveScroll: true,
         });
     };
 
     const handleDelete = (taskId: number) => {
-        router.delete(`/${teamSlug}/tasks/${taskId}`, { preserveScroll: true });
+        router.delete(taskRoutes.destroy({ current_team: team?.slug ?? '', task: taskId }).url, { preserveScroll: true });
     };
 
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Tasks', href: `/${teamSlug}/tasks` },
+                { title: 'Tasks', href: taskRoutes.index({ current_team: team?.slug ?? '' }).url },
             ]}
         >
             <Head title="Tasks" />
@@ -91,7 +89,7 @@ export default function TaskIndex({ tasks }: { tasks: Task[] }) {
                     <h1 className="text-2xl font-bold">Tasks</h1>
                     <Guard permission="task.create">
                         <Button onClick={() => setOpen(true)}>
-                            <PlusCircle className="mr-1.5 h-4 w-4" />
+                            <PlusCircle className="h-4 w-4" />
                             New Task
                         </Button>
                     </Guard>
@@ -119,7 +117,7 @@ export default function TaskIndex({ tasks }: { tasks: Task[] }) {
                                         className="shrink-0"
                                     >
                                         {task.status === 'done' ? (
-                                            <CheckSquare className="h-5 w-5 text-green-600" />
+                                            <CheckSquare className="h-5 w-5 text-primary" />
                                         ) : (
                                             <Circle className="h-5 w-5 text-muted-foreground" />
                                         )}
@@ -135,7 +133,7 @@ export default function TaskIndex({ tasks }: { tasks: Task[] }) {
                                             </Badge>
                                             {task.project && (
                                                 <Link
-                                                    href={`/${teamSlug}/projects/${task.project.id}`}
+                                                    href={`projects/${task.project.id}`}
                                                     className="text-xs text-muted-foreground hover:underline"
                                                 >
                                                     {task.project.name}
@@ -181,6 +179,7 @@ export default function TaskIndex({ tasks }: { tasks: Task[] }) {
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Create Task</DialogTitle>
+                        <DialogDescription>Add a new task to your team.</DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4">

@@ -18,7 +18,7 @@ import { useState } from 'react';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -53,43 +53,54 @@ import {
 } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 
-type SpaceMember = {
-    id: number;
-    user: { id: number; name: string; email: string };
-    role: string;
-    joined_at: string;
-};
-
-type SpaceDocument = {
-    id: number;
-    name: string;
-    file_type: string;
-    status: string;
-    requires_signature: boolean;
-    uploader: { name: string };
-    created_at: string;
-};
-
-type ActivityEntry = {
-    id: number;
-    action: string;
-    user: { name: string } | null;
-    created_at: string;
-    properties: Record<string, any>;
-};
-
 type SpaceData = {
     id: number;
     name: string;
     slug: string;
     description: string | null;
     visibility: string;
-    members: SpaceMember[];
-    documents: SpaceDocument[];
-    activity: ActivityEntry[];
+    settings: Record<string, unknown> | null;
+    created_at: string;
+    updated_at: string;
 };
 
-type Props = { space: SpaceData };
+type Member = {
+    id: number;
+    user_id: number;
+    name: string;
+    email: string;
+    role: string;
+    permissions: string[] | null;
+    joined_at: string | null;
+};
+
+type Document = {
+    id: number;
+    name: string;
+    file_type: string;
+    file_size: number;
+    status: string;
+    requires_signature: boolean;
+    expires_at: string | null;
+    created_at: string;
+};
+
+type ActivityEntry = {
+    id: number;
+    user: string | null;
+    action: string;
+    subject_type: string;
+    subject_id: number;
+    properties: Record<string, unknown>;
+    created_at: string;
+};
+
+type Props = {
+    space: SpaceData;
+    members: Member[];
+    documents: Document[];
+    activityLog: ActivityEntry[];
+};
 
 const visibilityConfig: Record<
     string,
@@ -98,7 +109,7 @@ const visibilityConfig: Record<
     public: {
         label: 'Public',
         className:
-            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+            'bg-primary/10 text-primary',
         icon: Globe,
     },
     restricted: {
@@ -110,29 +121,8 @@ const visibilityConfig: Record<
     private: {
         label: 'Private',
         className:
-            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+            'bg-destructive/10 text-destructive',
         icon: Lock,
-    },
-};
-
-const documentStatusConfig: Record<
-    string,
-    { label: string; className: string }
-> = {
-    uploaded: {
-        label: 'Uploaded',
-        className:
-            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    },
-    pending_signature: {
-        label: 'Pending Signature',
-        className:
-            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    },
-    signed: {
-        label: 'Signed',
-        className:
-            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     },
 };
 
@@ -145,12 +135,12 @@ const roleConfig: Record<string, { label: string; className: string }> = {
     editor: {
         label: 'Editor',
         className:
-            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+            'bg-secondary/10 text-secondary',
     },
     viewer: {
         label: 'Viewer',
         className:
-            'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+            'bg-muted text-muted-foreground',
     },
 };
 
@@ -160,7 +150,15 @@ function getActivityIcon(action: string) {
     return Activity;
 }
 
-export default function SpaceShow({ space }: Props) {
+function formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+export default function SpaceShow({ space, members, documents, activityLog }: Props) {
     const page = usePage();
     const teamSlug =
         (page.props.currentTeam as { slug: string })?.slug ?? '';
@@ -187,14 +185,14 @@ export default function SpaceShow({ space }: Props) {
 
     const submitEdit = (e: FormEvent) => {
         e.preventDefault();
-        editForm.patch(`/${teamSlug}/espaces/${space.slug}`, {
+        editForm.patch(`/${teamSlug}/spaces/${space.slug}`, {
             onSuccess: () => setEditOpen(false),
         });
     };
 
     const submitUpload = (e: FormEvent) => {
         e.preventDefault();
-        uploadForm.post(`/${teamSlug}/espaces/${space.slug}/documents`, {
+        uploadForm.post(`/${teamSlug}/spaces/${space.slug}/documents/upload`, {
             onSuccess: () => {
                 setUploadOpen(false);
                 uploadForm.reset();
@@ -204,7 +202,7 @@ export default function SpaceShow({ space }: Props) {
 
     const submitAddMember = (e: FormEvent) => {
         e.preventDefault();
-        addMemberForm.post(`/${teamSlug}/espaces/${space.slug}/members`, {
+        addMemberForm.post(`/${teamSlug}/spaces/${space.slug}/members`, {
             onSuccess: () => {
                 setAddMemberOpen(false);
                 addMemberForm.reset();
@@ -214,14 +212,14 @@ export default function SpaceShow({ space }: Props) {
 
     const deleteSpace = () => {
         if (confirm('Are you sure you want to delete this space?')) {
-            router.delete(`/${teamSlug}/espaces/${space.slug}`);
+            router.delete(`/${teamSlug}/spaces/${space.slug}`);
         }
     };
 
-    const removeMember = (memberId: number) => {
+    const removeMember = (userId: number) => {
         if (confirm('Remove this member from the space?')) {
             router.delete(
-                `/${teamSlug}/espaces/${space.slug}/members/${memberId}`,
+                `/${teamSlug}/spaces/${space.slug}/members/${userId}`,
             );
         }
     };
@@ -229,7 +227,7 @@ export default function SpaceShow({ space }: Props) {
     const deleteDocument = (documentId: number) => {
         if (confirm('Delete this document?')) {
             router.delete(
-                `/${teamSlug}/espaces/${space.slug}/documents/${documentId}`,
+                `/${teamSlug}/spaces/${space.slug}/documents/${documentId}`,
             );
         }
     };
@@ -242,7 +240,7 @@ export default function SpaceShow({ space }: Props) {
             breadcrumbs={[
                 {
                     title: 'Spaces',
-                    href: `/${teamSlug}/espaces`,
+                    href: `/${teamSlug}/spaces`,
                 },
                 {
                     title: space.name,
@@ -254,10 +252,10 @@ export default function SpaceShow({ space }: Props) {
 
             <div className="space-y-6 p-6">
                 <Link
-                    href={`/${teamSlug}/espaces`}
+                    href={`/${teamSlug}/spaces`}
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                 >
-                    <ArrowLeft className="mr-1 h-4 w-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     Back to Spaces
                 </Link>
 
@@ -271,7 +269,7 @@ export default function SpaceShow({ space }: Props) {
                                 variant="secondary"
                                 className={visibility.className}
                             >
-                                <VisibilityIcon className="mr-1 h-3 w-3" />
+                                <VisibilityIcon className="h-3 w-3" />
                                 {visibility.label}
                             </Badge>
                         </div>
@@ -295,49 +293,43 @@ export default function SpaceShow({ space }: Props) {
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="documents">
-                            Documents
+                            Documents ({documents.length})
                         </TabsTrigger>
-                        <TabsTrigger value="members">Members</TabsTrigger>
+                        <TabsTrigger value="members">
+                            Members ({members.length})
+                        </TabsTrigger>
                         <TabsTrigger value="activity">Activity</TabsTrigger>
                     </TabsList>
 
-                    {/* Overview Tab */}
+                    {/* Overview */}
                     <TabsContent value="overview">
                         <div className="grid gap-4 md:grid-cols-2">
                             <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                <CardContent className="flex items-center gap-3 pt-6">
+                                    <Users className="h-5 w-5 text-muted-foreground" />
+                                    <span className="text-2xl font-bold">
+                                        {members.length}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
                                         Members
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center gap-2">
-                                        <Users className="h-5 w-5 text-muted-foreground" />
-                                        <span className="text-2xl font-bold">
-                                            {space.members.length}
-                                        </span>
-                                    </div>
+                                    </span>
                                 </CardContent>
                             </Card>
                             <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                <CardContent className="flex items-center gap-3 pt-6">
+                                    <FileText className="h-5 w-5 text-muted-foreground" />
+                                    <span className="text-2xl font-bold">
+                                        {documents.length}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
                                         Documents
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-muted-foreground" />
-                                        <span className="text-2xl font-bold">
-                                            {space.documents.length}
-                                        </span>
-                                    </div>
+                                    </span>
                                 </CardContent>
                             </Card>
                         </div>
                     </TabsContent>
 
-                    {/* Documents Tab */}
+                    {/* Documents */}
                     <TabsContent value="documents">
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
@@ -351,8 +343,8 @@ export default function SpaceShow({ space }: Props) {
                                     >
                                         <DialogTrigger asChild>
                                             <Button>
-                                                <PlusCircle className="mr-1.5 h-4 w-4" />
-                                                Upload Document
+                                                <PlusCircle className="h-4 w-4" />
+                                                Upload
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent>
@@ -367,7 +359,7 @@ export default function SpaceShow({ space }: Props) {
                                             >
                                                 <div className="space-y-2">
                                                     <Label htmlFor="doc-name">
-                                                        Document Name
+                                                        Name
                                                     </Label>
                                                     <Input
                                                         id="doc-name"
@@ -385,7 +377,7 @@ export default function SpaceShow({ space }: Props) {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label htmlFor="file-type">
-                                                        File Type
+                                                        Type
                                                     </Label>
                                                     <Select
                                                         value={
@@ -402,30 +394,20 @@ export default function SpaceShow({ space }: Props) {
                                                         }
                                                     >
                                                         <SelectTrigger className="w-full">
-                                                            <SelectValue placeholder="Select type" />
+                                                            <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="pdf">
-                                                                PDF
-                                                            </SelectItem>
-                                                            <SelectItem value="docx">
-                                                                DOCX
-                                                            </SelectItem>
-                                                            <SelectItem value="xlsx">
-                                                                XLSX
-                                                            </SelectItem>
-                                                            <SelectItem value="image">
-                                                                Image
-                                                            </SelectItem>
+                                                            <SelectItem value="pdf">PDF</SelectItem>
+                                                            <SelectItem value="docx">DOCX</SelectItem>
+                                                            <SelectItem value="xlsx">XLSX</SelectItem>
+                                                            <SelectItem value="image">Image</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
                                                 <DialogFooter>
                                                     <Button
                                                         type="submit"
-                                                        disabled={
-                                                            uploadForm.processing
-                                                        }
+                                                        disabled={uploadForm.processing}
                                                     >
                                                         Upload
                                                     </Button>
@@ -436,12 +418,12 @@ export default function SpaceShow({ space }: Props) {
                                 </Guard>
                             </div>
 
-                            {space.documents.length === 0 ? (
+                            {documents.length === 0 ? (
                                 <Card>
                                     <CardContent className="flex flex-col items-center justify-center py-12">
                                         <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
                                         <p className="text-muted-foreground">
-                                            No documents in this space yet.
+                                            No documents yet.
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -452,10 +434,8 @@ export default function SpaceShow({ space }: Props) {
                                             <TableRow>
                                                 <TableHead>Name</TableHead>
                                                 <TableHead>Type</TableHead>
+                                                <TableHead>Size</TableHead>
                                                 <TableHead>Status</TableHead>
-                                                <TableHead>
-                                                    Uploaded by
-                                                </TableHead>
                                                 <TableHead>Date</TableHead>
                                                 <TableHead className="text-right">
                                                     Actions
@@ -463,94 +443,71 @@ export default function SpaceShow({ space }: Props) {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {space.documents.map((doc) => {
-                                                const status =
-                                                    documentStatusConfig[
-                                                        doc.status
-                                                    ] ?? documentStatusConfig.uploaded;
-
-                                                return (
-                                                    <TableRow key={doc.id}>
-                                                        <TableCell className="font-medium">
-                                                            <div className="flex items-center gap-2">
-                                                                <FileText className="h-4 w-4 text-muted-foreground" />
-                                                                {doc.name}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <span className="uppercase text-xs">
-                                                                {doc.file_type}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className={
-                                                                    status.className
-                                                                }
-                                                            >
-                                                                {status.label}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {doc.uploader.name}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {new Date(
-                                                                doc.created_at,
-                                                            ).toLocaleDateString()}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <TooltipProvider>
-                                                                <div className="inline-flex items-center gap-1">
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger
-                                                                            asChild
+                                            {documents.map((doc) => (
+                                                <TableRow key={doc.id}>
+                                                    <TableCell className="font-medium">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                                            {doc.name}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="uppercase text-xs">
+                                                            {doc.file_type}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {formatBytes(doc.file_size)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="bg-secondary/10 text-secondary"
+                                                        >
+                                                            {doc.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-muted-foreground">
+                                                        {new Date(doc.created_at).toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <TooltipProvider>
+                                                            <div className="inline-flex items-center gap-1">
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                window.open(
+                                                                                    `/${teamSlug}/spaces/${space.slug}/documents/${doc.id}/download`,
+                                                                                )
+                                                                            }
                                                                         >
+                                                                            <Download className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>Download</TooltipContent>
+                                                                </Tooltip>
+                                                                <Guard permission="space.document.delete">
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="sm"
-                                                                                onClick={() =>
-                                                                                    window.open(
-                                                                                        `/${teamSlug}/espaces/${space.slug}/documents/${doc.id}/download`,
-                                                                                    )
-                                                                                }
+                                                                                onClick={() => deleteDocument(doc.id)}
                                                                             >
-                                                                                <Download className="h-4 w-4" />
+                                                                                <Trash2 className="h-4 w-4 text-destructive" />
                                                                             </Button>
                                                                         </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            Download
-                                                                        </TooltipContent>
+                                                                        <TooltipContent>Delete</TooltipContent>
                                                                     </Tooltip>
-                                                                    <Guard permission="space.document.delete">
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger
-                                                                                asChild
-                                                                            >
-                                                                                <Button
-                                                                                    variant="ghost"
-                                                                                    size="sm"
-                                                                                    onClick={() =>
-                                                                                        deleteDocument(
-                                                                                            doc.id,
-                                                                                        )
-                                                                                    }
-                                                                                >
-                                                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                                                </Button>
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                Delete
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
-                                                                    </Guard>
-                                                                </div>
-                                                            </TooltipProvider>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
+                                                                </Guard>
+                                                            </div>
+                                                        </TooltipProvider>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
                                         </TableBody>
                                     </Table>
                                 </Card>
@@ -558,7 +515,7 @@ export default function SpaceShow({ space }: Props) {
                         </div>
                     </TabsContent>
 
-                    {/* Members Tab */}
+                    {/* Members */}
                     <TabsContent value="members">
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
@@ -572,8 +529,8 @@ export default function SpaceShow({ space }: Props) {
                                     >
                                         <DialogTrigger asChild>
                                             <Button>
-                                                <UserPlus className="mr-1.5 h-4 w-4" />
-                                                Add Member
+                                                <UserPlus className="h-4 w-4" />
+                                                Add
                                             </Button>
                                         </DialogTrigger>
                                         <DialogContent>
@@ -593,10 +550,7 @@ export default function SpaceShow({ space }: Props) {
                                                     <Input
                                                         id="member-email"
                                                         type="email"
-                                                        value={
-                                                            addMemberForm.data
-                                                                .email
-                                                        }
+                                                        value={addMemberForm.data.email}
                                                         onChange={(e) =>
                                                             addMemberForm.setData(
                                                                 'email',
@@ -611,41 +565,25 @@ export default function SpaceShow({ space }: Props) {
                                                         Role
                                                     </Label>
                                                     <Select
-                                                        value={
-                                                            addMemberForm.data
-                                                                .role
-                                                        }
-                                                        onValueChange={(
-                                                            value,
-                                                        ) =>
-                                                            addMemberForm.setData(
-                                                                'role',
-                                                                value,
-                                                            )
+                                                        value={addMemberForm.data.role}
+                                                        onValueChange={(value) =>
+                                                            addMemberForm.setData('role', value)
                                                         }
                                                     >
                                                         <SelectTrigger className="w-full">
-                                                            <SelectValue placeholder="Select role" />
+                                                            <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="admin">
-                                                                Admin
-                                                            </SelectItem>
-                                                            <SelectItem value="editor">
-                                                                Editor
-                                                            </SelectItem>
-                                                            <SelectItem value="viewer">
-                                                                Viewer
-                                                            </SelectItem>
+                                                            <SelectItem value="admin">Admin</SelectItem>
+                                                            <SelectItem value="editor">Editor</SelectItem>
+                                                            <SelectItem value="viewer">Viewer</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
                                                 <DialogFooter>
                                                     <Button
                                                         type="submit"
-                                                        disabled={
-                                                            addMemberForm.processing
-                                                        }
+                                                        disabled={addMemberForm.processing}
                                                     >
                                                         Add Member
                                                     </Button>
@@ -656,12 +594,12 @@ export default function SpaceShow({ space }: Props) {
                                 </Guard>
                             </div>
 
-                            {space.members.length === 0 ? (
+                            {members.length === 0 ? (
                                 <Card>
                                     <CardContent className="flex flex-col items-center justify-center py-12">
                                         <Users className="mb-4 h-12 w-12 text-muted-foreground" />
                                         <p className="text-muted-foreground">
-                                            No members in this space yet.
+                                            No members yet.
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -680,63 +618,49 @@ export default function SpaceShow({ space }: Props) {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {space.members.map((member) => {
+                                            {members.map((member) => {
                                                 const role =
                                                     roleConfig[member.role] ??
-                                                    roleConfig.viewer;
+                                                    { label: member.role, className: '' };
 
                                                 return (
                                                     <TableRow key={member.id}>
                                                         <TableCell className="font-medium">
-                                                            {member.user.name}
+                                                            {member.name}
                                                         </TableCell>
                                                         <TableCell>
                                                             <span className="inline-flex items-center gap-1 text-muted-foreground">
                                                                 <Mail className="h-3.5 w-3.5" />
-                                                                {
-                                                                    member.user
-                                                                        .email
-                                                                }
+                                                                {member.email}
                                                             </span>
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge
                                                                 variant="secondary"
-                                                                className={
-                                                                    role.className
-                                                                }
+                                                                className={role.className}
                                                             >
                                                                 {role.label}
                                                             </Badge>
                                                         </TableCell>
-                                                        <TableCell>
-                                                            {new Date(
-                                                                member.joined_at,
-                                                            ).toLocaleDateString()}
+                                                        <TableCell className="text-muted-foreground">
+                                                            {member.joined_at
+                                                                ? new Date(member.joined_at).toLocaleDateString()
+                                                                : '-'}
                                                         </TableCell>
                                                         <TableCell className="text-right">
                                                             <Guard permission="space.member.remove">
                                                                 <TooltipProvider>
                                                                     <Tooltip>
-                                                                        <TooltipTrigger
-                                                                            asChild
-                                                                        >
+                                                                        <TooltipTrigger asChild>
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="sm"
-                                                                                onClick={() =>
-                                                                                    removeMember(
-                                                                                        member.id,
-                                                                                    )
-                                                                                }
+                                                                                onClick={() => removeMember(member.user_id)}
                                                                             >
                                                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                                                             </Button>
                                                                         </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            Remove
-                                                                            member
-                                                                        </TooltipContent>
+                                                                        <TooltipContent>Remove</TooltipContent>
                                                                     </Tooltip>
                                                                 </TooltipProvider>
                                                             </Guard>
@@ -751,14 +675,14 @@ export default function SpaceShow({ space }: Props) {
                         </div>
                     </TabsContent>
 
-                    {/* Activity Tab */}
+                    {/* Activity */}
                     <TabsContent value="activity">
                         <div className="space-y-4">
                             <h2 className="text-lg font-semibold">
                                 Recent Activity
                             </h2>
 
-                            {space.activity.length === 0 ? (
+                            {activityLog.length === 0 ? (
                                 <Card>
                                     <CardContent className="flex flex-col items-center justify-center py-12">
                                         <Activity className="mb-4 h-12 w-12 text-muted-foreground" />
@@ -771,52 +695,37 @@ export default function SpaceShow({ space }: Props) {
                                 <Card>
                                     <CardContent className="pt-6">
                                         <div className="space-y-0">
-                                            {space.activity.map(
-                                                (entry, index) => {
-                                                    const Icon =
-                                                        getActivityIcon(
-                                                            entry.action,
-                                                        );
-                                                    const isLast =
-                                                        index ===
-                                                        space.activity.length -
-                                                            1;
+                                            {activityLog.map((entry, index) => {
+                                                const Icon = getActivityIcon(entry.action);
+                                                const isLast = index === activityLog.length - 1;
 
-                                                    return (
-                                                        <div
-                                                            key={entry.id}
-                                                            className="flex gap-4"
-                                                        >
-                                                            <div className="flex flex-col items-center">
-                                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                                                                    <Icon className="h-4 w-4 text-muted-foreground" />
-                                                                </div>
-                                                                {!isLast && (
-                                                                    <div className="w-px flex-1 bg-border" />
-                                                                )}
+                                                return (
+                                                    <div
+                                                        key={entry.id}
+                                                        className="flex gap-4"
+                                                    >
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                                                                <Icon className="h-4 w-4 text-muted-foreground" />
                                                             </div>
-                                                            <div className="pb-6">
-                                                                <p className="text-sm">
-                                                                    <span className="font-medium">
-                                                                        {entry
-                                                                            .user
-                                                                            ?.name ??
-                                                                            'System'}
-                                                                    </span>{' '}
-                                                                    {
-                                                                        entry.action
-                                                                    }
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {new Date(
-                                                                        entry.created_at,
-                                                                    ).toLocaleString()}
-                                                                </p>
-                                                            </div>
+                                                            {!isLast && (
+                                                                <div className="w-px flex-1 bg-border" />
+                                                            )}
                                                         </div>
-                                                    );
-                                                },
-                                            )}
+                                                        <div className="pb-6">
+                                                            <p className="text-sm">
+                                                                <span className="font-medium">
+                                                                    {entry.user ?? 'System'}
+                                                                </span>{' '}
+                                                                {entry.action}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {new Date(entry.created_at).toLocaleString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -825,7 +734,7 @@ export default function SpaceShow({ space }: Props) {
                     </TabsContent>
                 </Tabs>
 
-                {/* Edit Space Dialog */}
+                {/* Edit Dialog */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogContent>
                         <DialogHeader>
@@ -838,10 +747,7 @@ export default function SpaceShow({ space }: Props) {
                                     id="edit-name"
                                     value={editForm.data.name}
                                     onChange={(e) =>
-                                        editForm.setData(
-                                            'name',
-                                            e.target.value,
-                                        )
+                                        editForm.setData('name', e.target.value)
                                     }
                                     required
                                 />
@@ -872,18 +778,12 @@ export default function SpaceShow({ space }: Props) {
                                     }
                                 >
                                     <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select visibility" />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="public">
-                                            Public
-                                        </SelectItem>
-                                        <SelectItem value="restricted">
-                                            Restricted
-                                        </SelectItem>
-                                        <SelectItem value="private">
-                                            Private
-                                        </SelectItem>
+                                        <SelectItem value="public">Public</SelectItem>
+                                        <SelectItem value="restricted">Restricted</SelectItem>
+                                        <SelectItem value="private">Private</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -892,7 +792,7 @@ export default function SpaceShow({ space }: Props) {
                                     type="submit"
                                     disabled={editForm.processing}
                                 >
-                                    Save Changes
+                                    Save
                                 </Button>
                                 <Guard permission="space.delete">
                                     <Button
@@ -900,7 +800,7 @@ export default function SpaceShow({ space }: Props) {
                                         type="button"
                                         onClick={deleteSpace}
                                     >
-                                        Delete Space
+                                        Delete
                                     </Button>
                                 </Guard>
                             </DialogFooter>

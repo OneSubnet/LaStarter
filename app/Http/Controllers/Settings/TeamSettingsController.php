@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,6 +28,7 @@ class TeamSettingsController extends Controller
                 'name' => $team->name,
                 'slug' => $team->slug,
                 'isPersonal' => $team->is_personal,
+                'icon_url' => $team->iconUrl(),
             ],
             'permissions' => $request->user()->getAllPermissions()->pluck('name'),
         ]);
@@ -47,6 +49,77 @@ class TeamSettingsController extends Controller
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team updated.')]);
+
+        return back();
+    }
+
+    /**
+     * Upload or update the team icon.
+     */
+    public function updateIcon(Request $request): RedirectResponse
+    {
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('update', $team);
+
+        $file = $request->file('icon');
+
+        if (! $file) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('No file selected.')]);
+
+            return back();
+        }
+
+        if (! $file->isValid()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Upload failed: ').$file->getErrorMessage()]);
+
+            return back();
+        }
+
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if (! in_array($ext, $allowed)) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Invalid file type. Allowed: jpg, png, webp, svg')]);
+
+            return back();
+        }
+
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('File too large. Max 5MB.')]);
+
+            return back();
+        }
+
+        // Delete old icon
+        if ($team->icon_path) {
+            Storage::disk('public')->delete($team->icon_path);
+        }
+
+        $path = $file->store("teams/{$team->id}", 'public');
+
+        $team->update(['icon_path' => $path]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Team icon updated.')]);
+
+        return back();
+    }
+
+    /**
+     * Remove the team icon.
+     */
+    public function removeIcon(Request $request): RedirectResponse
+    {
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('update', $team);
+
+        if ($team->icon_path) {
+            Storage::disk('public')->delete($team->icon_path);
+            $team->update(['icon_path' => null]);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Team icon removed.')]);
 
         return back();
     }

@@ -1,37 +1,37 @@
-# Contributing to LaStarter
+# Contribuer à LaStarter
 
-Thank you for your interest in contributing to LaStarter! This document provides guidelines for contributing to the project.
+Merci de votre intérêt pour LaStarter ! Ce document décrit les guidelines pour contribuer au projet.
 
-## Development Setup
+## Installation pour le développement
 
-1. Fork and clone the repository
-2. Run `composer setup` for a full installation from scratch
-3. Copy `.env.example` to `.env` and configure your database
-4. Run `composer dev` to start the development server
+1. Forkez et clonez le dépôt
+2. Lancez `composer setup` pour une installation complète
+3. Copiez `.env.example` vers `.env` et configurez votre base de données
+4. Lancez `composer dev` pour démarrer le serveur de développement
 
-## Code Style
+## Style de code
 
 ### PHP
-- Follow PSR-12 coding standards
-- Run `composer run lint` to auto-fix with Pint
-- Run `composer run lint:check` to check without fixing
+- Suivre les standards PSR-12
+- Lancer `composer run lint` pour auto-fixer avec Pint
+- Lancer `composer run lint:check` pour vérifier sans modifier
 
 ### TypeScript / React
-- Follow the existing ESLint + Prettier configuration
-- Run `npm run lint` to auto-fix
-- Run `npm run format` to format with Prettier
-- Run `npm run types:check` to verify TypeScript types
+- Suivre la configuration ESLint + Prettier existante
+- Lancer `npm run lint` pour auto-fixer
+- Lancer `npm run format` pour formater avec Prettier
+- Lancer `npm run types:check` pour vérifier les types TypeScript
 
-## Branch Naming
+## Nommage des branches
 
-- `feature/` — new features (e.g., `feature/extension-marketplace`)
-- `fix/` — bug fixes (e.g., `fix/team-switching-redirect`)
-- `docs/` — documentation changes (e.g., `docs/update-readme`)
-- `refactor/` — code refactoring (e.g., `refactor/extract-actions`)
+- `feature/` — nouvelles fonctionnalités (ex : `feature/extension-marketplace`)
+- `fix/` — corrections de bugs (ex : `fix/team-switching-redirect`)
+- `docs/` — changements de documentation (ex : `docs/update-readme`)
+- `refactor/` — refactoring de code (ex : `refactor/extract-actions`)
 
-## Commit Messages
+## Messages de commit
 
-Write clear, descriptive commit messages that explain the **why** not the **what**:
+Écrire des messages clairs et descriptifs qui expliquent le **pourquoi** et non le **quoi** :
 
 ```
 Add extension lifecycle states for better module management
@@ -40,48 +40,50 @@ Extensions now track their state (enabled, disabled, errored, incompatible)
 instead of a simple boolean. This allows better UX and error recovery.
 ```
 
-## Testing
+## Tests
 
-All contributions must include appropriate tests:
+Toute contribution doit inclure les tests appropriés :
 
-- **PHP tests**: Use Pest. Run `composer run test`
-- **Authorization tests**: Every permission check must have a test
-- **Integration tests**: Feature changes must have HTTP tests
-- **Type checks**: Run `npm run types:check` — zero errors required
+- **Tests PHP** : Utiliser Pest. Lancer `composer run test`
+- **Tests d'autorisation** : Chaque vérification de permission doit avoir un test
+- **Tests d'intégration** : Les changements de fonctionnalité doivent avoir des tests HTTP
+- **Vérification de types** : Lancer `npm run types:check` — zéro erreur requise
 
-## Pull Request Process
+## Processus de Pull Request
 
-1. Create a feature branch from `main`
-2. Make your changes with appropriate tests
-3. Ensure all checks pass:
-   - `composer run lint:check` — zero warnings
-   - `composer run test` — zero failures
-   - `npm run types:check` — zero errors
-   - `npm run lint` — zero errors
-4. Open a PR with a clear description of the change and why it's needed
-5. Address review feedback
+1. Créer une branche feature depuis `main`
+2. Faire les changements avec les tests appropriés
+3. S'assurer que tous les checks passent :
+   - `composer run lint:check` — zéro warning
+   - `composer run test` — zéro échec
+   - `npm run types:check` — zéro erreur
+   - `npm run lint` — zéro erreur
+4. Ouvrir une PR avec une description claire du changement et de sa justification
+5. Répondre aux retours de review
 
-## Architecture Guidelines
+## Guidelines d'architecture
 
-- **Backend is the source of truth** — frontend only reflects state
-- **Never hardcode role names** — use `hasPermissionTo()` and Policies
-- **Never put business logic in controllers** — use Action classes
-- **Never make DB queries in views/layouts/navigation** — resolve context upstream
-- **Use Form Requests** for all non-trivial validation
-- **Use the `HasTeam` trait** on all module models for auto-scoping
+- **Le backend est la source de vérité** — le frontend ne fait que refléter l'état
+- **Ne jamais hardcoder de noms de rôles** — utiliser `hasPermissionTo()` et les Policies
+- **Ne jamais mettre de logique métier dans les contrôleurs** — utiliser des classes Action
+- **Ne jamais faire de requêtes DB dans les vues/layouts/navigation** — résoudre le contexte en amont
+- **Utiliser les Form Requests** pour toute validation non-triviale
+- **Utiliser le trait `HasTeam`** sur tous les modèles de module pour le scope automatique
+- **Aucun texte hardcodé** — utiliser le système de traduction `__()` (backend) et `t()` (frontend)
 
-## Extension Contributions
+## Contributions d'extensions
 
-Extensions are developed in separate repositories under the OneSubnet organization. Each extension must:
+Les extensions sont développées dans le dépôt [LaStarter-Marketplace](https://github.com/OneSubnet/LaStarter-Marketplace). Chaque extension doit :
 
-1. Have a valid `extension.json` manifest
-2. Use a ServiceProvider extending `ModuleServiceProvider`
-3. Include models with the `HasTeam` trait
-4. Define permissions in the manifest
-5. Include a Policy using `hasPermissionTo()`
+1. Avoir un manifeste `extension.json` valide
+2. Utiliser un ServiceProvider étendant `ModuleServiceProvider`
+3. Inclure des modèles avec le trait `HasTeam`
+4. Définir les permissions dans le manifeste
+5. Inclure une Policy utilisant `hasPermissionTo()`
+6. Fournir les traductions dans `resources/locales/{locale}.json`
 
-See CLAUDE.md for the full extension development guide.
+Voir CLAUDE.md pour le guide complet de développement d'extensions.
 
-## Questions?
+## Questions ?
 
-Open an issue on GitHub for bugs, feature requests, or questions.
+Ouvrez une issue sur GitHub pour les bugs, demandes de fonctionnalités ou questions.

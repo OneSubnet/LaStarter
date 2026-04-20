@@ -2,6 +2,7 @@
 
 namespace App\Actions\Invitations;
 
+use App\Enums\MembershipStatus;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class AcceptTeamInvitation
 
             $team->memberships()->firstOrCreate(
                 ['user_id' => $user->id],
-                ['role' => $invitation->role, 'status' => 'active', 'joined_at' => now()],
+                ['role' => $invitation->role, 'status' => MembershipStatus::Active->value, 'joined_at' => now()],
             );
 
             $invitation->update(['accepted_at' => now()]);

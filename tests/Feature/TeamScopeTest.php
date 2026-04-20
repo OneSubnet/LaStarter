@@ -3,7 +3,6 @@
 use App\Models\AuditLog;
 use App\Models\Team;
 use App\Models\User;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 

@@ -25,6 +25,8 @@ if (class_exists(FormController::class)) {
 
     Route::post('forms/{form}/submit', [FormSubmissionController::class, 'submit'])
         ->name('forms.submit');
+    Route::get('forms/{form}/submit', [FormSubmissionController::class, 'show'])
+        ->name('forms.submit.show');
     Route::get('forms/{form}/responses', [FormSubmissionController::class, 'responses'])
         ->name('forms.responses');
     Route::delete('forms/{form}/responses/{submission}', [FormSubmissionController::class, 'destroy'])

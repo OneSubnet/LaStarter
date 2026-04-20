@@ -3,8 +3,6 @@
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\User;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Tests\Concerns\CreatesTeams;
 
 uses(CreatesTeams::class);

@@ -29,15 +29,15 @@ type Project = {
 };
 
 const priorityConfig: Record<string, { label: string; className: string }> = {
-    high: { label: 'High', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+    high: { label: 'High', className: 'bg-destructive/10 text-destructive' },
     medium: { label: 'Medium', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    low: { label: 'Low', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+    low: { label: 'Low', className: 'bg-primary/10 text-primary' },
 };
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-    active: { label: 'Active', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    completed: { label: 'Completed', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    archived: { label: 'Archived', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+    active: { label: 'Active', className: 'bg-secondary/10 text-secondary' },
+    completed: { label: 'Completed', className: 'bg-primary/10 text-primary' },
+    archived: { label: 'Archived', className: 'bg-muted text-muted-foreground' },
 };
 
 export default function ProjectIndex({ projects }: { projects: Project[] }) {
@@ -85,7 +85,7 @@ export default function ProjectIndex({ projects }: { projects: Project[] }) {
                         <Dialog open={open} onOpenChange={setOpen}>
                             <DialogTrigger asChild>
                                 <Button>
-                                    <PlusCircle className="mr-1.5 h-4 w-4" />
+                                    <PlusCircle className="h-4 w-4" />
                                     New Project
                                 </Button>
                             </DialogTrigger>
@@ -154,7 +154,7 @@ export default function ProjectIndex({ projects }: { projects: Project[] }) {
                                             <input
                                                 id="color"
                                                 type="color"
-                                                value={data.color || '#3b82f6'}
+                                                value={data.color || 'hsl(var(--primary))'}
                                                 onChange={(e) =>
                                                     setData('color', e.target.value)
                                                 }

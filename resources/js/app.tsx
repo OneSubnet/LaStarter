@@ -77,7 +77,7 @@ createInertiaApp({
         );
     },
     progress: {
-        color: '#4B5563',
+        color: 'hsl(var(--muted-foreground))',
     },
 });
 

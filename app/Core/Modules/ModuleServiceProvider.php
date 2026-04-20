@@ -2,6 +2,7 @@
 
 namespace App\Core\Modules;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 abstract class ModuleServiceProvider extends ServiceProvider
@@ -9,6 +10,13 @@ abstract class ModuleServiceProvider extends ServiceProvider
     protected string $identifier;
 
     protected string $basePath;
+
+    /**
+     * Model → Policy mapping.
+     *
+     * @var array<class-string, class-string>
+     */
+    protected array $policies = [];
 
     public function __construct($app)
     {
@@ -48,6 +56,16 @@ abstract class ModuleServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register the module's policies with Gate.
+     */
+    protected function registerPolicies(): void
+    {
+        foreach ($this->policies as $model => $policy) {
+            Gate::policy($model, $policy);
+        }
+    }
+
+    /**
      * Register the module.
      */
     public function register(): void
@@ -60,6 +78,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->registerPolicies();
         $this->bootModule();
     }
 

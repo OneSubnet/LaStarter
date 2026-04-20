@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Actions\Roles\CreateRole;
 use App\Actions\Roles\DeleteRole;
 use App\Actions\Roles\UpdateRole;
+use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\StoreRoleRequest;
 use App\Http\Requests\Teams\UpdateRoleRequest;
@@ -26,15 +27,14 @@ class TeamRolesController extends Controller
 
         $teamRoles = Role::where('team_id', $team->id)
             ->with('permissions')
+            ->withCount('users')
             ->get()
             ->map(fn ($role) => [
                 'id' => $role->id,
                 'name' => $role->name,
-                'is_protected' => $role->name === 'owner',
+                'is_protected' => $role->name === TeamRole::Owner->value,
                 'permissions' => $role->permissions->pluck('name')->toArray(),
-                'users_count' => $team->members()
-                    ->whereHas('roles', fn ($q) => $q->where('roles.id', $role->id)->where('roles.team_id', $team->id))
-                    ->count(),
+                'users_count' => $role->users_count,
             ]);
 
         $allPermissions = Permission::all()->map(fn ($permission) => [

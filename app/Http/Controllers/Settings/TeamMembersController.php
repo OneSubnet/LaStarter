@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Actions\Members\MapTeamMembers;
 use App\Actions\Members\RemoveTeamMember;
 use App\Actions\Members\UpdateTeamMemberRole;
+use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\UpdateTeamMemberRequest;
 use App\Models\User;
@@ -33,16 +34,18 @@ class TeamMembersController extends Controller
             'members' => $mapTeamMembers->handle($team),
             'invitations' => $team->invitations()
                 ->whereNull('accepted_at')
+                ->with('inviter')
                 ->get()
                 ->map(fn ($invitation) => [
                     'code' => $invitation->code,
                     'email' => $invitation->email,
                     'role' => $invitation->role instanceof \BackedEnum ? $invitation->role->value : $invitation->role,
                     'role_label' => ucfirst($invitation->role instanceof \BackedEnum ? $invitation->role->value : $invitation->role),
+                    'invited_by' => $invitation->inviter?->name,
                     'created_at' => $invitation->created_at->toISOString(),
                 ]),
             'permissions' => $user->getAllPermissions()->pluck('name'),
-            'availableRoles' => $teamRoles->where('name', '!=', 'owner')->map(fn ($role) => [
+            'availableRoles' => $teamRoles->where('name', '!=', TeamRole::Owner->value)->map(fn ($role) => [
                 'value' => $role->name,
                 'label' => ucfirst($role->name),
             ])->values()->toArray(),

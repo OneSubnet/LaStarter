@@ -2,14 +2,17 @@
 
 namespace Modules\Spaces\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Modules\Spaces\Models\SpaceDeletionRequest;
 
 class SpaceDeletionRequestController
 {
     public function request(Request $request): RedirectResponse
     {
+        Gate::authorize('create', SpaceDeletionRequest::class);
+
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:1000'],
         ]);
@@ -40,9 +43,7 @@ class SpaceDeletionRequestController
     {
         $deletionRequest = SpaceDeletionRequest::findOrFail((int) $request->route('deletion_request'));
 
-        if ($deletionRequest->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        Gate::authorize('delete', $deletionRequest);
 
         if ($deletionRequest->status !== 'pending') {
             Inertia\Inertia::flash('toast', ['type' => 'error', 'message' => __('Only pending requests can be cancelled.')]);
@@ -59,6 +60,8 @@ class SpaceDeletionRequestController
 
     public function review(Request $request): RedirectResponse
     {
+        Gate::authorize('review', SpaceDeletionRequest::class);
+
         $deletionRequest = SpaceDeletionRequest::findOrFail((int) $request->route('deletion_request'));
 
         $validated = $request->validate([

@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class SpaceMember extends Model
 {
     public const ROLE_ADMIN = 'admin';
+
     public const ROLE_MEMBER = 'member';
+
     public const ROLE_VIEWER = 'viewer';
 
     protected $table = 'space_members';

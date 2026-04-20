@@ -2,12 +2,22 @@
 
 namespace Modules\Spaces;
 
+use App\Core\Dashboard\DashboardWidgetBag;
 use App\Core\Hooks\Hook;
 use App\Core\Modules\ModuleServiceProvider;
+use Modules\Spaces\Models\Space;
+use Modules\Spaces\Models\SpaceDocument;
+use Modules\Spaces\Policies\SpaceDocumentPolicy;
+use Modules\Spaces\Policies\SpacePolicy;
 
 class SpaceServiceProvider extends ModuleServiceProvider
 {
     protected string $identifier = 'spaces';
+
+    protected array $policies = [
+        Space::class => SpacePolicy::class,
+        SpaceDocument::class => SpaceDocumentPolicy::class,
+    ];
 
     public function __construct($app)
     {
@@ -22,8 +32,19 @@ class SpaceServiceProvider extends ModuleServiceProvider
 
     protected function bootModule(): void
     {
-        $this->loadModuleRoutes();
         $this->loadModuleMigrations();
+
+        Hook::listen(Hook::DASHBOARD_RENDER, function (DashboardWidgetBag $bag) {
+            $bag->add(
+                'spaces',
+                'Spaces',
+                'Secure spaces',
+                'Lock',
+                'stat',
+                Space::count(),
+                15,
+            );
+        });
 
         Hook::dispatch(Hook::MODULE_BOOT, ['module' => 'spaces']);
     }

@@ -3,6 +3,7 @@
 namespace App\Core\Extensions\Console;
 
 use App\Core\Extensions\ExtensionManager;
+use App\Enums\TeamRole;
 use App\Models\Extension;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Permission;
@@ -41,7 +42,7 @@ class ExtensionsSyncCommand extends Command
 
         // Ensure owner roles have all permissions
         $allPermissions = Permission::where('guard_name', 'web')->get();
-        Role::where('name', 'owner')->each(function (Role $role) use ($allPermissions) {
+        Role::where('name', TeamRole::Owner->value)->each(function (Role $role) use ($allPermissions) {
             $role->syncPermissions($allPermissions);
         });
 

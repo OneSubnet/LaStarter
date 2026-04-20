@@ -35,8 +35,10 @@ class MarketplaceController extends Controller
         $installed = Extension::pluck('identifier')->toArray();
 
         $results = $results->map(function (array $repo) use ($installed) {
-            $repo['installed'] = in_array($repo['name'], $installed) ||
-                in_array(str_replace('lastarter-', '', $repo['name']), $installed);
+            $name = $repo['name'];
+            // Match patterns: lastarter-module-projects → projects, lastarter-theme-default → default
+            $identifier = preg_replace('/^lastarter-(module|theme)-/', '', $name);
+            $repo['installed'] = in_array($identifier, $installed);
 
             return $repo;
         });

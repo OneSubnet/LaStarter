@@ -2,6 +2,7 @@
 
 namespace Modules\Spaces\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,6 +17,8 @@ use Modules\Spaces\Models\SpaceMember;
 
 class SpaceController
 {
+    use ResolvesSpace;
+
     public function index(Request $request): Response
     {
         Gate::authorize('viewAny', Space::class);
@@ -42,7 +45,7 @@ class SpaceController
 
     public function show(Request $request): Response
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
 
         Gate::authorize('view', $space);
 
@@ -142,7 +145,7 @@ class SpaceController
 
     public function update(UpdateSpaceRequest $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
 
         Gate::authorize('update', $space);
 
@@ -167,7 +170,7 @@ class SpaceController
 
     public function destroy(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
 
         Gate::authorize('delete', $space);
 
@@ -189,7 +192,7 @@ class SpaceController
 
     public function addMember(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
 
         Gate::authorize('manageMembers', $space);
 
@@ -198,7 +201,7 @@ class SpaceController
             'role' => ['sometimes', 'string', 'in:admin,member,viewer'],
         ]);
 
-        $user = \App\Models\User::where('email', $validated['email'])->first();
+        $user = User::where('email', $validated['email'])->first();
 
         $existingMember = SpaceMember::where('space_id', $space->id)
             ->where('user_id', $user->id)
@@ -221,7 +224,7 @@ class SpaceController
             'space_id' => $space->id,
             'user_id' => $request->user()->id,
             'action' => 'member.added',
-            'subject_type' => \App\Models\User::class,
+            'subject_type' => User::class,
             'subject_id' => $user->id,
             'properties' => ['email' => $user->email, 'role' => $validated['role'] ?? SpaceMember::ROLE_MEMBER],
         ]);
@@ -233,7 +236,7 @@ class SpaceController
 
     public function removeMember(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
 
         Gate::authorize('manageMembers', $space);
 
@@ -247,7 +250,7 @@ class SpaceController
             'space_id' => $space->id,
             'user_id' => $request->user()->id,
             'action' => 'member.removed',
-            'subject_type' => \App\Models\User::class,
+            'subject_type' => User::class,
             'subject_id' => $userId,
         ]);
 
