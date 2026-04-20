@@ -164,7 +164,7 @@ class MarketplaceClient
      */
     protected function fetchIndex(): ?Collection
     {
-        return cache()->remember('marketplace.index', now()->addHour(), function () {
+        $data = cache()->remember('marketplace.index', now()->addHour(), function () {
             $response = $this->http()
                 ->accept('application/vnd.github.raw')
                 ->get("https://api.github.com/repos/{$this->githubOrg}/{$this->marketplaceRepo}/contents/index.json");
@@ -179,8 +179,14 @@ class MarketplaceClient
                 return null;
             }
 
-            return collect($data);
+            return $data;
         });
+
+        if ($data === null) {
+            return null;
+        }
+
+        return collect($data);
     }
 
     private function http()

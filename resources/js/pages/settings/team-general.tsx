@@ -189,7 +189,7 @@ fileInputRef.current.value = '';
                                                         )
                                                     }
                                                     onBlur={field.handleBlur}
-                                                    disabled={team.isPersonal}
+                                                    disabled={false}
                                                 />
                                                 <InputError
                                                     message={
@@ -205,8 +205,7 @@ fileInputRef.current.value = '';
                                     </form.Field>
                                 </div>
 
-                                {!team.isPersonal && (
-                                    <form.Subscribe
+                                <form.Subscribe
                                         selector={(state) => [
                                             state.canSubmit,
                                             state.isSubmitting,
@@ -229,7 +228,6 @@ fileInputRef.current.value = '';
                                             </div>
                                         )}
                                     </form.Subscribe>
-                                )}
                             </form>
                         </>
                     ) : (
