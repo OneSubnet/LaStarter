@@ -68,7 +68,7 @@ export default function Marketplace({ results, query, type }: Props) {
 
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                    <div className="relative max-w-sm flex-1">
+                    <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder={t('settings.marketplace.search_placeholder')}
@@ -80,6 +80,7 @@ export default function Marketplace({ results, query, type }: Props) {
                             className="pl-9"
                         />
                     </div>
+                    <Button onClick={handleSearch}>{t('settings.marketplace.search_button')}</Button>
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
                         <SelectTrigger className="w-[140px]">
                             <SelectValue />
@@ -90,7 +91,6 @@ export default function Marketplace({ results, query, type }: Props) {
                             <SelectItem value="theme">{t('settings.marketplace.type_theme')}</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Button onClick={handleSearch}>{t('settings.marketplace.search_button')}</Button>
                 </div>
 
                 {results.length === 0 ? (
