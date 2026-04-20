@@ -164,7 +164,7 @@ export default function Marketplace({ results, query, type }: Props) {
                                                         )
                                                     }
                                                 >
-                                                    <Download className="mr-1 h-3 w-3" />
+                                                    <Download className="h-3 w-3" />
                                                     {t('settings.marketplace.install')}
                                                 </Button>
                                             </Guard>

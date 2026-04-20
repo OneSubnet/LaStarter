@@ -168,7 +168,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             )}
                                         >
                                             {item.icon && (
-                                                <item.icon className="mr-2 h-4 w-4" />
+                                                <item.icon className="h-4 w-4" />
                                             )}
                                             {item.title}
                                         </Link>

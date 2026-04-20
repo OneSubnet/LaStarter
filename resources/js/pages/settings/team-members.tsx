@@ -233,7 +233,7 @@ export default function TeamMembers({
 
                     return (
                         <Badge variant="secondary">
-                            <ShieldCheck className="mr-1 h-3 w-3" />
+                            <ShieldCheck className="h-3 w-3" />
                             {member.role_label}
                         </Badge>
                     );
@@ -392,7 +392,7 @@ export default function TeamMembers({
                                 data-test="invite-member-button"
                                 onClick={() => setInviteDialogOpen(true)}
                             >
-                                <UserPlus className="mr-2 h-4 w-4" />
+                                <UserPlus className="h-4 w-4" />
                                 {t('settings.team.members.invite_button')}
                             </Button>
                         </Guard>

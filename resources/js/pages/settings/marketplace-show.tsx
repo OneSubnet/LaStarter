@@ -121,7 +121,7 @@ export default function MarketplaceShow({
                                     onClick={handleInstall}
                                     disabled={installing || !release?.zip_url}
                                 >
-                                    <Download className="mr-2 h-4 w-4" />
+                                    <Download className="h-4 w-4" />
                                     {installing
                                         ? t('settings.marketplace.installing')
                                         : t('settings.marketplace.install')}
@@ -134,7 +134,7 @@ export default function MarketplaceShow({
                             rel="noopener noreferrer"
                         >
                             <Button variant="outline" size="sm">
-                                <ExternalLink className="mr-2 h-4 w-4" />
+                                <ExternalLink className="h-4 w-4" />
                                 {t('settings.marketplace.github')}
                             </Button>
                         </a>

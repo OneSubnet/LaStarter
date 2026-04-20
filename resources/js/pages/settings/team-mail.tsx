@@ -320,7 +320,7 @@ export default function TeamMail({ mail }: Props) {
                             disabled={sendingTest}
                             onClick={handleTestEmail}
                         >
-                            <Mail className="mr-2 h-4 w-4" />
+                            <Mail className="h-4 w-4" />
                             {sendingTest ? t('settings.team.mail.test_sending') : t('settings.team.mail.test_button')}
                         </Button>
                     </div>
