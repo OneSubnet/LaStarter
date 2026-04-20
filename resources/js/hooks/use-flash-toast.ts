@@ -18,8 +18,10 @@ export function useFlashToast(): void {
         // Validation errors (422) — show first error
         router.on('error', (event) => {
             const errors = (event as CustomEvent).detail?.errors;
+
             if (errors && typeof errors === 'object') {
                 const firstError = Object.values(errors).flat()[0];
+
                 if (typeof firstError === 'string') {
                     toast.error(firstError);
                 }

@@ -1,8 +1,7 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import type { FormEvent } from 'react';
 import Guard from '@/components/guard';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -196,7 +195,7 @@ export default function ProjectShow({ project }: { project: ProjectData }) {
                                                         'Are you sure you want to delete this project?',
                                                     )
                                                 ) {
-                                                    useForm({}).delete(
+                                                    router.delete(
                                                         `/${teamSlug}/projects/${project.id}`,
                                                     );
                                                 }

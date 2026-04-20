@@ -65,6 +65,7 @@ export default function ThemedDashboard() {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         {widgets.map((widget) => {
                             const Icon = iconMap[widget.icon] ?? LayoutGrid;
+
                             return (
                                 <Card key={widget.id}>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -47,6 +47,7 @@ export default function Security({
         if (prevTwoFactorEnabled.current && !twoFactorEnabled) {
             clearTwoFactorAuthData();
         }
+
         prevTwoFactorEnabled.current = twoFactorEnabled;
     }, [twoFactorEnabled, clearTwoFactorAuthData]);
 
@@ -62,9 +63,13 @@ export default function Security({
                 preserveScroll: true,
                 onSuccess: () => formApi.reset(),
                 onError: (errors) => {
-                    if (errors.password) currentPasswordInput.current?.focus();
-                    if (errors.current_password)
-                        currentPasswordInput.current?.focus();
+                    if (errors.password) {
+currentPasswordInput.current?.focus();
+}
+
+                    if (errors.current_password) {
+currentPasswordInput.current?.focus();
+}
                 },
             });
         },

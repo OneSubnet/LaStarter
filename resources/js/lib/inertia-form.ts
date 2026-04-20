@@ -24,15 +24,21 @@ export function inertiaSubmit(options: InertiaSubmitOptions) {
 export function zodValidator<T>(schema: ZodSchema<T>) {
     return ({ value }: { value: unknown }) => {
         const result = schema.safeParse(value);
-        if (result.success) return;
+
+        if (result.success) {
+return;
+}
 
         const errors: Record<string, string> = {};
+
         for (const issue of result.error.issues) {
             const key = issue.path.join('.');
+
             if (!errors[key]) {
                 errors[key] = issue.message;
             }
         }
+
         return errors;
     };
 }

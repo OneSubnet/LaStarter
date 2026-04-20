@@ -1,10 +1,9 @@
 import { router, usePage } from '@inertiajs/react';
-import { Activity, Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { Activity, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useState } from 'react';
 import CreateTeamModal from '@/components/create-team-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -58,19 +57,37 @@ type AuditEntry = {
 };
 
 function formatTimeAgo(dateStr: string | null): string {
-    if (!dateStr) return '';
+    if (!dateStr) {
+return '';
+}
+
     const diff = Date.now() - new Date(dateStr).getTime();
     const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
+
+    if (minutes < 1) {
+return 'just now';
+}
+
+    if (minutes < 60) {
+return `${minutes}m ago`;
+}
+
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+
+    if (hours < 24) {
+return `${hours}h ago`;
+}
+
     const days = Math.floor(hours / 24);
+
     return `${days}d ago`;
 }
 
 function formatDateTime(dateStr: string | null): string {
-    if (!dateStr) return '—';
+    if (!dateStr) {
+return '—';
+}
+
     return new Date(dateStr).toLocaleString('fr-FR', {
         day: 'numeric',
         month: 'short',
@@ -193,6 +210,7 @@ export function SidebarRight() {
                             <div className="space-y-1">
                                 {teamMembers.map((member) => {
                                     const initials = getInitials(member.name);
+
                                     return (
                                         <div
                                             key={member.id}

@@ -125,6 +125,7 @@ export default function AppSidebarLayout({
                             ].map((item) => {
                                 const Icon = item.icon;
                                 const isActive = currentPath === item.href || (item.href !== `/${teamSlug}` && currentPath.startsWith(item.href));
+
                                 return (
                                     <Link
                                         key={item.label}
@@ -161,6 +162,7 @@ export default function AppSidebarLayout({
                     </Link>
                     {extensionNav.slice(0, 2).map((ext) => {
                         const Icon = ext.icon ? iconMap[ext.icon] ?? LayoutGrid : LayoutGrid;
+
                         return (
                             <Link
                                 key={ext.title}

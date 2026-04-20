@@ -187,6 +187,7 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                         createForm.reset();
 
                         const flash = (page as unknown as { props: { roles: Role[] } }).props?.roles;
+
                         if (flash && flash.length > 0) {
                             const newRole = flash[flash.length - 1];
                             openDetail(newRole);
@@ -212,7 +213,9 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
     }, []);
 
     const handleUpdate = () => {
-        if (!detailRole || detailRole.is_protected) return;
+        if (!detailRole || detailRole.is_protected) {
+return;
+}
 
         setEditErrors({});
         router.patch(
@@ -230,7 +233,10 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
             destroyUrl({ current_team: teamSlug, role: roleId }).url,
             {
                 onSuccess: () => {
-                    if (detailRole?.id === roleId) closeDetail();
+                    if (detailRole?.id === roleId) {
+closeDetail();
+}
+
                     setDeleteConfirmId(null);
                 },
             },
@@ -256,6 +262,7 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
 
     const toggleAll = () => {
         const allPerms = Object.values(allPermissions).flat().map((p) => p.name);
+
         if (allPerms.every((p) => editPermissions.includes(p))) {
             setEditPermissions([]);
         } else {
@@ -357,6 +364,7 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                     if (row.original.is_protected) {
                         return <Badge variant="outline">System</Badge>;
                     }
+
                     return <Badge variant="secondary">Custom</Badge>;
                 },
             },
@@ -965,7 +973,9 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                         <Button
                             variant="destructive"
                             onClick={() => {
-                                if (deleteConfirmId) handleDelete(deleteConfirmId);
+                                if (deleteConfirmId) {
+handleDelete(deleteConfirmId);
+}
                             }}
                         >
                             Delete role
