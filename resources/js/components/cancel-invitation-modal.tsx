@@ -33,7 +33,7 @@ export default function CancelInvitationModal({
             return;
         }
 
-        router.visit(destroyInvitation({ current_team: team.slug, invitation: invitation.code }).url, {
+        router.visit(destroyInvitation({ current_team: team.slug, invitation_code: invitation.code }).url, {
             method: 'delete',
             onStart: () => setProcessing(true),
             onFinish: () => setProcessing(false),
