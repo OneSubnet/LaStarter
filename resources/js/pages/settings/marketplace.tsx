@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { marketplace as marketplaceUrl } from '@/routes/settings/team';
-import { show as showUrl } from '@/routes/settings/team/marketplace';
+import { install as installUrl, show as showUrl } from '@/routes/settings/team/marketplace';
 
 type Repo = {
     name: string;
@@ -166,7 +166,7 @@ export default function Marketplace({ results, query, type }: Props) {
                                                     variant="outline"
                                                     onClick={() =>
                                                         router.post(
-                                                            `/api/marketplace/install`,
+                                                            installUrl(teamSlug).url,
                                                             {
                                                                 owner,
                                                                 repo: name,

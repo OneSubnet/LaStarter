@@ -1,15 +1,18 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
+    ArrowDown,
     ArrowLeft,
+    ArrowUp,
     Calendar,
     CheckSquare,
     ChevronDown,
     CircleDot,
     Clock,
+    Copy,
     Edit3,
     Eye,
     FileText,
-    GripVertical,
+    Link as LinkIcon,
     List,
     Mail,
     MessageSquare,
@@ -106,17 +109,17 @@ const statusConfig: Record<
     draft: {
         label: 'Draft',
         className:
-            'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+            'bg-muted text-muted-foreground',
     },
     published: {
         label: 'Published',
         className:
-            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+            'bg-primary/10 text-primary',
     },
     closed: {
         label: 'Closed',
         className:
-            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+            'bg-destructive/10 text-destructive',
     },
 };
 
@@ -254,7 +257,7 @@ function PreviewQuestion({ question }: { question: Question }) {
                         className="gap-1.5"
                         disabled
                     >
-                        <CircleDot className="h-4 w-4 text-green-500" />
+                        <CircleDot className="h-4 w-4 text-primary" />
                         Yes
                     </Button>
                     <Button
@@ -263,7 +266,7 @@ function PreviewQuestion({ question }: { question: Question }) {
                         className="gap-1.5"
                         disabled
                     >
-                        <X className="h-4 w-4 text-red-500" />
+                        <X className="h-4 w-4 text-destructive" />
                         No
                     </Button>
                 </div>
@@ -373,6 +376,27 @@ export default function FormShow({ form }: Props) {
         }
     };
 
+    const handleMoveQuestion = (currentIndex: number, direction: 'up' | 'down') => {
+        const questions = [...form.questions];
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= questions.length) return;
+        [questions[currentIndex], questions[targetIndex]] = [questions[targetIndex], questions[currentIndex]];
+        router.post(
+            `/${teamSlug}/forms/${form.id}/questions/reorder`,
+            { questions: questions.map((q) => q.id) },
+            { preserveScroll: true },
+        );
+    };
+
+    const shareUrl = `${window.location.origin}/${teamSlug}/forms/${form.id}/submit`;
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     const submitFormEdit = (e: FormEvent) => {
         e.preventDefault();
         formEditForm.patch(`/${teamSlug}/forms/${form.id}`, {
@@ -383,11 +407,11 @@ export default function FormShow({ form }: Props) {
     };
 
     const handlePublish = () => {
-        router.patch(`/${teamSlug}/forms/${form.id}/publish`);
+        router.post(`/${teamSlug}/forms/${form.id}/publish`);
     };
 
     const handleClose = () => {
-        router.patch(`/${teamSlug}/forms/${form.id}/close`);
+        router.post(`/${teamSlug}/forms/${form.id}/close`);
     };
 
     // Placeholder responses for demo purposes
@@ -414,7 +438,7 @@ export default function FormShow({ form }: Props) {
                     href={`/${teamSlug}/forms`}
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                 >
-                    <ArrowLeft className="mr-1 h-4 w-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     Back to Forms
                 </Link>
 
@@ -463,18 +487,37 @@ export default function FormShow({ form }: Props) {
                     </Guard>
                 </div>
 
+                {/* Share link */}
+                {form.status === 'published' && (
+                    <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
+                        <LinkIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                            {shareUrl}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyLink}
+                            className="shrink-0"
+                        >
+                            <Copy className="h-3.5 w-3.5" />
+                            {copied ? 'Copied!' : 'Copy'}
+                        </Button>
+                    </div>
+                )}
+
                 <Tabs defaultValue="builder">
                     <TabsList>
                         <TabsTrigger value="builder">
-                            <Edit3 className="mr-1.5 h-4 w-4" />
+                            <Edit3 className="h-4 w-4" />
                             Builder
                         </TabsTrigger>
                         <TabsTrigger value="preview">
-                            <Eye className="mr-1.5 h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                             Preview
                         </TabsTrigger>
                         <TabsTrigger value="responses">
-                            <List className="mr-1.5 h-4 w-4" />
+                            <List className="h-4 w-4" />
                             Responses
                         </TabsTrigger>
                     </TabsList>
@@ -583,7 +626,7 @@ export default function FormShow({ form }: Props) {
                             )}
                         </Guard>
 
-                        {/* Questions list */}
+                        {/* Questions DataTable */}
                         <div className="space-y-3">
                             {form.questions.length === 0 ? (
                                 <Card>
@@ -596,85 +639,113 @@ export default function FormShow({ form }: Props) {
                                     </CardContent>
                                 </Card>
                             ) : (
-                                form.questions.map((question, index) => {
-                                    const Icon = getQuestionIcon(
-                                        question.type,
-                                    );
-                                    return (
-                                        <Card key={question.id}>
-                                            <CardContent className="flex items-center gap-3 py-4">
-                                                <GripVertical className="h-5 w-5 shrink-0 text-muted-foreground" />
-                                                <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium">
-                                                            {index + 1}.{' '}
+                                <Card>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-10">#</TableHead>
+                                                <TableHead>Type</TableHead>
+                                                <TableHead>Label</TableHead>
+                                                <TableHead className="w-24">Required</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {form.questions.map((question, index) => {
+                                                const Icon = getQuestionIcon(question.type);
+                                                return (
+                                                    <TableRow key={question.id}>
+                                                        <TableCell className="font-mono text-muted-foreground">
+                                                            {index + 1}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-2">
+                                                                <Icon className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm">
+                                                                    {getQuestionTypeLabel(question.type)}
+                                                                </span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="font-medium max-w-xs truncate">
                                                             {question.label}
-                                                        </span>
-                                                        {question.required && (
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="text-xs"
-                                                            >
-                                                                Required
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {getQuestionTypeLabel(
-                                                            question.type,
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div className="flex shrink-0 items-center gap-1">
-                                                    <Guard permission="form.update">
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger
-                                                                    asChild
-                                                                >
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                    >
-                                                                        <Pencil className="h-4 w-4" />
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    Edit
-                                                                    question
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger
-                                                                    asChild
-                                                                >
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() =>
-                                                                            handleDeleteQuestion(
-                                                                                question.id,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    Delete
-                                                                    question
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                    </Guard>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    );
-                                })
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {question.required ? (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    Required
+                                                                </Badge>
+                                                            ) : (
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    Optional
+                                                                </span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Guard permission="form.update">
+                                                                <div className="inline-flex items-center gap-0.5">
+                                                                    <TooltipProvider>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    disabled={index === 0}
+                                                                                    onClick={() => handleMoveQuestion(index, 'up')}
+                                                                                >
+                                                                                    <ArrowUp className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>Move up</TooltipContent>
+                                                                        </Tooltip>
+                                                                    </TooltipProvider>
+                                                                    <TooltipProvider>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    disabled={index === form.questions.length - 1}
+                                                                                    onClick={() => handleMoveQuestion(index, 'down')}
+                                                                                >
+                                                                                    <ArrowDown className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>Move down</TooltipContent>
+                                                                        </Tooltip>
+                                                                    </TooltipProvider>
+                                                                    <TooltipProvider>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <Button variant="ghost" size="sm">
+                                                                                    <Pencil className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>Edit</TooltipContent>
+                                                                        </Tooltip>
+                                                                    </TooltipProvider>
+                                                                    <TooltipProvider>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    onClick={() => handleDeleteQuestion(question.id)}
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                                                </Button>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>Delete</TooltipContent>
+                                                                        </Tooltip>
+                                                                    </TooltipProvider>
+                                                                </div>
+                                                            </Guard>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </Card>
                             )}
                         </div>
 
@@ -689,7 +760,7 @@ export default function FormShow({ form }: Props) {
                                     className="w-full"
                                     onClick={() => setAddQuestionOpen(true)}
                                 >
-                                    <PlusCircle className="mr-1.5 h-4 w-4" />
+                                    <PlusCircle className="h-4 w-4" />
                                     Add Question
                                 </Button>
                                 <DialogContent className="sm:max-w-lg">
@@ -850,7 +921,7 @@ export default function FormShow({ form }: Props) {
                                                     size="sm"
                                                     onClick={handleAddOption}
                                                 >
-                                                    <PlusCircle className="mr-1 h-3.5 w-3.5" />
+                                                    <PlusCircle className="h-3.5 w-3.5" />
                                                     Add Option
                                                 </Button>
                                             </div>

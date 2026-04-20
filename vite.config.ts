@@ -10,7 +10,7 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: [
-                'resources/js/**',
+                'resources/js/!(routes)/**',
                 'extensions/modules/*/resources/**',
                 'extensions/themes/*/resources/**',
             ],
@@ -26,4 +26,15 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    optimizeDeps: {
+        include: [
+            'react',
+            'react-dom',
+            '@inertiajs/react',
+            '@tanstack/react-table',
+            '@tanstack/react-form',
+            'lucide-react',
+            'zod',
+        ],
+    },
 });

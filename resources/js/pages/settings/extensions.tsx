@@ -24,8 +24,6 @@ import {
     PowerOff,
     Puzzle,
     Search,
-    ShoppingBag,
-    Star,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import Guard from '@/components/guard';
@@ -65,7 +63,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Tooltip,
     TooltipContent,
@@ -80,8 +77,6 @@ import {
     install as installUrl,
     uninstall as uninstallUrl,
 } from '@/routes/settings/team/extensions';
-import { install as marketplaceInstallUrl } from '@/routes/settings/team/marketplace';
-
 type ExtensionState =
     | 'not_installed'
     | 'enabled'
@@ -111,21 +106,8 @@ type Extension = {
     settings: { key: string; label: string; type: string; default?: string; options?: { label: string; value: string }[] }[];
 };
 
-type MarketplaceResult = {
-    name: string;
-    full_name: string;
-    description: string | null;
-    html_url: string;
-    stargazers_count: number;
-    topics: string[];
-    updated_at: string;
-    installed: boolean;
-};
-
 type Props = {
     extensions: Extension[];
-    marketplace_results?: MarketplaceResult[];
-    marketplace_query?: string;
 };
 
 const stateConfig: Record<
@@ -139,24 +121,16 @@ const stateConfig: Record<
     incompatible: { label: 'Incompatible', variant: 'destructive' },
 };
 
-export default function Extensions({ extensions, marketplace_results, marketplace_query }: Props) {
+export default function Extensions({ extensions }: Props) {
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [rowSelection, setRowSelection] = useState({});
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-    const [tab, setTab] = useState('all');
     const [detailExtension, setDetailExtension] = useState<Extension | null>(null);
-    const [marketplaceSearch, setMarketplaceSearch] = useState(marketplace_query ?? '');
 
-    const filteredData = useMemo(() => {
-        if (tab === 'all') return extensions;
-        return extensions.filter((ext) => ext.type === tab);
-    }, [extensions, tab]);
-
-    const moduleCount = useMemo(() => extensions.filter((e) => e.type === 'module').length, [extensions]);
-    const themeCount = useMemo(() => extensions.filter((e) => e.type === 'theme').length, [extensions]);
+    const filteredData = useMemo(() => extensions, [extensions]);
 
     const postAction = useCallback(
         (url: string) => {
@@ -471,33 +445,8 @@ export default function Extensions({ extensions, marketplace_results, marketplac
                     <p className="text-sm">No extensions available.</p>
                 </div>
             ) : (
-                <Tabs value={tab} onValueChange={(value) => {
-                    if (value === 'marketplace' && !marketplace_results) {
-                        router.visit(extensionsUrl(teamSlug).url + '?tab=marketplace', { preserveState: true });
-                    }
-                    setTab(value);
-                }} className="w-full">
+                <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <TabsList>
-                            <TabsTrigger value="all">
-                                All
-                            </TabsTrigger>
-                            <TabsTrigger value="module">
-                                Modules
-                                <Badge variant="secondary" className="ml-1.5 size-5 rounded-full px-1 text-[10px]">
-                                    {moduleCount}
-                                </Badge>
-                            </TabsTrigger>
-                            <TabsTrigger value="theme">
-                                Themes
-                                <Badge variant="secondary" className="ml-1.5 size-5 rounded-full px-1 text-[10px]">
-                                    {themeCount}
-                                </Badge>
-                            </TabsTrigger>
-                            <TabsTrigger value="marketplace">
-                                Marketplace
-                            </TabsTrigger>
-                        </TabsList>
                         <div className="flex items-center gap-2">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -557,8 +506,8 @@ export default function Extensions({ extensions, marketplace_results, marketplac
                         </div>
                     </div>
 
-                    {tab !== 'marketplace' && (
-                    <TabsContent value={tab} className="space-y-4">
+                    {filteredData.length > 0 && (
+                    <div className="space-y-4">
                         <div className="rounded-lg border">
                             <Table>
                                 <TableHeader>
@@ -790,123 +739,9 @@ export default function Extensions({ extensions, marketplace_results, marketplac
                                 </div>
                             </div>
                         </div>
-                    </TabsContent>
+                    </div>
                     )}
-
-                    <TabsContent value="marketplace" className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search marketplace..."
-                                    value={marketplaceSearch}
-                                    onChange={(e) => setMarketplaceSearch(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            router.visit(extensionsUrl(teamSlug).url + '?tab=marketplace&q=' + encodeURIComponent(marketplaceSearch), { preserveState: true });
-                                        }
-                                    }}
-                                    className="h-9 pl-9"
-                                />
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    router.visit(extensionsUrl(teamSlug).url + '?tab=marketplace&q=' + encodeURIComponent(marketplaceSearch), { preserveState: true });
-                                }}
-                            >
-                                <Search className="mr-2 h-4 w-4" />
-                                Search
-                            </Button>
-                        </div>
-
-                        {!marketplace_results || marketplace_results.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                                <ShoppingBag className="mb-4 h-12 w-12 opacity-20" />
-                                <p className="text-sm">
-                                    {marketplace_results ? 'No extensions found.' : 'Search the marketplace to discover extensions.'}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {marketplace_results.map((repo) => {
-                                    const cleanName = repo.name.replace(/^lastarter-/, '');
-                                    const typeFromTopics = repo.topics.find((t) => t === 'lastarter-module' || t === 'lastarter-theme');
-                                    const type = typeFromTopics ? typeFromTopics.replace('lastarter-', '') : null;
-
-                                    return (
-                                        <div
-                                            key={repo.name}
-                                            className="rounded-lg border p-4 flex flex-col gap-3"
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="min-w-0">
-                                                    <h3 className="font-medium leading-snug truncate">
-                                                        {cleanName}
-                                                    </h3>
-                                                    {repo.description && (
-                                                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                                                            {repo.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-1.5">
-                                                {type && (
-                                                    <Badge variant="outline" className="capitalize text-xs">
-                                                        {type}
-                                                    </Badge>
-                                                )}
-                                                {repo.installed && (
-                                                    <Badge variant="secondary" className="text-xs">
-                                                        Installed
-                                                    </Badge>
-                                                )}
-                                                <div className="flex items-center gap-0.5 text-xs text-muted-foreground ml-auto">
-                                                    <Star className="h-3 w-3" />
-                                                    {repo.stargazers_count}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 mt-auto">
-                                                <a
-                                                    href={repo.html_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-xs text-primary underline-offset-4 hover:underline"
-                                                >
-                                                    View on GitHub
-                                                </a>
-                                                {!repo.installed && (
-                                                    <Guard permission="extension.manage">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="ml-auto"
-                                                            onClick={() => {
-                                                                const parts = repo.full_name.split('/');
-                                                                router.post(
-                                                                    marketplaceInstallUrl({ current_team: teamSlug }).url,
-                                                                    { owner: parts[0], repo: parts[1] },
-                                                                    { preserveScroll: true },
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Download className="mr-1.5 h-3.5 w-3.5" />
-                                                            Install
-                                                        </Button>
-                                                    </Guard>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </TabsContent>
-                </Tabs>
+                </div>
             )}
 
             <Sheet open={!!detailExtension} onOpenChange={(open) => !open && setDetailExtension(null)}>

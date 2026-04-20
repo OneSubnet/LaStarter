@@ -2,6 +2,7 @@
 
 namespace App\Concerns;
 
+use App\Enums\TeamRole;
 use App\Models\Membership;
 use App\Models\Team;
 use App\Support\UserTeam;
@@ -94,7 +95,7 @@ trait HasTeams
      */
     public function ownsTeam(Team $team): bool
     {
-        return $this->hasRole('owner', $team);
+        return $this->hasRole(TeamRole::Owner->value, $team);
     }
 
     /**
@@ -149,6 +150,7 @@ trait HasTeams
             role: $roleString,
             roleLabel: $roleString ? ucfirst($roleString) : null,
             isCurrent: $this->isCurrentTeam($team),
+            iconUrl: $team->iconUrl(),
         );
     }
 

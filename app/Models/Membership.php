@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MembershipStatus;
 use App\Enums\TeamRole;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,7 +50,7 @@ class Membership extends Pivot
      */
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return $this->status === MembershipStatus::Active->value;
     }
 
     /**
@@ -57,7 +58,7 @@ class Membership extends Pivot
      */
     public function isInvited(): bool
     {
-        return $this->status === 'invited';
+        return $this->status === MembershipStatus::Invited->value;
     }
 
     /**
@@ -65,7 +66,7 @@ class Membership extends Pivot
      */
     public function isSuspended(): bool
     {
-        return $this->status === 'suspended';
+        return $this->status === MembershipStatus::Suspended->value;
     }
 
     /**

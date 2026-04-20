@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Teams;
 
+use App\Enums\TeamRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,7 +22,7 @@ class UpdateTeamMemberRequest extends FormRequest
         return [
             'role' => ['required', 'string', Rule::in(
                 Role::where('team_id', $teamId)
-                    ->where('name', '!=', 'owner')
+                    ->where('name', '!=', TeamRole::Owner->value)
                     ->pluck('name')
                     ->toArray()
             )],

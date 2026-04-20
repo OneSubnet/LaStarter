@@ -6,6 +6,7 @@ use App\Actions\Members\MapTeamMembers;
 use App\Actions\Teams\CreateTeam;
 use App\Actions\Teams\DeleteTeam;
 use App\Actions\Teams\UpdateTeam;
+use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\DeleteTeamRequest;
 use App\Http\Requests\Teams\SaveTeamRequest;
@@ -59,7 +60,7 @@ class TeamController extends Controller
                     'created_at' => $invitation->created_at->toISOString(),
                 ]),
             'permissions' => $user->getAllPermissions()->pluck('name'),
-            'availableRoles' => $teamRoles->where('name', '!=', 'owner')->map(fn ($role) => [
+            'availableRoles' => $teamRoles->where('name', '!=', TeamRole::Owner->value)->map(fn ($role) => [
                 'value' => $role->name,
                 'label' => ucfirst($role->name),
             ])->values()->toArray(),
@@ -77,8 +78,10 @@ class TeamController extends Controller
         return to_route('settings.team.general', ['current_team' => $team->slug]);
     }
 
-    public function switch(Request $request, Team $team): RedirectResponse
+    public function switch(Request $request): RedirectResponse
     {
+        $team = Team::where('slug', $request->route('team'))->firstOrFail();
+
         abort_unless($request->user()->belongsToTeam($team), 403);
 
         $request->user()->switchTeam($team);

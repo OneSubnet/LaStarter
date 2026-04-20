@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import CreateTeamModal from '@/components/create-team-modal';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,16 +33,17 @@ export function TeamSwitcher() {
     const isMobile = useIsMobile();
     const { state } = useSidebar();
     const currentTeam = page.props.currentTeam as
-        | { id: number; name: string; slug: string }
+        | { id: number; name: string; slug: string; iconUrl?: string }
         | undefined;
     const teams =
-        (page.props.teams as { id: number; name: string; slug: string }[]) ??
+        (page.props.teams as { id: number; name: string; slug: string; iconUrl?: string }[]) ??
         [];
 
     const switchTeam = (team: {
         id: number;
         name: string;
         slug: string;
+        iconUrl?: string;
     }) => {
         router.visit(switchMethod({ current_team: currentTeam?.slug ?? '', team: team.slug }).url, {
             method: 'post',
@@ -55,15 +57,21 @@ export function TeamSwitcher() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground md:h-8 md:p-0 md:justify-center"
                             data-test="team-switcher-trigger"
                         >
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                <span className="text-xs font-semibold">
-                                    {currentTeam
-                                        ? getInitials(currentTeam.name)
-                                        : '?'}
-                                </span>
+                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                                {currentTeam?.iconUrl ? (
+                                    <Avatar className="size-8 rounded-lg">
+                                        <AvatarImage src={currentTeam.iconUrl} alt={currentTeam.name} />
+                                    </Avatar>
+                                ) : (
+                                    <span className="text-xs font-semibold">
+                                        {currentTeam
+                                            ? getInitials(currentTeam.name)
+                                            : '?'}
+                                    </span>
+                                )}
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
@@ -83,7 +91,7 @@ export function TeamSwitcher() {
                             isMobile
                                 ? 'bottom'
                                 : state === 'collapsed'
-                                  ? 'left'
+                                  ? 'right'
                                   : 'bottom'
                         }
                     >
@@ -98,9 +106,15 @@ export function TeamSwitcher() {
                                 onSelect={() => switchTeam(team)}
                             >
                                 <div className="flex size-6 items-center justify-center rounded-sm border">
-                                    <span className="text-xs">
-                                        {getInitials(team.name)}
-                                    </span>
+                                    {team.iconUrl ? (
+                                        <Avatar className="size-6 rounded-sm">
+                                            <AvatarImage src={team.iconUrl} alt={team.name} />
+                                        </Avatar>
+                                    ) : (
+                                        <span className="text-xs">
+                                            {getInitials(team.name)}
+                                        </span>
+                                    )}
                                 </div>
                                 {team.name}
                                 {currentTeam?.id === team.id && (

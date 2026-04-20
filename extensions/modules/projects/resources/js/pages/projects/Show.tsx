@@ -171,7 +171,7 @@ export default function ProjectShow({ project }: { project: ProjectData }) {
                                             <input
                                                 id="color"
                                                 type="color"
-                                                value={data.color || '#3b82f6'}
+                                                value={data.color || 'hsl(var(--primary))'}
                                                 onChange={(e) =>
                                                     setData('color', e.target.value)
                                                 }

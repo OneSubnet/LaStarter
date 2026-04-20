@@ -17,9 +17,10 @@ class TaskController
 
         $tasks = Task::query()
             ->with('project')
-            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
-            ->orderBy('due_date')
             ->get()
+            ->sortBy(fn (Task $task) => TaskPriority::tryFrom($task->priority)?->order() ?? 99)
+            ->sortBy('due_date')
+            ->values()
             ->map(fn (Task $task) => [
                 'id' => $task->id,
                 'title' => $task->title,
@@ -50,7 +51,7 @@ class TaskController
             'due_date' => 'nullable|date',
         ]);
 
-        Task::create(array_merge($validated, ['status' => 'todo']));
+        Task::create(array_merge($validated, ['status' => TaskStatus::Todo->value]));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Task created.')]);
 

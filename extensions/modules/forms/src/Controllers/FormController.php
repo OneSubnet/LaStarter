@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Forms\Enums\FormStatus;
 use Modules\Forms\Http\Requests\AddQuestionRequest;
 use Modules\Forms\Http\Requests\StoreFormRequest;
 use Modules\Forms\Http\Requests\UpdateFormRequest;
@@ -79,7 +80,7 @@ class FormController
             'title' => $request->validated('title'),
             'description' => $request->validated('description'),
             'user_id' => $request->user()->id,
-            'status' => 'draft',
+            'status' => FormStatus::Draft->value,
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Form created.')]);
@@ -106,7 +107,7 @@ class FormController
 
         Gate::authorize('publish', $form);
 
-        $form->update(['status' => 'published']);
+        $form->update(['status' => FormStatus::Published->value]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Form published.')]);
 
@@ -119,7 +120,7 @@ class FormController
 
         Gate::authorize('publish', $form);
 
-        $form->update(['status' => 'closed']);
+        $form->update(['status' => FormStatus::Closed->value]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Form closed.')]);
 
@@ -216,7 +217,7 @@ class FormController
             'questions.*' => ['required', 'integer', 'exists:form_questions,id'],
         ]);
 
-        $questionIds = $request->validated('questions');
+        $questionIds = $request->input('questions');
 
         foreach ($questionIds as $order => $id) {
             FormQuestion::where('form_id', $form->id)

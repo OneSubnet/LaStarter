@@ -16,6 +16,8 @@ export type TeamMember = {
     role: string;
     role_label: string;
     roles?: string[];
+    status: string;
+    joined_at: string | null;
 };
 
 export type TeamInvitation = {
@@ -23,6 +25,7 @@ export type TeamInvitation = {
     email: string;
     role: string;
     role_label: string;
+    invited_by: string | null;
     created_at: string;
 };
 

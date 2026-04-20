@@ -1,10 +1,12 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useForm as useTanStackForm } from '@tanstack/react-form';
-import { useState } from 'react';
+import { Camera, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
 import DeleteTeamModal from '@/components/delete-team-modal';
 import Guard from '@/components/guard';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +16,9 @@ import { teamGeneralSchema } from '@/lib/schemas';
 import {
     general as generalUrl,
     update as updateUrl,
+    icon as iconUrl,
 } from '@/routes/settings/team';
+import { remove as iconRemoveUrl } from '@/routes/settings/team/icon';
 
 type Props = {
     team: {
@@ -22,6 +26,7 @@ type Props = {
         name: string;
         slug: string;
         isPersonal: boolean;
+        icon_url: string | null;
     };
     permissions: string[];
 };
@@ -31,6 +36,8 @@ export default function TeamGeneral({ team, permissions }: Props) {
     const [serverErrors, setServerErrors] = useState<Record<string, string>>(
         {},
     );
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
 
     const can = (permission: string) => permissions.includes(permission);
     const canUpdate = can('team.update');
@@ -49,6 +56,36 @@ export default function TeamGeneral({ team, permissions }: Props) {
             })(value as Record<string, string>);
         },
     });
+
+    const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('icon', file);
+
+        router.post(iconUrl(team.slug).url, formData, {
+            preserveScroll: true,
+            onFinish: () => {
+                setUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            },
+        });
+    };
+
+    const handleIconRemove = () => {
+        router.delete(iconRemoveUrl(team.slug).url, {
+            preserveScroll: true,
+        });
+    };
+
+    const initials = team.name
+        .split(' ')
+        .map((w) => w[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
 
     return (
         <TeamSettingsLayout
@@ -70,8 +107,57 @@ export default function TeamGeneral({ team, permissions }: Props) {
                             <Heading
                                 variant="small"
                                 title="Team settings"
-                                description="Update your team name and settings"
+                                description="Update your team name and icon"
                             />
+
+                            {/* Team icon */}
+                            <div className="flex items-center gap-4">
+                                <Avatar className="size-16">
+                                    <AvatarImage
+                                        src={team.icon_url ?? undefined}
+                                        alt={team.name}
+                                    />
+                                    <AvatarFallback className="text-lg">
+                                        {initials}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.webp,.svg"
+                                        className="hidden"
+                                        onChange={handleIconUpload}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={uploading}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                    >
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        {uploading
+                                            ? 'Uploading...'
+                                            : team.icon_url
+                                              ? 'Change icon'
+                                              : 'Upload icon'}
+                                    </Button>
+                                    {team.icon_url && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleIconRemove}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Remove
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
 
                             <form
                                 onSubmit={(e) => {
@@ -141,6 +227,17 @@ export default function TeamGeneral({ team, permissions }: Props) {
                     ) : (
                         <>
                             <Heading variant="small" title={team.name} />
+                            <div className="flex items-center gap-4">
+                                <Avatar className="size-16">
+                                    <AvatarImage
+                                        src={team.icon_url ?? undefined}
+                                        alt={team.name}
+                                    />
+                                    <AvatarFallback className="text-lg">
+                                        {initials}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </div>
                             <div className="grid gap-2">
                                 <Label>Team name</Label>
                                 <p className="text-sm text-muted-foreground">
@@ -159,8 +256,8 @@ export default function TeamGeneral({ team, permissions }: Props) {
                                 title="Delete team"
                                 description="Permanently delete your team"
                             />
-                            <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
-                                <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
+                            <div className="space-y-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                                <div className="relative space-y-0.5 text-destructive">
                                     <p className="font-medium">Warning</p>
                                     <p className="text-sm">
                                         Please proceed with caution, this cannot

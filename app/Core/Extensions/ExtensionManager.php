@@ -59,7 +59,8 @@ class ExtensionManager
                 Extension::create(array_merge($data, [
                     'identifier' => $manifest->identifier,
                     'is_active' => true,
-                    'state' => ExtensionState::NotInstalled,
+                    'state' => ExtensionState::Enabled,
+                    'installed_at' => now(),
                 ]));
                 $created++;
             }

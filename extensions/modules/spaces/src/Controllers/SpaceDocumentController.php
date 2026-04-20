@@ -2,12 +2,11 @@
 
 namespace Modules\Spaces\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Modules\Spaces\Models\Space;
 use Modules\Spaces\Models\SpaceActivityLog;
 use Modules\Spaces\Models\SpaceDocument;
 use Modules\Spaces\Models\SpaceDocumentAssignment;
@@ -16,9 +15,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SpaceDocumentController
 {
+    use ResolvesSpace;
+
     public function upload(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
 
         Gate::authorize('upload', SpaceDocument::class);
 
@@ -60,7 +61,7 @@ class SpaceDocumentController
 
     public function assign(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
         $document = SpaceDocument::where('space_id', $space->id)
             ->findOrFail((int) $request->route('document'));
 
@@ -99,7 +100,7 @@ class SpaceDocumentController
 
     public function sign(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
         $document = SpaceDocument::where('space_id', $space->id)
             ->findOrFail((int) $request->route('document'));
 
@@ -144,18 +145,18 @@ class SpaceDocumentController
 
     public function download(Request $request): StreamedResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
         $document = SpaceDocument::where('space_id', $space->id)
             ->findOrFail((int) $request->route('document'));
 
         Gate::authorize('view', $document);
 
-        return Storage::download($document->file_path, $document->name . '.' . $document->file_type);
+        return Storage::download($document->file_path, $document->name.'.'.$document->file_type);
     }
 
     public function destroy(Request $request): RedirectResponse
     {
-        $space = Space::findOrFail((int) $request->route('space'));
+        $space = $this->resolveSpace($request);
         $document = SpaceDocument::where('space_id', $space->id)
             ->findOrFail((int) $request->route('document'));
 

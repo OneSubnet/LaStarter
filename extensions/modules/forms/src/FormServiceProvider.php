@@ -2,12 +2,22 @@
 
 namespace Modules\Forms;
 
+use App\Core\Dashboard\DashboardWidgetBag;
 use App\Core\Hooks\Hook;
 use App\Core\Modules\ModuleServiceProvider;
+use Modules\Forms\Models\Form;
+use Modules\Forms\Models\FormSubmission;
+use Modules\Forms\Policies\FormPolicy;
+use Modules\Forms\Policies\FormSubmissionPolicy;
 
 class FormServiceProvider extends ModuleServiceProvider
 {
     protected string $identifier = 'forms';
+
+    protected array $policies = [
+        Form::class => FormPolicy::class,
+        FormSubmission::class => FormSubmissionPolicy::class,
+    ];
 
     public function __construct($app)
     {
@@ -22,8 +32,19 @@ class FormServiceProvider extends ModuleServiceProvider
 
     protected function bootModule(): void
     {
-        $this->loadModuleRoutes();
         $this->loadModuleMigrations();
+
+        Hook::listen(Hook::DASHBOARD_RENDER, function (DashboardWidgetBag $bag) {
+            $bag->add(
+                'forms',
+                'Forms',
+                'Total forms',
+                'FileText',
+                'stat',
+                Form::count(),
+                30,
+            );
+        });
 
         Hook::dispatch(Hook::MODULE_BOOT, ['module' => 'forms']);
     }

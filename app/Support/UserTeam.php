@@ -12,6 +12,7 @@ readonly class UserTeam
         public ?string $role = null,
         public ?string $roleLabel = null,
         public ?bool $isCurrent = null,
+        public ?string $iconUrl = null,
     ) {
         //
     }

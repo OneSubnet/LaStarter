@@ -44,7 +44,7 @@ const visibilityConfig: Record<
     public: {
         label: 'Public',
         className:
-            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+            'bg-primary/10 text-primary',
     },
     restricted: {
         label: 'Restricted',
@@ -54,7 +54,7 @@ const visibilityConfig: Record<
     private: {
         label: 'Private',
         className:
-            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+            'bg-destructive/10 text-destructive',
     },
 };
 
@@ -71,7 +71,7 @@ export default function SpaceIndex({ spaces }: Props) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post(`/${teamSlug}/espaces`, {
+        post(`/${teamSlug}/spaces`, {
             onSuccess: () => {
                 setOpen(false);
                 reset();
@@ -84,7 +84,7 @@ export default function SpaceIndex({ spaces }: Props) {
             breadcrumbs={[
                 {
                     title: 'Spaces',
-                    href: `/${teamSlug}/espaces`,
+                    href: `/${teamSlug}/spaces`,
                 },
             ]}
         >
@@ -103,7 +103,7 @@ export default function SpaceIndex({ spaces }: Props) {
                         <Dialog open={open} onOpenChange={setOpen}>
                             <DialogTrigger asChild>
                                 <Button>
-                                    <PlusCircle className="mr-1.5 h-4 w-4" />
+                                    <PlusCircle className="h-4 w-4" />
                                     New Space
                                 </Button>
                             </DialogTrigger>
@@ -202,7 +202,7 @@ export default function SpaceIndex({ spaces }: Props) {
                             return (
                                 <Link
                                     key={space.id}
-                                    href={`/${teamSlug}/espaces/${space.slug}`}
+                                    href={`/${teamSlug}/spaces/${space.slug}`}
                                 >
                                     <Card className="transition-shadow hover:shadow-md">
                                         <CardHeader className="pb-2">

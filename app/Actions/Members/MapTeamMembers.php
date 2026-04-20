@@ -41,6 +41,8 @@ class MapTeamMembers
                 'role' => $roleValue,
                 'role_label' => ucfirst($roleValue),
                 'roles' => $roleAssignments->get($member->id, []),
+                'status' => $member->pivot->status,
+                'joined_at' => $member->pivot->joined_at?->toISOString(),
             ];
         })->toArray();
     }

@@ -3,7 +3,6 @@
 namespace Modules\Forms\Policies;
 
 use App\Models\User;
-use Modules\Forms\Models\FormSubmission;
 
 class FormSubmissionPolicy
 {

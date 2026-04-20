@@ -1,6 +1,6 @@
 # LaStarter
 
-**Modular multi-tenant platform core built with Laravel, React, and TypeScript.**
+**Plateforme multi-tenant modulaire construite avec Laravel, React et TypeScript.**
 
 ![Laravel](https://img.shields.io/badge/Laravel-13-red)
 ![React](https://img.shields.io/badge/React-19-blue)
@@ -8,74 +8,75 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## Features
+## Fonctionnalités
 
-- **Multi-tenancy** — Team-based organizations with automatic data isolation via global scopes
-- **Dynamic roles & permissions** — Spatie permission system in teams mode, no hardcoded role checks
-- **Extension system** — Modules, themes, and language packs with marketplace integration
-- **Theme overrides** — 3-level page resolution: theme → module → core
-- **Context-aware navigation** — Sidebar built from enabled extension manifests, filtered by permissions
-- **Type-safe routes** — Wayfinder auto-generates TypeScript route helpers from PHP routes
-- **Audit logging** — Track sensitive actions with team context, user, and trace IDs
+- **Multi-tenant** — Équipes en tant qu'organisations avec isolation automatique des données via scopes globaux
+- **Rôles et permissions dynamiques** — Système Spatie en mode équipes, aucun check de rôle hardcodé
+- **Système d'extensions** — Modules, thèmes avec intégration marketplace
+- **Surcharges de thème** — Résolution de page en 3 niveaux : thème → module → core
+- **Navigation contextuelle** — Sidebar construite depuis les manifests d'extensions actives, filtrée par permissions
+- **Routes typées** — Wayfinder génère automatiquement des helpers TypeScript depuis les routes PHP
+- **Audit logging** — Traçage des actions sensibles avec contexte équipe, utilisateur et trace IDs
+- **Dashboard dynamique** — Widgets exportés par les modules via le système de Hooks
 
-## Requirements
+## Prérequis
 
-- PHP 8.3+
+- PHP 8.4+
 - Node.js 22+
-- SQLite, MySQL 8+, MariaDB 10.3+, or PostgreSQL 14+
+- SQLite, MySQL 8+, MariaDB 10.3+, ou PostgreSQL 14+
 
-## Quick Start
+## Installation rapide
 
 ```bash
-# Clone the repository
-git clone https://github.com/OneSubnet/lastarter.git
-cd lastarter
+# Cloner le dépôt
+git clone https://github.com/OneSubnet/LaStarter.git
+cd LaStarter
 
-# Full setup (install dependencies, create .env, generate key, run migrations)
+# Installation complète (dépendances, .env, clé, migrations)
 composer setup
 
-# Start the development server
+# Lancer le serveur de développement
 composer dev
 ```
 
-Visit `http://localhost:8000` and create your account.
+Visitez `http://localhost:8000` et créez votre compte.
 
 ## Architecture
 
 ```
 LaStarter/
 ├── app/
-│   ├── Actions/          # Single-responsibility action classes
-│   ├── Core/             # Extension, navigation, settings, hooks systems
+│   ├── Actions/          # Classes d'action à responsabilité unique
+│   ├── Core/             # Systèmes d'extensions, navigation, settings, hooks
 │   ├── Concerns/         # HasTeam, HasTeams, GeneratesUniqueTeamSlugs
-│   ├── Enums/            # TeamRole and other backed enums
-│   ├── Policies/         # Authorization via hasPermissionTo()
+│   ├── Enums/            # TeamRole, MembershipStatus et autres backed enums
+│   ├── Policies/         # Autorisation via hasPermissionTo()
 │   └── Http/
 │       ├── Controllers/
 │       ├── Middleware/    # SetPermissionsTeamId, EnsureTeamMembership
-│       └── Requests/      # Form Request validation
+│       └── Requests/      # Validation Form Request
 ├── extensions/
-│   ├── modules/          # Business logic modules
-│   └── themes/           # UI theme overrides
+│   ├── modules/          # Modules métier (projects, tasks, forms, spaces)
+│   └── themes/           # Surcharges UI
 ├── resources/
 │   └── js/
-│       ├── pages/        # Core Inertia pages
-│       ├── components/   # Reusable UI components (shadcn/ui)
-│       └── layouts/      # App, auth, and settings layouts
+│       ├── pages/        # Pages Inertia core
+│       ├── components/   # Composants UI réutilisables (shadcn/ui)
+│       └── layouts/      # Layouts app, auth et settings
 └── database/
-    └── migrations/       # All schema changes
+    └── migrations/       # Toutes les modifications de schéma
 ```
 
-### Key Concepts
+### Concepts clés
 
-- **Team = Organization** — the primary tenant unit
-- **Global scope** — `HasTeam` trait auto-filters all queries by `team_id`
-- **Backend = source of truth** — frontend receives resolved permissions, never decides access
-- **Policies, not role names** — every access check uses `$user->hasPermissionTo()`
+- **Team = Organisation** — l'unité tenant principale
+- **Scope global** — Le trait `HasTeam` filtre automatiquement toutes les requêtes par `team_id`
+- **Backend = source de vérité** — Le frontend reçoit les permissions résolues, ne décide jamais de l'accès
+- **Policies, pas noms de rôles** — Chaque vérification d'accès utilise `$user->hasPermissionTo()`
 
-## Extension System
+## Système d'extensions
 
-Extensions live in `/extensions/{type}/{slug}/` with an `extension.json` manifest:
+Les extensions vivent dans `/extensions/{type}/{slug}/` avec un manifeste `extension.json` :
 
 ```json
 {
@@ -83,63 +84,64 @@ Extensions live in `/extensions/{type}/{slug}/` with an `extension.json` manifes
     "name": "Projects",
     "type": "module",
     "version": "1.0.0",
-    "description": "Project management module",
-    "author": "OneSubnet",
+    "description": "Module de gestion de projets",
+    "author": "LaStarter",
     "namespace": "Modules\\Projects",
     "provider": "Modules\\Projects\\ProjectServiceProvider",
     "permissions": ["project.view", "project.create", "project.update", "project.delete"],
     "navigation": {
-        "app": [{ "title": "Projects", "href": "/projects", "icon": "FolderKanban", "permission": "project.view" }]
+        "app": [{ "title": "Projects", "icon": "FolderKanban", "permission": "project.view" }]
     }
 }
 ```
 
-### Extension CLI
+### CLI d'extensions
 
 ```bash
-php artisan extensions:scan        # Discover extensions on disk
-php artisan extensions:sync        # Sync permissions to database
-php artisan extensions:enable {id} # Enable globally or per team
+php artisan extensions:scan        # Découvrir les extensions sur le disque
+php artisan extensions:sync        # Synchroniser les permissions en base
+php artisan extensions:enable {id} # Activer globalement ou par équipe
 php artisan extensions:disable {id}
 ```
 
-### Adding a Module
+### Ajouter un module
 
-1. Create `extensions/modules/{slug}/extension.json`
-2. Create a ServiceProvider extending `ModuleServiceProvider`
-3. Add models with the `HasTeam` trait
-4. Define permissions in the manifest
-5. Run `extensions:scan` and `extensions:sync`
+1. Créer `extensions/modules/{slug}/extension.json`
+2. Créer un ServiceProvider étendant `ModuleServiceProvider`
+3. Ajouter des modèles avec le trait `HasTeam`
+4. Définir les permissions dans le manifeste
+5. Enregistrer les widgets dashboard via `Hook::listen(Hook::DASHBOARD_RENDER, ...)`
+6. Lancer `extensions:scan` et `extensions:sync`
 
-See [CLAUDE.md](CLAUDE.md) for the complete development guide.
+Voir [CLAUDE.md](CLAUDE.md) pour le guide de développement complet.
 
-## Commands
+## Commandes
 
 ```bash
-# Development
-composer dev              # PHP server + queue + Vite
-npm run dev               # Vite dev server only
+# Développement
+composer dev              # Serveur PHP + queue + Vite
+npm run dev               # Serveur Vite uniquement
 
-# Code quality
+# Qualité du code
 composer run lint         # Pint fix (PHP)
 composer run lint:check   # Pint check (PHP)
 composer run test         # Pint check + Pest tests
 npm run lint              # ESLint fix
 npm run format            # Prettier write
-npm run types:check       # TypeScript check
+npm run types:check       # Vérification TypeScript
 
 # Production
-npm run build             # Production build
+npm run build             # Build production
 ```
 
-## Contributing
+## Contribution
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour les directives de développement.
 
-## Security
+## Sécurité
 
-If you discover a security vulnerability, please email security@onesubnet.com instead of using the issue tracker.
+Si vous découvrez une vulnérabilité de sécurité, merci d'envoyer un email à security@onesubnet.com au lieu d'utiliser le tracker d'issues.
 
-## License
+## Licence
 
-LaStarter is open-source software licensed under the [MIT license](LICENSE).
+LaStarter est un logiciel open-source sous la [licence MIT](LICENSE).

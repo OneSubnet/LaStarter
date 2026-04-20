@@ -11,9 +11,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'slug', 'is_personal', 'is_active'])]
+#[Fillable(['name', 'slug', 'is_personal', 'is_active', 'icon_path'])]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
@@ -111,6 +112,18 @@ class Team extends Model
             ->where('is_active', true)
             ->whereHas('extension', fn ($q) => $q->where('identifier', $identifier))
             ->exists();
+    }
+
+    /**
+     * Get the URL for the team icon.
+     */
+    public function iconUrl(): ?string
+    {
+        if (! $this->icon_path) {
+            return null;
+        }
+
+        return Storage::url($this->icon_path);
     }
 
     /**

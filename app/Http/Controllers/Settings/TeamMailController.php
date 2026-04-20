@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Settings;
 
 use App\Core\Settings\SettingManager;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\UpdateTeamMailRequest;
 use App\Mail\TestMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,19 +36,9 @@ class TeamMailController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateTeamMailRequest $request): RedirectResponse
     {
-        Gate::authorize('update', $request->user()->currentTeam);
-
-        $validated = $request->validate([
-            'host' => ['required', 'string', 'max:255'],
-            'port' => ['required', 'integer', 'between:1,65535'],
-            'username' => ['nullable', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'max:255'],
-            'encryption' => ['required', 'string', Rule::in(['tls', 'ssl', 'none'])],
-            'from_address' => ['nullable', 'email', 'max:255'],
-            'from_name' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         foreach ($validated as $key => $value) {
             if ($key === 'password' && ($value === '••••••••' || $value === '')) {
