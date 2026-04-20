@@ -52,8 +52,9 @@ class TeamMembersController extends Controller
         ]);
     }
 
-    public function update(UpdateTeamMemberRequest $request, User $user, UpdateTeamMemberRole $updateRole): RedirectResponse
+    public function update(UpdateTeamMemberRequest $request, UpdateTeamMemberRole $updateRole): RedirectResponse
     {
+        $user = User::findOrFail($request->route('user'));
         $team = $request->user()->currentTeam;
 
         Gate::authorize('updateMember', $team);
@@ -65,8 +66,9 @@ class TeamMembersController extends Controller
         return back();
     }
 
-    public function destroy(Request $request, User $user, RemoveTeamMember $removeMember): RedirectResponse
+    public function destroy(Request $request, RemoveTeamMember $removeMember): RedirectResponse
     {
+        $user = User::findOrFail($request->route('user'));
         $team = $request->user()->currentTeam;
 
         Gate::authorize('removeMember', $team);

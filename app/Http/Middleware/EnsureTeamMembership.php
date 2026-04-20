@@ -22,6 +22,13 @@ class EnsureTeamMembership
 
         abort_if(! $user || ! $team || ! $user->belongsToTeam($team), 403);
 
+        // Replace the raw slug with the resolved Team model so that
+        // downstream code ($request->route('current_team')) receives
+        // a Team instance instead of a string.
+        if ($request->route()->hasParameter('current_team')) {
+            $request->route()->setParameter('current_team', $team);
+        }
+
         // Set Spatie team context for permission checks
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->id);
 
@@ -29,7 +36,7 @@ class EnsureTeamMembership
             abort_unless($user->hasPermissionTo($permission), 403);
         }
 
-        if ($request->route('current_team') && ! $user->isCurrentTeam($team)) {
+        if (! $user->isCurrentTeam($team)) {
             $user->switchTeam($team);
         }
 

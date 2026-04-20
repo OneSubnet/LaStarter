@@ -69,7 +69,7 @@ Route::prefix('{current_team}')
 
             // Invitations
             Route::post('invitations', [TeamInvitationController::class, 'store'])->name('settings.team.invitations.store');
-            Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('settings.team.invitations.destroy');
+            Route::delete('invitations/{invitation_code}', [TeamInvitationController::class, 'destroy'])->name('settings.team.invitations.destroy');
 
             // Roles
             Route::get('roles', [TeamRolesController::class, 'index'])->name('settings.team.roles');
@@ -122,5 +122,5 @@ Route::prefix('{current_team}')
     });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::get('invitations/{invitation_code}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
 });

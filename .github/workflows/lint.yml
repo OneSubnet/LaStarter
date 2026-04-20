@@ -35,6 +35,25 @@ jobs:
       - name: Generate App Key
         run: php artisan key:generate
 
+      - name: Setup Database
+        run: |
+          touch database/database.sqlite
+          sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/database.sqlite/' .env
+
+      - name: Run Migrations
+        run: php artisan migrate --force
+
+      - name: Scan and Enable Extensions
+        run: |
+          php artisan extensions:scan
+          php artisan extensions:sync
+          php artisan extensions:enable projects
+          php artisan extensions:enable tasks
+          php artisan extensions:enable forms
+          php artisan extensions:enable spaces
+          php artisan extensions:enable default
+
       - name: Generate Wayfinder Routes
         run: php artisan wayfinder:generate
 

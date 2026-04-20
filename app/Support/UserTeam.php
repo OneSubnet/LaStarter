@@ -8,7 +8,7 @@ readonly class UserTeam
         public int $id,
         public string $name,
         public string $slug,
-        public bool $isPersonal,
+        public ?bool $isPersonal = null,
         public ?string $role = null,
         public ?string $roleLabel = null,
         public ?bool $isCurrent = null,

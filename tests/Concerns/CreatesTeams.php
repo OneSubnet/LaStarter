@@ -35,11 +35,19 @@ trait CreatesTeams
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($team->id);
 
+        // Create Owner role with all permissions
         $ownerRole = Role::firstOrCreate(
             ['name' => TeamRole::Owner->value, 'team_id' => $team->id, 'guard_name' => 'web'],
         );
-        $ownerRole->syncPermissions(Permission::pluck('name')->toArray());
+        $allPermissions = Permission::all();
+        $ownerRole->syncPermissions($allPermissions);
         $user->assignRole($ownerRole);
+
+        // Create Member role with basic permissions
+        $memberRole = Role::firstOrCreate(
+            ['name' => TeamRole::Member->value, 'team_id' => $team->id, 'guard_name' => 'web'],
+        );
+        // Member role gets no permissions by default
 
         app(PermissionRegistrar::class)->setPermissionsTeamId(null);
 
