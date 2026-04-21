@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@tanstack/react-form';
+import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { confirmPasswordSchema } from '@/lib/schemas';
 import { store } from '@/routes/password/confirm';
 
 export default function ConfirmPassword() {
+    const { t } = useTranslation();
     const form = useForm({
         defaultValues: { password: '' },
         validators: { onChange: zodValidator(confirmPasswordSchema) },
@@ -21,10 +23,10 @@ export default function ConfirmPassword() {
 
     return (
         <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
+            title={t('auth.confirm_password.title')}
+            description={t('auth.confirm_password.description')}
         >
-            <Head title="Confirm password" />
+            <Head title={t('auth.confirm_password.head_title')} />
 
             <form
                 onSubmit={(e) => {
@@ -34,7 +36,7 @@ export default function ConfirmPassword() {
             >
                 <div className="space-y-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t('auth.confirm_password.password_label')}</Label>
                         <form.Field name="password">
                             {(field) => (
                                 <>
@@ -45,7 +47,7 @@ export default function ConfirmPassword() {
                                             field.handleChange(e.target.value)
                                         }
                                         onBlur={field.handleBlur}
-                                        placeholder="Password"
+                                        placeholder={t('auth.confirm_password.password_placeholder')}
                                         autoComplete="current-password"
                                         autoFocus
                                     />
@@ -72,7 +74,7 @@ export default function ConfirmPassword() {
                                     data-test="confirm-password-button"
                                 >
                                     {isSubmitting && <Spinner />}
-                                    Confirm password
+                                    {t('auth.confirm_password.submit')}
                                 </Button>
                             </div>
                         )}

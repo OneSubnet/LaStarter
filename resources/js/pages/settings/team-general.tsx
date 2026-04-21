@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { useForm as useTanStackForm } from '@tanstack/react-form';
 import { Camera, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DeleteTeamModal from '@/components/delete-team-modal';
 import Guard from '@/components/guard';
 import Heading from '@/components/heading';
@@ -32,6 +33,7 @@ type Props = {
 };
 
 export default function TeamGeneral({ team, permissions }: Props) {
+    const { t } = useTranslation();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>(
         {},
@@ -103,8 +105,8 @@ fileInputRef.current.value = '';
                 },
             ]}
         >
-            <Head title={`General - ${team.name}`} />
-            <h1 className="sr-only">Team settings</h1>
+            <Head title={`${t('common.general')} - ${team.name}`} />
+            <h1 className="sr-only">{t('settings.team.general.title')}</h1>
 
             <div className="flex flex-col space-y-10">
                 <div className="space-y-6">
@@ -112,8 +114,8 @@ fileInputRef.current.value = '';
                         <>
                             <Heading
                                 variant="small"
-                                title="Team settings"
-                                description="Update your team name and icon"
+                                title={t('settings.team.general.title')}
+                                description={t('settings.team.general.description')}
                             />
 
                             {/* Team icon */}
@@ -144,12 +146,12 @@ fileInputRef.current.value = '';
                                             fileInputRef.current?.click()
                                         }
                                     >
-                                        <Camera className="mr-2 h-4 w-4" />
+                                        <Camera className="h-4 w-4" />
                                         {uploading
-                                            ? 'Uploading...'
+                                            ? t('settings.team.general.uploading')
                                             : team.icon_url
-                                              ? 'Change icon'
-                                              : 'Upload icon'}
+                                              ? t('settings.team.general.change_icon')
+                                              : t('settings.team.general.upload_icon')}
                                     </Button>
                                     {team.icon_url && (
                                         <Button
@@ -158,8 +160,8 @@ fileInputRef.current.value = '';
                                             size="sm"
                                             onClick={handleIconRemove}
                                         >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Remove
+                                            <Trash2 className="h-4 w-4" />
+                                            {t('settings.team.general.remove')}
                                         </Button>
                                     )}
                                 </div>
@@ -173,7 +175,7 @@ fileInputRef.current.value = '';
                                 className="space-y-6"
                             >
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Team name</Label>
+                                    <Label htmlFor="name">{t('settings.team.general.name_label')}</Label>
                                     <form.Field name="name">
                                         {(field) => (
                                             <>
@@ -187,7 +189,7 @@ fileInputRef.current.value = '';
                                                         )
                                                     }
                                                     onBlur={field.handleBlur}
-                                                    disabled={team.isPersonal}
+                                                    disabled={false}
                                                 />
                                                 <InputError
                                                     message={
@@ -203,8 +205,7 @@ fileInputRef.current.value = '';
                                     </form.Field>
                                 </div>
 
-                                {!team.isPersonal && (
-                                    <form.Subscribe
+                                <form.Subscribe
                                         selector={(state) => [
                                             state.canSubmit,
                                             state.isSubmitting,
@@ -221,13 +222,12 @@ fileInputRef.current.value = '';
                                                     }
                                                 >
                                                     {isSubmitting
-                                                        ? 'Saving...'
-                                                        : 'Save'}
+                                                        ? t('settings.team.general.saving')
+                                                        : t('settings.team.general.save')}
                                                 </Button>
                                             </div>
                                         )}
                                     </form.Subscribe>
-                                )}
                             </form>
                         </>
                     ) : (
@@ -245,7 +245,7 @@ fileInputRef.current.value = '';
                                 </Avatar>
                             </div>
                             <div className="grid gap-2">
-                                <Label>Team name</Label>
+                                <Label>{t('settings.team.general.name_label')}</Label>
                                 <p className="text-sm text-muted-foreground">
                                     {team.name}
                                 </p>
@@ -259,15 +259,14 @@ fileInputRef.current.value = '';
                         <div className="space-y-6">
                             <Heading
                                 variant="small"
-                                title="Delete team"
-                                description="Permanently delete your team"
+                                title={t('settings.team.general.delete_title')}
+                                description={t('settings.team.general.delete_description')}
                             />
                             <div className="space-y-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
                                 <div className="relative space-y-0.5 text-destructive">
-                                    <p className="font-medium">Warning</p>
+                                    <p className="font-medium">{t('settings.team.general.warning')}</p>
                                     <p className="text-sm">
-                                        Please proceed with caution, this cannot
-                                        be undone.
+                                        {t('settings.team.general.warning_message')}
                                     </p>
                                 </div>
                                 <Button
@@ -275,7 +274,7 @@ fileInputRef.current.value = '';
                                     data-test="delete-team-button"
                                     onClick={() => setDeleteDialogOpen(true)}
                                 >
-                                    Delete team
+                                    {t('settings.team.general.delete_button')}
                                 </Button>
                             </div>
                         </div>

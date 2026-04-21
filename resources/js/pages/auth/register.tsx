@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@tanstack/react-form';
+import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -14,6 +15,7 @@ import { login } from '@/routes';
 import { store } from '@/routes/register';
 
 export default function Register() {
+    const { t } = useTranslation();
     const form = useForm({
         defaultValues: {
             name: '',
@@ -31,10 +33,10 @@ export default function Register() {
 
     return (
         <AuthLayout
-            title="Create an account"
-            description="Enter your details below to create your account"
+            title={t('auth.register.title')}
+            description={t('auth.register.description')}
         >
-            <Head title="Register" />
+            <Head title={t('auth.register.head_title')} />
 
             <form
                 onSubmit={(e) => {
@@ -45,7 +47,7 @@ export default function Register() {
             >
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">{t('auth.register.name_label')}</Label>
                         <form.Field name="name">
                             {(field) => (
                                 <>
@@ -60,7 +62,7 @@ export default function Register() {
                                         autoFocus
                                         tabIndex={1}
                                         autoComplete="name"
-                                        placeholder="Full name"
+                                        placeholder={t('auth.register.name_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -76,7 +78,7 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">{t('auth.register.email_label')}</Label>
                         <form.Field name="email">
                             {(field) => (
                                 <>
@@ -90,7 +92,7 @@ export default function Register() {
                                         onBlur={field.handleBlur}
                                         tabIndex={2}
                                         autoComplete="email"
-                                        placeholder="email@example.com"
+                                        placeholder={t('auth.register.email_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -105,7 +107,7 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t('auth.register.password_label')}</Label>
                         <form.Field name="password">
                             {(field) => (
                                 <>
@@ -118,7 +120,7 @@ export default function Register() {
                                         onBlur={field.handleBlur}
                                         tabIndex={3}
                                         autoComplete="new-password"
-                                        placeholder="Password"
+                                        placeholder={t('auth.register.password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -134,7 +136,7 @@ export default function Register() {
 
                     <div className="grid gap-2">
                         <Label htmlFor="password_confirmation">
-                            Confirm password
+                            {t('auth.register.confirm_password_label')}
                         </Label>
                         <form.Field name="password_confirmation">
                             {(field) => (
@@ -148,7 +150,7 @@ export default function Register() {
                                         onBlur={field.handleBlur}
                                         tabIndex={4}
                                         autoComplete="new-password"
-                                        placeholder="Confirm password"
+                                        placeholder={t('auth.register.confirm_password_placeholder')}
                                     />
                                     <InputError
                                         message={
@@ -174,16 +176,16 @@ export default function Register() {
                                 data-test="register-user-button"
                             >
                                 {isSubmitting && <Spinner />}
-                                Create account
+                                {t('auth.register.submit')}
                             </Button>
                         )}
                     </form.Subscribe>
                 </div>
 
                 <div className="text-center text-sm text-muted-foreground">
-                    Already have an account?{' '}
+                    {t('auth.register.already_have_account')}{' '}
                     <TextLink href={login()} tabIndex={6}>
-                        Log in
+                        {t('auth.register.log_in')}
                     </TextLink>
                 </div>
             </form>

@@ -38,6 +38,8 @@ class HandleInertiaRequests extends Middleware
             'teamMembers' => fn () => $this->resolveTeamMembers($ctx),
             'auditLogs' => fn () => $this->resolveAuditLogs($ctx),
             'theme' => fn () => $this->resolveTheme($ctx),
+            'locale' => $user->locale ?? app()->getLocale(),
+            'fallbackLocale' => config('app.fallback_locale'),
         ];
     }
 

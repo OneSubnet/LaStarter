@@ -7,6 +7,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarRight } from '@/components/sidebar-right';
@@ -55,6 +56,7 @@ export default function AppSidebarLayout({
     const extensionNav = (page.props.navigation as { title: string; href: string; icon: string | null }[] | undefined) ?? [];
     const teamSlug = currentTeam?.slug ?? '';
     const currentPath = page.url;
+    const { t } = useTranslation();
 
     return (
         <SidebarProvider
@@ -110,18 +112,18 @@ export default function AppSidebarLayout({
             >
                 <DrawerContent className="md:hidden">
                     <DrawerHeader>
-                        <DrawerTitle>Navigation</DrawerTitle>
+                        <DrawerTitle>{t('common.navigation_menu')}</DrawerTitle>
                     </DrawerHeader>
                     <div className="space-y-4 px-4 pb-6">
                         <div className="space-y-1">
                             {[
-                                { label: 'Dashboard', icon: LayoutGrid, href: `/${teamSlug}` },
+                                { label: t('common.dashboard'), icon: LayoutGrid, href: `/${teamSlug}` },
                                 ...extensionNav.map((ext) => ({
                                     label: ext.title,
                                     icon: ext.icon ? iconMap[ext.icon] ?? LayoutGrid : LayoutGrid,
                                     href: ext.href,
                                 })),
-                                { label: 'Settings', icon: Settings, href: `/${teamSlug}/settings/general` },
+                                { label: t('common.settings'), icon: Settings, href: `/${teamSlug}/settings/general` },
                             ].map((item) => {
                                 const Icon = item.icon;
                                 const isActive = currentPath === item.href || (item.href !== `/${teamSlug}` && currentPath.startsWith(item.href));
@@ -191,7 +193,7 @@ export default function AppSidebarLayout({
                         type="button"
                         onClick={() => setIsMobilePanelOpen(true)}
                         className="flex flex-col items-center justify-center py-3 text-xs text-muted-foreground hover:text-foreground"
-                        aria-label="More"
+                        aria-label={t('common.more')}
                     >
                         <MoreHorizontal className="h-5 w-5" />
                     </button>

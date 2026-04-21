@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { Download, ExternalLink, Star } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,7 @@ export default function MarketplaceShow({
     manifest,
     installed,
 }: Props) {
+    const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
     const [installing, setInstalling] = useState(false);
@@ -74,7 +76,7 @@ export default function MarketplaceShow({
             wide
             breadcrumbs={[
                 {
-                    title: 'Marketplace',
+                    title: t('settings.marketplace.title'),
                     href: marketplaceUrl(teamSlug).url,
                 },
                 { title: details.name, href: '#' },
@@ -105,24 +107,24 @@ export default function MarketplaceShow({
                         </p>
                         {manifest?.author && (
                             <p className="text-sm text-muted-foreground">
-                                by {manifest.author}
+                                {t('common.by')} {manifest.author}
                             </p>
                         )}
                     </div>
 
                     <div className="flex items-center gap-2">
                         {installed ? (
-                            <Badge variant="default">Installed</Badge>
+                            <Badge variant="default">{t('settings.marketplace.installed')}</Badge>
                         ) : (
                             <Guard permission="extension.manage">
                                 <Button
                                     onClick={handleInstall}
                                     disabled={installing || !release?.zip_url}
                                 >
-                                    <Download className="mr-2 h-4 w-4" />
+                                    <Download className="h-4 w-4" />
                                     {installing
-                                        ? 'Installing...'
-                                        : 'Install'}
+                                        ? t('settings.marketplace.installing')
+                                        : t('settings.marketplace.install')}
                                 </Button>
                             </Guard>
                         )}
@@ -132,8 +134,8 @@ export default function MarketplaceShow({
                             rel="noopener noreferrer"
                         >
                             <Button variant="outline" size="sm">
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                GitHub
+                                <ExternalLink className="h-4 w-4" />
+                                {t('settings.marketplace.github')}
                             </Button>
                         </a>
                     </div>
@@ -144,7 +146,7 @@ export default function MarketplaceShow({
                     {manifest?.version && (
                         <div className="rounded-lg border p-3">
                             <div className="text-xs text-muted-foreground">
-                                Version
+                                {t('settings.marketplace.version')}
                             </div>
                             <p className="font-medium">
                                 v{manifest.version}
@@ -154,24 +156,24 @@ export default function MarketplaceShow({
                     {release && (
                         <div className="rounded-lg border p-3">
                             <div className="text-xs text-muted-foreground">
-                                Latest Release
+                                {t('settings.marketplace.latest_release')}
                             </div>
                             <p className="font-medium">{release.tag_name}</p>
                         </div>
                     )}
                     <div className="rounded-lg border p-3">
                         <div className="text-xs text-muted-foreground">
-                            Stars
+                            {t('settings.marketplace.stars')}
                         </div>
                         <p className="flex items-center gap-1 font-medium">
-                            <Star className="h-4 w-4 text-amber-500" />
+                            <Star className="h-4 w-4 text-yellow-500" />
                             {details.stargazers_count}
                         </p>
                     </div>
                     {manifest?.lastarterVersion && (
                         <div className="rounded-lg border p-3">
                             <div className="text-xs text-muted-foreground">
-                                Requires
+                                {t('settings.marketplace.requires')}
                             </div>
                             <p className="font-medium">
                                 LaStarter {manifest.lastarterVersion}
@@ -195,7 +197,7 @@ export default function MarketplaceShow({
                 {readme && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
-                            README
+                            {t('settings.marketplace.readme')}
                         </h3>
                         <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
                             <div
@@ -209,7 +211,7 @@ export default function MarketplaceShow({
                 {release?.body && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
-                            Latest Release Notes
+                            {t('settings.marketplace.release_notes')}
                         </h3>
                         <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
                             <div

@@ -26,6 +26,7 @@ import {
     Search,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -109,18 +110,8 @@ type Props = {
     extensions: Extension[];
 };
 
-const stateConfig: Record<
-    ExtensionState,
-    { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
-> = {
-    enabled: { label: 'Active', variant: 'default' },
-    disabled: { label: 'Disabled', variant: 'secondary' },
-    not_installed: { label: 'Not Installed', variant: 'outline' },
-    errored: { label: 'Error', variant: 'destructive' },
-    incompatible: { label: 'Incompatible', variant: 'destructive' },
-};
-
 export default function Extensions({ extensions }: Props) {
+    const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -128,6 +119,17 @@ export default function Extensions({ extensions }: Props) {
     const [rowSelection, setRowSelection] = useState({});
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [detailExtension, setDetailExtension] = useState<Extension | null>(null);
+
+    const stateConfig = useMemo<Record<
+        ExtensionState,
+        { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+    >>(() => ({
+        enabled: { label: t('settings.extensions.status_active'), variant: 'default' },
+        disabled: { label: t('settings.extensions.status_disabled'), variant: 'secondary' },
+        not_installed: { label: t('settings.extensions.status_not_installed'), variant: 'outline' },
+        errored: { label: t('settings.extensions.status_error'), variant: 'destructive' },
+        incompatible: { label: t('settings.extensions.status_incompatible'), variant: 'destructive' },
+    }), [t]);
 
     const filteredData = useMemo(() => extensions, [extensions]);
 
@@ -181,7 +183,7 @@ export default function Extensions({ extensions }: Props) {
                             column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
-                        Name
+                        {t('settings.extensions.table_name')}
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 ),
@@ -197,7 +199,7 @@ export default function Extensions({ extensions }: Props) {
             },
             {
                 accessorKey: 'type',
-                header: 'Type',
+                header: t('settings.extensions.table_type'),
                 cell: ({ row }) => (
                     <Badge variant="outline" className="capitalize">
                         {row.original.type}
@@ -206,7 +208,7 @@ export default function Extensions({ extensions }: Props) {
             },
             {
                 accessorKey: 'author',
-                header: 'Author',
+                header: t('settings.extensions.table_author'),
                 cell: ({ row }) => (
                     <span className="text-sm text-muted-foreground">
                         {row.original.author ?? '—'}
@@ -215,7 +217,7 @@ export default function Extensions({ extensions }: Props) {
             },
             {
                 accessorKey: 'version',
-                header: 'Version',
+                header: t('settings.extensions.table_version'),
                 cell: ({ row }) => (
                     <span className="text-sm tabular-nums text-muted-foreground">
                         v{row.original.version}
@@ -224,7 +226,7 @@ export default function Extensions({ extensions }: Props) {
             },
             {
                 accessorKey: 'state',
-                header: 'Status',
+                header: t('settings.extensions.table_status'),
                 cell: ({ row }) => {
                     const ext = row.original;
                     const displayState: ExtensionState = ext.is_enabled_for_team
@@ -263,11 +265,11 @@ export default function Extensions({ extensions }: Props) {
                                             onClick={() => setDetailExtension(ext)}
                                         >
                                             <Eye className="h-4 w-4" />
-                                            <span className="sr-only">Details</span>
+                                            <span className="sr-only">{t('settings.extensions.details')}</span>
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        View details
+                                        {t('settings.extensions.view_details_tooltip')}
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -295,11 +297,11 @@ export default function Extensions({ extensions }: Props) {
                                                             }
                                                         >
                                                             <PowerOff className="h-4 w-4" />
-                                                            <span className="sr-only">Disable</span>
+                                                            <span className="sr-only">{t('settings.extensions.disable')}</span>
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        Disable
+                                                        {t('settings.extensions.disable')}
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -323,11 +325,11 @@ export default function Extensions({ extensions }: Props) {
                                                             }
                                                         >
                                                             <Power className="h-4 w-4" />
-                                                            <span className="sr-only">Enable</span>
+                                                            <span className="sr-only">{t('settings.extensions.enable')}</span>
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        Enable
+                                                        {t('settings.extensions.enable')}
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -346,12 +348,12 @@ export default function Extensions({ extensions }: Props) {
                                                         className="size-8 text-muted-foreground data-[state=open]:bg-muted"
                                                     >
                                                         <MoreVertical className="h-4 w-4" />
-                                                        <span className="sr-only">More actions</span>
+                                                        <span className="sr-only">{t('settings.extensions.more_actions_tooltip')}</span>
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                More actions
+                                                {t('settings.extensions.more_actions_tooltip')}
                                             </TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
@@ -368,7 +370,7 @@ export default function Extensions({ extensions }: Props) {
                                                 }
                                             >
                                                 <Download className="h-4 w-4" />
-                                                Install
+                                                {t('settings.extensions.install')}
                                             </DropdownMenuItem>
                                         )}
                                         {ext.state !== 'not_installed' &&
@@ -386,7 +388,7 @@ export default function Extensions({ extensions }: Props) {
                                                 }
                                             >
                                                 <PackageX className="h-4 w-4" />
-                                                Uninstall
+                                                {t('settings.extensions.uninstall')}
                                             </DropdownMenuItem>
                                         )}
                                     </DropdownMenuContent>
@@ -398,7 +400,7 @@ export default function Extensions({ extensions }: Props) {
                 enableHiding: false,
             },
         ],
-        [teamSlug, postAction],
+        [teamSlug, postAction, t, stateConfig],
     );
 
     const table = useReactTable({
@@ -429,18 +431,18 @@ export default function Extensions({ extensions }: Props) {
             wide
             breadcrumbs={[
                 {
-                    title: 'Extensions',
+                    title: t('settings.extensions.title'),
                     href: extensionsUrl(teamSlug).url,
                 },
             ]}
         >
-            <Head title="Extensions" />
-            <h1 className="sr-only">Extensions</h1>
+            <Head title={t('settings.extensions.title')} />
+            <h1 className="sr-only">{t('settings.extensions.title')}</h1>
 
             {extensions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                     <Puzzle className="mb-4 h-12 w-12 opacity-20" />
-                    <p className="text-sm">No extensions available.</p>
+                    <p className="text-sm">{t('settings.extensions.no_extensions')}</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -449,7 +451,7 @@ export default function Extensions({ extensions }: Props) {
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search extensions..."
+                                    placeholder={t('settings.extensions.search_placeholder')}
                                     value={globalFilter}
                                     onChange={(e) =>
                                         setGlobalFilter(e.target.value)
@@ -465,14 +467,14 @@ export default function Extensions({ extensions }: Props) {
                                                 <Button variant="outline" size="sm">
                                                     <Columns3 className="h-4 w-4" />
                                                     <span className="hidden lg:inline">
-                                                        Columns
+                                                        {t('settings.extensions.columns')}
                                                     </span>
                                                     <ChevronDown className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Customize columns
+                                            {t('settings.extensions.customize_tooltip')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -570,7 +572,7 @@ export default function Extensions({ extensions }: Props) {
                                                 colSpan={columns.length}
                                                 className="h-24 text-center text-muted-foreground"
                                             >
-                                                No extensions found.
+                                                {t('settings.extensions.no_results')}
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -580,10 +582,10 @@ export default function Extensions({ extensions }: Props) {
 
                         <div className="flex items-center justify-between px-1">
                             <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-                                {table.getFilteredSelectedRowModel().rows.length}{' '}
-                                of{' '}
-                                {table.getFilteredRowModel().rows.length}{' '}
-                                row(s) selected.
+                                {t('common.selected_rows', {
+                                    selected: table.getFilteredSelectedRowModel().rows.length,
+                                    total: table.getFilteredRowModel().rows.length,
+                                })}
                             </div>
                             <div className="flex w-full items-center gap-8 lg:w-fit">
                                 <div className="hidden items-center gap-2 lg:flex">
@@ -591,7 +593,7 @@ export default function Extensions({ extensions }: Props) {
                                         htmlFor="rows-per-page"
                                         className="text-sm font-medium"
                                     >
-                                        Rows per page
+                                        {t('common.rows_per_page')}
                                     </Label>
                                     <Select
                                         value={`${table.getState().pagination.pageSize}`}
@@ -750,30 +752,30 @@ export default function Extensions({ extensions }: Props) {
 
                         const descriptions: Record<string, { about: string; features: string[] }> = {
                             projects: {
-                                about: 'Full project management for your team. Create, organize and track projects with customizable visibility settings. Each project is scoped to your team so data stays isolated.',
+                                about: t('settings.extensions.features.projects.about'),
                                 features: [
-                                    'Create and manage team projects',
-                                    'Customizable default visibility (private, team, public)',
-                                    'Project listing with search and filters',
-                                    'Full CRUD operations with permission controls',
+                                    t('settings.extensions.features.projects.items.0'),
+                                    t('settings.extensions.features.projects.items.1'),
+                                    t('settings.extensions.features.projects.items.2'),
+                                    t('settings.extensions.features.projects.items.3'),
                                 ],
                             },
                             tasks: {
-                                about: 'Lightweight task management with project linking. Create tasks, assign statuses, and keep your team on track. Tasks can be linked to projects from the Projects module.',
+                                about: t('settings.extensions.features.tasks.about'),
                                 features: [
-                                    'Create and assign tasks to team members',
-                                    'Track task status (To Do, In Progress, Done)',
-                                    'Link tasks to projects',
-                                    'Configurable default task status',
+                                    t('settings.extensions.features.tasks.items.0'),
+                                    t('settings.extensions.features.tasks.items.1'),
+                                    t('settings.extensions.features.tasks.items.2'),
+                                    t('settings.extensions.features.tasks.items.3'),
                                 ],
                             },
                             default: {
-                                about: 'The default LaStarter theme. Provides a clean, modern dashboard and consistent UI components across the platform. This theme can be overridden by installing a custom theme.',
+                                about: t('settings.extensions.features.default.about'),
                                 features: [
-                                    'Clean dashboard layout',
-                                    'Consistent UI component styling',
-                                    'Responsive design for all screen sizes',
-                                    'Dark mode support',
+                                    t('settings.extensions.features.default.items.0'),
+                                    t('settings.extensions.features.default.items.1'),
+                                    t('settings.extensions.features.default.items.2'),
+                                    t('settings.extensions.features.default.items.3'),
                                 ],
                             },
                         };
@@ -794,7 +796,7 @@ export default function Extensions({ extensions }: Props) {
                                     {/* About */}
                                     <div>
                                         <h4 className="text-sm font-semibold">
-                                            {isModule ? 'About this module' : 'About this theme'}
+                                            {isModule ? t('settings.extensions.about_module') : t('settings.extensions.about_theme')}
                                         </h4>
                                         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                                             {meta.about}
@@ -804,7 +806,7 @@ export default function Extensions({ extensions }: Props) {
                                     {/* Features */}
                                     {meta.features.length > 0 && (
                                         <div>
-                                            <h4 className="text-sm font-semibold">What you can do</h4>
+                                            <h4 className="text-sm font-semibold">{t('settings.extensions.what_you_can_do')}</h4>
                                             <ul className="mt-2 space-y-1.5">
                                                 {meta.features.map((f) => (
                                                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -821,30 +823,30 @@ export default function Extensions({ extensions }: Props) {
                                     {/* Info grid */}
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="rounded-lg border p-3">
-                                            <p className="text-xs text-muted-foreground">Type</p>
+                                            <p className="text-xs text-muted-foreground">{t('settings.extensions.type')}</p>
                                             <Badge variant="outline" className="mt-1 capitalize">
                                                 {ext.type}
                                             </Badge>
                                         </div>
                                         <div className="rounded-lg border p-3">
-                                            <p className="text-xs text-muted-foreground">Version</p>
+                                            <p className="text-xs text-muted-foreground">{t('settings.extensions.version')}</p>
                                             <p className="mt-1 text-sm font-medium">v{ext.version}</p>
                                         </div>
                                         {ext.author && (
                                             <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">Author</p>
+                                                <p className="text-xs text-muted-foreground">{t('settings.extensions.author')}</p>
                                                 <p className="mt-1 text-sm font-medium">{ext.author}</p>
                                             </div>
                                         )}
                                         {ext.license && (
                                             <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">License</p>
+                                                <p className="text-xs text-muted-foreground">{t('settings.extensions.license')}</p>
                                                 <p className="mt-1 text-sm font-medium">{ext.license}</p>
                                             </div>
                                         )}
                                         {ext.installed_at && (
                                             <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">Installed</p>
+                                                <p className="text-xs text-muted-foreground">{t('settings.extensions.installed')}</p>
                                                 <p className="mt-1 text-sm font-medium">
                                                     {new Date(ext.installed_at).toLocaleDateString()}
                                                 </p>
@@ -852,15 +854,15 @@ export default function Extensions({ extensions }: Props) {
                                         )}
                                         {ext.lastarter_version && (
                                             <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">Requires</p>
+                                                <p className="text-xs text-muted-foreground">{t('settings.extensions.requires')}</p>
                                                 <p className="mt-1 text-sm font-medium">
-                                                    LaStarter {ext.lastarter_version}
+                                                    {t('settings.extensions.requires_version', { version: ext.lastarter_version })}
                                                 </p>
                                             </div>
                                         )}
                                         {ext.homepage && (
                                             <div className="rounded-lg border p-3 col-span-2">
-                                                <p className="text-xs text-muted-foreground">Homepage</p>
+                                                <p className="text-xs text-muted-foreground">{t('settings.extensions.homepage')}</p>
                                                 <a
                                                     href={ext.homepage}
                                                     target="_blank"
@@ -876,7 +878,7 @@ export default function Extensions({ extensions }: Props) {
                                     {/* Keywords */}
                                     {ext.keywords.length > 0 && (
                                         <div>
-                                            <h4 className="text-sm font-semibold">Keywords</h4>
+                                            <h4 className="text-sm font-semibold">{t('settings.extensions.keywords')}</h4>
                                             <div className="mt-1.5 flex flex-wrap gap-1">
                                                 {ext.keywords.map((kw) => (
                                                     <Badge key={kw} variant="secondary" className="text-xs">
@@ -891,10 +893,10 @@ export default function Extensions({ extensions }: Props) {
                                     {isModule && ext.permissions.length > 0 && (
                                         <div>
                                             <h4 className="text-sm font-semibold">
-                                                Permissions ({ext.permissions.length})
+                                                {t('settings.extensions.permissions_title')} ({ext.permissions.length})
                                             </h4>
                                             <p className="mt-0.5 text-xs text-muted-foreground">
-                                                These permissions are added when the module is enabled. Assign them to roles to control access.
+                                                {t('settings.extensions.permissions_description')}
                                             </p>
                                             <div className="mt-2 flex flex-wrap gap-1">
                                                 {ext.permissions.map((perm) => (
@@ -910,10 +912,10 @@ export default function Extensions({ extensions }: Props) {
                                     {isModule && ext.settings.length > 0 && (
                                         <div>
                                             <h4 className="text-sm font-semibold">
-                                                Configurable settings
+                                                {t('settings.extensions.settings_title')}
                                             </h4>
                                             <p className="mt-0.5 text-xs text-muted-foreground">
-                                                These settings can be adjusted per team when the module is active.
+                                                {t('settings.extensions.settings_description')}
                                             </p>
                                             <div className="mt-2 space-y-2">
                                                 {ext.settings.map((s) => (
@@ -936,14 +938,14 @@ export default function Extensions({ extensions }: Props) {
                                                                         }`}
                                                                     >
                                                                         {opt.label}
-                                                                        {opt.value === s.default && ' (default)'}
+                                                                        {opt.value === s.default && ` ${t('common.default')}`}
                                                                     </code>
                                                                 ))}
                                                             </div>
                                                         )}
                                                         {!s.options && s.default && (
                                                             <p className="mt-1 text-xs text-muted-foreground">
-                                                                Default: <code className="rounded bg-muted px-1">{s.default}</code>
+                                                                {t('settings.extensions.settings_default')} <code className="rounded bg-muted px-1">{s.default}</code>
                                                             </p>
                                                         )}
                                                     </div>
@@ -955,7 +957,7 @@ export default function Extensions({ extensions }: Props) {
                                     {/* Technical info */}
                                     <Separator />
                                     <div>
-                                        <p className="text-xs text-muted-foreground">Identifier</p>
+                                        <p className="text-xs text-muted-foreground">{t('settings.extensions.identifier')}</p>
                                         <code className="mt-1 block rounded bg-muted px-2 py-1 text-sm">
                                             {ext.identifier}
                                         </code>
@@ -964,7 +966,7 @@ export default function Extensions({ extensions }: Props) {
                                     {/* Error */}
                                     {ext.error_message && (
                                         <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-3">
-                                            <p className="text-xs font-medium text-destructive">Error</p>
+                                            <p className="text-xs font-medium text-destructive">{t('settings.extensions.error_message')}</p>
                                             <p className="mt-1 text-sm text-destructive/80">
                                                 {ext.error_message}
                                             </p>

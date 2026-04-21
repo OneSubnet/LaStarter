@@ -1,9 +1,11 @@
 import { Head, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 
 export default function Dashboard() {
+    const { t } = useTranslation();
     const page = usePage();
     const teamSlug = page.props.currentTeam?.slug;
 
@@ -11,12 +13,12 @@ export default function Dashboard() {
         <AppLayout
             breadcrumbs={[
                 {
-                    title: 'Dashboard',
+                    title: t('dashboard.breadcrumb'),
                     href: teamSlug ? dashboard(teamSlug) : '/',
                 },
             ]}
         >
-            <Head title="Dashboard" />
+            <Head title={t('dashboard.title')} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">

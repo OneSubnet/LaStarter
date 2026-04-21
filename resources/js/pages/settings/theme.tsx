@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { Check, Paintbrush } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +28,7 @@ type Props = {
 };
 
 export default function ThemeSettings({ themes, activeTheme }: Props) {
+    const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = currentTeam?.slug ?? '';
 
@@ -51,33 +53,33 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
             activeTab="Theme"
             breadcrumbs={[
                 {
-                    title: 'Theme',
+                    title: t('settings.theme.title'),
                     href: themeUrl(teamSlug).url,
                 },
             ]}
         >
-            <Head title="Theme" />
-            <h1 className="sr-only">Theme</h1>
+            <Head title={t('settings.theme.title')} />
+            <h1 className="sr-only">{t('settings.theme.title')}</h1>
 
             <div className="flex flex-col space-y-8">
                 <div className="flex items-center justify-between">
                     <Heading
                         variant="small"
-                        title="Theme"
-                        description="Choose a theme for your team"
+                        title={t('settings.theme.title')}
+                        description={t('settings.theme.description')}
                     />
 
                     {hasChanges && (
                         <Button onClick={handleSave}>
                             <Paintbrush />
-                            Apply theme
+                            {t('settings.theme.apply')}
                         </Button>
                     )}
                 </div>
 
                 {themes.length === 0 ? (
                     <p className="py-8 text-center text-muted-foreground">
-                        No themes available.
+                        {t('settings.theme.no_themes')}
                     </p>
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -110,7 +112,7 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    Active theme
+                                                    {t('settings.theme.active_tooltip')}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
@@ -140,7 +142,7 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
                                             </span>
                                             {isActive && (
                                                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                    Active
+                                                    {t('common.active')}
                                                 </span>
                                             )}
                                         </div>

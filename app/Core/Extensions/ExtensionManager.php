@@ -3,11 +3,14 @@
 namespace App\Core\Extensions;
 
 use App\Core\Hooks\Hook;
+use App\Enums\TeamRole;
 use App\Models\Extension;
 use App\Models\TeamExtension;
 use Composer\Semver\Semver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class ExtensionManager
 {
@@ -67,6 +70,9 @@ class ExtensionManager
         }
 
         $removed = Extension::whereNotIn('identifier', $scannedIdentifiers)->delete();
+
+        $this->syncPermissionsFromManifests($manifests);
+        $this->ensureOwnerHasAllPermissions();
 
         $this->clearCache();
 
@@ -335,5 +341,29 @@ class ExtensionManager
             ->where('is_active', true)
             ->pluck('extension_id')
             ->toArray();
+    }
+
+    protected function syncPermissionsFromManifests(Collection $manifests): void
+    {
+        foreach ($manifests as $manifest) {
+            if (empty($manifest->permissions)) {
+                continue;
+            }
+
+            foreach ($manifest->permissions as $permissionName) {
+                Permission::firstOrCreate(
+                    ['name' => $permissionName, 'guard_name' => 'web'],
+                );
+            }
+        }
+    }
+
+    protected function ensureOwnerHasAllPermissions(): void
+    {
+        $allPermissions = Permission::where('guard_name', 'web')->get();
+
+        Role::where('name', TeamRole::Owner->value)->each(function (Role $role) use ($allPermissions) {
+            $role->syncPermissions($allPermissions);
+        });
     }
 }

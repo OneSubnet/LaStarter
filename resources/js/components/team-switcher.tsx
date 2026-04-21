@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import CreateTeamModal from '@/components/create-team-modal';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -29,6 +30,7 @@ function getInitials(name: string): string {
 }
 
 export function TeamSwitcher() {
+    const { t } = useTranslation();
     const page = usePage();
     const isMobile = useIsMobile();
     const { state } = useSidebar();
@@ -75,7 +77,7 @@ export function TeamSwitcher() {
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
-                                    {currentTeam?.name ?? 'Select team'}
+                                    {currentTeam?.name ?? t('components.team_switcher.select_team')}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground">
                                     {currentTeam?.slug}
@@ -96,7 +98,7 @@ export function TeamSwitcher() {
                         }
                     >
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
-                            Teams
+                            {t('components.team_switcher.teams')}
                         </DropdownMenuLabel>
                         {teams.map((team) => (
                             <DropdownMenuItem
@@ -133,7 +135,7 @@ export function TeamSwitcher() {
                                     <Plus className="size-4" />
                                 </div>
                                 <div className="font-medium text-muted-foreground">
-                                    New team
+                                    {t('components.team_switcher.new_team')}
                                 </div>
                             </DropdownMenuItem>
                         </CreateTeamModal>

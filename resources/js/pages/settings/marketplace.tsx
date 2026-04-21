@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Download, ExternalLink, Search, Star } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,9 @@ type Repo = {
     topics: string[];
     updated_at: string;
     installed: boolean;
+    type: string;
+    identifier: string;
+    path: string;
 };
 
 type Props = {
@@ -34,6 +38,7 @@ type Props = {
 };
 
 export default function Marketplace({ results, query, type }: Props) {
+    const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
     const [search, setSearch] = useState(query);
@@ -53,20 +58,20 @@ export default function Marketplace({ results, query, type }: Props) {
             wide
             breadcrumbs={[
                 {
-                    title: 'Marketplace',
+                    title: t('settings.marketplace.title'),
                     href: marketplaceUrl(teamSlug).url,
                 },
             ]}
         >
-            <Head title="Marketplace" />
-            <h1 className="sr-only">Marketplace</h1>
+            <Head title={t('settings.marketplace.title')} />
+            <h1 className="sr-only">{t('settings.marketplace.title')}</h1>
 
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                    <div className="relative max-w-sm flex-1">
+                    <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                            placeholder="Search extensions..."
+                            placeholder={t('settings.marketplace.search_placeholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) =>
@@ -75,17 +80,17 @@ export default function Marketplace({ results, query, type }: Props) {
                             className="pl-9"
                         />
                     </div>
+                    <Button onClick={handleSearch}>{t('settings.marketplace.search_button')}</Button>
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
                         <SelectTrigger className="w-[140px]">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All types</SelectItem>
-                            <SelectItem value="module">Modules</SelectItem>
-                            <SelectItem value="theme">Themes</SelectItem>
+                            <SelectItem value="all">{t('settings.marketplace.type_all')}</SelectItem>
+                            <SelectItem value="module">{t('settings.marketplace.type_module')}</SelectItem>
+                            <SelectItem value="theme">{t('settings.marketplace.type_theme')}</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Button onClick={handleSearch}>Search</Button>
                 </div>
 
                 {results.length === 0 ? (
@@ -93,35 +98,31 @@ export default function Marketplace({ results, query, type }: Props) {
                         <Search className="mx-auto mb-4 h-12 w-12 opacity-20" />
                         <p className="text-sm">
                             {query
-                                ? 'No extensions found matching your search.'
-                                : 'Search for extensions from the GitHub marketplace.'}
+                                ? t('settings.marketplace.no_results')
+                                : t('settings.marketplace.empty_message')}
                         </p>
                     </div>
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {results.map((repo) => {
                             const [owner, name] = repo.full_name.split('/');
-                            const shortName = name.replace(
-                                /^lastarter-(module|theme)-/,
-                                '',
-                            );
 
                             return (
                                 <div
-                                    key={repo.full_name}
+                                    key={repo.identifier}
                                     className="rounded-lg border p-4 transition-colors hover:border-foreground/20"
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="min-w-0 flex-1">
                                             <Link
-                                                href={showUrl({
+                                                href={`${showUrl({
                                                     current_team: teamSlug,
                                                     owner,
                                                     repo: name,
-                                                }).url}
+                                                }).url}?extension=${repo.identifier}`}
                                                 className="font-medium hover:underline"
                                             >
-                                                {shortName}
+                                                {repo.name}
                                             </Link>
                                             <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                                                 {repo.description}
@@ -130,26 +131,14 @@ export default function Marketplace({ results, query, type }: Props) {
                                     </div>
 
                                     <div className="mt-3 flex items-center gap-2">
-                                        {repo.topics
-                                            .filter((t) =>
-                                                t.startsWith('lastarter-'),
-                                            )
-                                            .map((topic) => (
-                                                <Badge
-                                                    key={topic}
-                                                    variant="outline"
-                                                    className="text-xs capitalize"
-                                                >
-                                                    {topic
-                                                        .replace(
-                                                            'lastarter-',
-                                                            '',
-                                                        )
-                                                        .replace('-', ' ')}
-                                                </Badge>
-                                            ))}
+                                        <Badge
+                                            variant="outline"
+                                            className="text-xs capitalize"
+                                        >
+                                            {repo.type}
+                                        </Badge>
                                         <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-                                            <Star className="h-3 w-3" />
+                                            <Star className="h-3 w-3 text-yellow-500" />
                                             {repo.stargazers_count}
                                         </span>
                                     </div>
@@ -157,7 +146,7 @@ export default function Marketplace({ results, query, type }: Props) {
                                     <div className="mt-3 flex items-center gap-2">
                                         {repo.installed ? (
                                             <Badge variant="secondary">
-                                                Installed
+                                                {t('settings.marketplace.installed')}
                                             </Badge>
                                         ) : (
                                             <Guard permission="extension.manage">
@@ -170,12 +159,13 @@ export default function Marketplace({ results, query, type }: Props) {
                                                             {
                                                                 owner,
                                                                 repo: name,
+                                                                identifier: repo.identifier,
                                                             },
                                                         )
                                                     }
                                                 >
-                                                    <Download className="mr-1 h-3 w-3" />
-                                                    Install
+                                                    <Download className="h-3 w-3" />
+                                                    {t('settings.marketplace.install')}
                                                 </Button>
                                             </Guard>
                                         )}

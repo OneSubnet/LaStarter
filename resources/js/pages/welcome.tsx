@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { dashboard, login, register } from '@/routes';
 
 export default function Welcome({
@@ -6,12 +7,13 @@ export default function Welcome({
 }: {
     canRegister?: boolean;
 }) {
+    const { t } = useTranslation();
     const { auth, currentTeam } = usePage().props;
     const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
 
     return (
         <>
-            <Head title="Welcome">
+            <Head title={t('welcome.head_title')}>
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
@@ -26,7 +28,7 @@ export default function Welcome({
                                 href={dashboardUrl}
                                 className="inline-block rounded-sm border border-border px-5 py-1.5 text-sm leading-normal text-foreground hover:border-foreground/30"
                             >
-                                Dashboard
+                                {t('welcome.dashboard')}
                             </Link>
                         ) : (
                             <>
@@ -34,14 +36,14 @@ export default function Welcome({
                                     href={login()}
                                     className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-foreground hover:border-border"
                                 >
-                                    Log in
+                                    {t('welcome.login')}
                                 </Link>
                                 {canRegister && (
                                     <Link
                                         href={register()}
                                         className="inline-block rounded-sm border border-border px-5 py-1.5 text-sm leading-normal text-foreground hover:border-foreground/30"
                                     >
-                                        Register
+                                        {t('welcome.register')}
                                     </Link>
                                 )}
                             </>
@@ -52,12 +54,10 @@ export default function Welcome({
                     <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
                         <div className="flex-1 rounded-br-lg rounded-bl-lg bg-card p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:shadow-[inset_0px_0px_0px_1px_rgba(255,255,255,0.06)]">
                             <h1 className="mb-1 font-medium">
-                                Let's get started
+                                {t('welcome.heading')}
                             </h1>
                             <p className="mb-2 text-muted-foreground">
-                                Laravel has an incredibly rich ecosystem.
-                                <br />
-                                We suggest starting with the following.
+                                {t('welcome.description')}
                             </p>
                             <ul className="mb-4 flex flex-col lg:mb-6">
                                 <li className="relative flex items-center gap-4 py-2 before:absolute before:top-1/2 before:bottom-0 before:left-[0.4rem] before:border-l before:border-border">
@@ -67,13 +67,13 @@ export default function Welcome({
                                         </span>
                                     </span>
                                     <span>
-                                        Read the
+                                        {t('welcome.read_the')}
                                         <a
                                             href="https://laravel.com/docs"
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-primary underline underline-offset-4"
                                         >
-                                            <span>Documentation</span>
+                                            <span>{t('welcome.documentation')}</span>
                                             <svg
                                                 width={10}
                                                 height={11}
@@ -98,13 +98,13 @@ export default function Welcome({
                                         </span>
                                     </span>
                                     <span>
-                                        Watch video tutorials at
+                                        {t('welcome.watch_tutorials')}
                                         <a
                                             href="https://laracasts.com"
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-primary underline underline-offset-4"
                                         >
-                                            <span>Laracasts</span>
+                                            <span>{t('welcome.laracasts')}</span>
                                             <svg
                                                 width={10}
                                                 height={11}
@@ -130,7 +130,7 @@ export default function Welcome({
                                         target="_blank"
                                         className="inline-block rounded-sm border border-foreground bg-foreground px-5 py-1.5 text-sm leading-normal text-background hover:bg-foreground/90"
                                     >
-                                        Deploy now
+                                        {t('welcome.deploy')}
                                     </a>
                                 </li>
                             </ul>

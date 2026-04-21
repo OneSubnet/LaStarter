@@ -31,16 +31,12 @@ class MarketplaceController extends Controller
 
         $results = $this->marketplace->search($query, $type);
 
-        // Mark which extensions are already installed
         $installed = Extension::pluck('identifier')->toArray();
 
-        $results = $results->map(function (array $repo) use ($installed) {
-            $name = $repo['name'];
-            // Match patterns: lastarter-module-projects → projects, lastarter-theme-default → default
-            $identifier = preg_replace('/^lastarter-(module|theme)-/', '', $name);
-            $repo['installed'] = in_array($identifier, $installed);
+        $results = $results->map(function (array $item) use ($installed) {
+            $item['installed'] = in_array($item['identifier'], $installed);
 
-            return $repo;
+            return $item;
         });
 
         return Inertia::render('settings/marketplace', [
@@ -57,14 +53,22 @@ class MarketplaceController extends Controller
         $details = $this->marketplace->getDetails($owner, $repo);
 
         if (! $details) {
-            abort(404, 'Repository not found');
+            abort(404, __('Repository not found'));
         }
 
-        $readme = $this->marketplace->getReadme($owner, $repo);
-        $release = $this->marketplace->getLatestRelease($owner, $repo);
-        $manifest = $this->marketplace->getManifest($owner, $repo, $details['default_branch']);
+        $identifier = $request->string('extension')->toString();
 
-        $installed = Extension::where('identifier', $manifest['identifier'] ?? $repo)->exists();
+        $extensionEntry = $identifier
+            ? $this->marketplace->findByIdentifier($identifier)
+            : null;
+
+        $path = $extensionEntry['path'] ?? '';
+
+        $readme = $this->marketplace->getReadme($owner, $repo, $path);
+        $release = $this->marketplace->getLatestRelease($owner, $repo);
+        $manifest = $this->marketplace->getManifest($owner, $repo, $details['default_branch'], $path);
+
+        $installed = Extension::where('identifier', $manifest['identifier'] ?? $identifier)->exists();
 
         return Inertia::render('settings/marketplace-show', [
             'details' => $details,
@@ -72,6 +76,8 @@ class MarketplaceController extends Controller
             'release' => $release,
             'manifest' => $manifest,
             'installed' => $installed,
+            'extensionPath' => $path,
+            'extensionIdentifier' => $identifier,
         ]);
     }
 
@@ -82,6 +88,7 @@ class MarketplaceController extends Controller
         $validated = Validator::make($request->all(), [
             'owner' => 'required|string',
             'repo' => 'required|string',
+            'identifier' => 'nullable|string',
         ])->validate();
 
         $release = $this->marketplace->getLatestRelease($validated['owner'], $validated['repo']);
@@ -93,7 +100,8 @@ class MarketplaceController extends Controller
         }
 
         try {
-            $path = $this->installer->installFromUrl($release['zip_url'], $validated['repo']);
+            $identifier = $validated['identifier'] ?? $validated['repo'];
+            $path = $this->installer->installFromUrl($release['zip_url'], $identifier);
             $this->extensions->sync();
 
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension downloaded. Run extensions:scan to register it.')]);

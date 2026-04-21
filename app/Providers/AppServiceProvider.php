@@ -54,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(MarketplaceClient::class, function () {
             return new MarketplaceClient(
                 config('extensions.github_org', 'OneSubnet'),
+                config('extensions.marketplace_repo', 'LaStarter-Marketplace'),
                 config('extensions.github_token'),
             );
         });

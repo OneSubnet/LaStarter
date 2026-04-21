@@ -10,6 +10,8 @@ return [
 
     'github_org' => env('GITHUB_ORG', 'OneSubnet'),
 
+    'marketplace_repo' => env('MARKETPLACE_REPO', 'LaStarter-Marketplace'),
+
     'github_token' => env('GITHUB_TOKEN'),
 
     'max_upload_size' => 50 * 1024 * 1024, // 50MB

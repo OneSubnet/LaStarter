@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { Activity, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CreateTeamModal from '@/components/create-team-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -98,6 +99,7 @@ return '—';
 }
 
 export function SidebarRight() {
+    const { t } = useTranslation();
     const page = usePage();
 
     const currentTeam = page.props.currentTeam as { id: number; name: string; slug: string; iconUrl?: string } | undefined;
@@ -140,7 +142,7 @@ export function SidebarRight() {
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
-                                    {currentTeam?.name ?? 'Select team'}
+                                    {currentTeam?.name ?? t('components.team_switcher.select_team')}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground">
                                     {currentTeam?.slug}
@@ -155,7 +157,7 @@ export function SidebarRight() {
                         side="left"
                     >
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
-                            Teams
+                            {t('components.team_switcher.teams')}
                         </DropdownMenuLabel>
                         {teams.map((team) => (
                             <DropdownMenuItem
@@ -190,7 +192,7 @@ export function SidebarRight() {
                                     <Plus className="size-4" />
                                 </div>
                                 <div className="font-medium text-muted-foreground">
-                                    New team
+                                    {t('components.sidebar_right.new_team')}
                                 </div>
                             </DropdownMenuItem>
                         </CreateTeamModal>
@@ -205,7 +207,7 @@ export function SidebarRight() {
                         {/* Members */}
                         <section className="space-y-3">
                             <SidebarGroupLabel className="text-xs font-medium tracking-wide text-muted-foreground">
-                                Members ({teamMembers.length})
+                                {t('components.sidebar_right.members')} ({teamMembers.length})
                             </SidebarGroupLabel>
                             <div className="space-y-1">
                                 {teamMembers.map((member) => {
@@ -228,7 +230,7 @@ export function SidebarRight() {
                                                 <span
                                                     className={`absolute -bottom-0.5 -right-0.5 block size-2.5 rounded-full ring-2 ring-background ${
                                                         member.is_online
-                                                            ? 'bg-emerald-500'
+                                                            ? 'bg-green-500'
                                                             : 'bg-muted-foreground/30'
                                                     }`}
                                                 />
@@ -238,7 +240,7 @@ export function SidebarRight() {
                                                     {member.name}
                                                 </div>
                                                 <div className="truncate text-xs text-muted-foreground">
-                                                    {member.is_online ? 'Online' : member.role_label}
+                                                    {member.is_online ? t('common.online') : member.role_label}
                                                 </div>
                                             </div>
                                         </div>
@@ -250,11 +252,11 @@ export function SidebarRight() {
                         {/* Recent Activity — clickable audit log entries */}
                         <section className="space-y-3">
                             <SidebarGroupLabel className="text-xs font-medium tracking-wide text-muted-foreground">
-                                Recent Activity
+                                {t('components.sidebar_right.recent_activity')}
                             </SidebarGroupLabel>
                             {auditLogs.length === 0 ? (
                                 <p className="px-2 text-xs text-muted-foreground/60 italic">
-                                    No activity recorded yet.
+                                    {t('components.sidebar_right.no_activity')}
                                 </p>
                             ) : (
                                 <div className="space-y-1">
@@ -297,7 +299,7 @@ export function SidebarRight() {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Activity className="h-4 w-4" />
-                            Activity Detail
+                            {t('components.sidebar_right.activity_detail')}
                         </DialogTitle>
                     </DialogHeader>
 

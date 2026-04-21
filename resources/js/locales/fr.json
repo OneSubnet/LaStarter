@@ -1,0 +1,488 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "back": "Retour",
+    "continue": "Continuer",
+    "confirm": "Confirmer",
+    "hide": "Masquer",
+    "view": "Voir",
+    "log_out": "Déconnexion",
+    "profile": "Profil",
+    "create": "Créer",
+    "edit": "Modifier",
+    "settings": "Paramètres",
+    "members": "Membres",
+    "roles": "Rôles",
+    "mail": "Mail",
+    "general": "Général",
+    "team": "Équipe",
+    "account": "Compte",
+    "extensions": "Extensions",
+    "marketplace": "Marketplace",
+    "dashboard": "Tableau de bord",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "loading": "Chargement...",
+    "saving": "Enregistrement...",
+    "more": "Plus",
+    "details": "Détails",
+    "online": "En ligne",
+    "active": "Actif",
+    "invited": "Invité",
+    "suspended": "Suspendu",
+    "disabled": "Désactivé",
+    "installed": "Installé",
+    "not_installed": "Non installé",
+    "error": "Erreur",
+    "search": "Rechercher",
+    "rows_per_page": "Lignes par page",
+    "selected_rows": "{{selected}} sur {{total}} ligne(s) sélectionnée(s).",
+    "no_results": "Aucun résultat trouvé.",
+    "something_went_wrong": "Une erreur est survenue.",
+    "navigation_menu": "Menu de navigation",
+    "app_name": "Laravel Starter Kit",
+    "by": "par",
+    "default": "(par défaut)"
+  },
+  "auth": {
+    "login": {
+      "title": "Connectez-vous à votre compte",
+      "description": "Entrez votre email et mot de passe ci-dessous pour vous connecter",
+      "head_title": "Connexion",
+      "email_label": "Adresse email",
+      "email_placeholder": "email@exemple.com",
+      "password_label": "Mot de passe",
+      "password_placeholder": "Mot de passe",
+      "remember_me": "Se souvenir de moi",
+      "submit": "Se connecter",
+      "forgot_password": "Mot de passe oublié ?",
+      "no_account": "Pas encore de compte ?",
+      "sign_up": "S'inscrire",
+      "verification_sent": "Un nouveau lien de vérification a été envoyé à l'adresse email que vous avez indiquée lors de votre inscription."
+    },
+    "register": {
+      "title": "Créer un compte",
+      "description": "Entrez vos informations ci-dessous pour créer votre compte",
+      "head_title": "Inscription",
+      "name_label": "Nom",
+      "name_placeholder": "Nom complet",
+      "email_label": "Adresse email",
+      "email_placeholder": "email@exemple.com",
+      "password_label": "Mot de passe",
+      "password_placeholder": "Mot de passe",
+      "confirm_password_label": "Confirmer le mot de passe",
+      "confirm_password_placeholder": "Confirmer le mot de passe",
+      "submit": "Créer le compte",
+      "already_have_account": "Vous avez déjà un compte ?",
+      "log_in": "Se connecter"
+    },
+    "forgot_password": {
+      "title": "Mot de passe oublié",
+      "description": "Entrez votre email pour recevoir un lien de réinitialisation",
+      "email_label": "Adresse email",
+      "email_placeholder": "email@exemple.com",
+      "submit": "Envoyer le lien de réinitialisation",
+      "return_to": "Ou, retourner à",
+      "login_link": "la connexion"
+    },
+    "reset_password": {
+      "title": "Réinitialiser le mot de passe",
+      "description": "Veuillez entrer votre nouveau mot de passe ci-dessous",
+      "email_label": "Email",
+      "password_label": "Mot de passe",
+      "password_placeholder": "Mot de passe",
+      "confirm_password_label": "Confirmer le mot de passe",
+      "confirm_password_placeholder": "Confirmer le mot de passe",
+      "submit": "Réinitialiser le mot de passe"
+    },
+    "confirm_password": {
+      "title": "Confirmez votre mot de passe",
+      "description": "Ceci est une zone sécurisée de l'application. Veuillez confirmer votre mot de passe avant de continuer.",
+      "head_title": "Confirmation du mot de passe",
+      "password_label": "Mot de passe",
+      "password_placeholder": "Mot de passe",
+      "submit": "Confirmer le mot de passe"
+    },
+    "verify_email": {
+      "title": "Vérification de l'email",
+      "description": "Veuillez vérifier votre adresse email en cliquant sur le lien que nous venons de vous envoyer.",
+      "head_title": "Vérification email",
+      "resend": "Renvoyer l'email de vérification",
+      "logout": "Déconnexion",
+      "verification_sent": "Un nouveau lien de vérification a été envoyé à l'adresse email que vous avez fournie lors de l'inscription."
+    },
+    "two_factor": {
+      "title_code": "Code d'authentification",
+      "title_recovery": "Code de récupération",
+      "description_code": "Entrez le code d'authentification fourni par votre application d'authentification.",
+      "description_recovery": "Veuillez confirmer l'accès à votre compte en entrant l'un de vos codes de récupération d'urgence.",
+      "toggle_code": "se connecter avec un code d'authentification",
+      "toggle_recovery": "se connecter avec un code de récupération",
+      "continue": "Continuer",
+      "recovery_placeholder": "Entrez le code de récupération",
+      "or_you_can": "ou vous pouvez"
+    }
+  },
+  "welcome": {
+    "head_title": "Bienvenue",
+    "dashboard": "Tableau de bord",
+    "login": "Se connecter",
+    "register": "S'inscrire",
+    "heading": "Commençons",
+    "description": "Laravel possède un écosystème incroyablement riche. Nous vous suggérons de commencer par ce qui suit.",
+    "documentation": "Documentation",
+    "read_the": "Lire la",
+    "watch_tutorials": "Regarder les tutoriels sur",
+    "laracasts": "Laracasts",
+    "deploy": "Déployer maintenant"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "breadcrumb": "Tableau de bord"
+  },
+  "settings": {
+    "profile": {
+      "title": "Paramètres du profil",
+      "info_title": "Informations du profil",
+      "info_description": "Mettez à jour votre nom et votre adresse email",
+      "name_label": "Nom",
+      "name_placeholder": "Nom complet",
+      "email_label": "Adresse email",
+      "email_placeholder": "Adresse email",
+      "unverified": "Votre adresse email n'est pas vérifiée.",
+      "resend_verification": "Cliquez ici pour renvoyer l'email de vérification.",
+      "verification_sent": "Un nouveau lien de vérification a été envoyé à votre adresse email.",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "locale_label": "Langue",
+      "locale_description": "Choisissez votre langue préférée. Elle sera appliquée dans toute l'application."
+    },
+    "security": {
+      "title": "Paramètres de sécurité",
+      "password_title": "Mettre à jour le mot de passe",
+      "password_description": "Assurez-vous d'utiliser un mot de passe long et aléatoire pour rester en sécurité",
+      "current_password_label": "Mot de passe actuel",
+      "current_password_placeholder": "Mot de passe actuel",
+      "new_password_label": "Nouveau mot de passe",
+      "new_password_placeholder": "Nouveau mot de passe",
+      "confirm_password_label": "Confirmer le mot de passe",
+      "confirm_password_placeholder": "Confirmer le mot de passe",
+      "save": "Enregistrer le mot de passe",
+      "saving": "Enregistrement...",
+      "two_factor_title": "Authentification à deux facteurs",
+      "two_factor_description": "Gérez vos paramètres d'authentification à deux facteurs",
+      "two_factor_enabled": "Un code PIN sécurisé et aléatoire vous sera demandé lors de la connexion, que vous pouvez récupérer depuis l'application TOTP sur votre téléphone.",
+      "two_factor_disabled": "Lorsque vous activez l'authentification à deux facteurs, un code PIN sécurisé vous sera demandé lors de la connexion. Ce code peut être récupéré depuis une application TOTP sur votre téléphone.",
+      "enable_2fa": "Activer la 2FA",
+      "disable_2fa": "Désactiver la 2FA",
+      "continue_setup": "Continuer la configuration"
+    },
+    "appearance": {
+      "title": "Paramètres d'apparence",
+      "description": "Mettez à jour les paramètres d'apparence de votre compte"
+    },
+    "team": {
+      "general": {
+        "title": "Paramètres de l'équipe",
+        "description": "Mettez à jour le nom et l'icône de votre équipe",
+        "name_label": "Nom de l'équipe",
+        "change_icon": "Changer l'icône",
+        "upload_icon": "Télécharger une icône",
+        "uploading": "Téléchargement...",
+        "remove": "Supprimer",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "delete_title": "Supprimer l'équipe",
+        "delete_description": "Supprimer définitivement votre équipe",
+        "warning": "Attention",
+        "warning_message": "Veuillez faire attention, cette action est irréversible.",
+        "delete_button": "Supprimer l'équipe"
+      },
+      "members": {
+        "search_placeholder": "Rechercher des membres...",
+        "columns": "Colonnes",
+        "customize_tooltip": "Personnaliser les colonnes",
+        "invite_button": "Inviter un membre",
+        "table_member": "Membre",
+        "table_role": "Rôle",
+        "table_status": "Statut",
+        "table_joined": "Rejoint",
+        "table_permissions": "Permissions",
+        "table_email": "Email",
+        "table_invited_by": "Invité par",
+        "table_sent": "Envoyé",
+        "no_members": "Aucun membre trouvé.",
+        "member_count": "{{count}} membre(s)",
+        "selected_rows": "{{selected}} sur {{total}} ligne(s) sélectionnée(s).",
+        "pending_invitations": "Invitations en attente",
+        "cancel_invitation": "Annuler l'invitation"
+      },
+      "roles": {
+        "create_button": "Créer un rôle",
+        "search_placeholder": "Rechercher des rôles...",
+        "columns": "Colonnes",
+        "customize_tooltip": "Personnaliser les colonnes",
+        "table_name": "Nom",
+        "table_members": "Membres",
+        "table_permissions": "Permissions",
+        "table_status": "Statut",
+        "no_roles": "Aucun rôle trouvé.",
+        "member_count": "{{count}} membre(s)",
+        "selected_rows": "{{selected}} sur {{total}} ligne(s) sélectionnée(s).",
+        "toggle_all": "Tout sélectionner",
+        "remove_all": "Tout désélectionner",
+        "delete_title": "Supprimer le rôle",
+        "delete_message": "Êtes-vous sûr de vouloir supprimer ce rôle ? Les membres avec ce rôle perdront ses permissions. Cette action est irréversible.",
+        "delete_confirm": "Supprimer le rôle",
+        "create_title": "Créer un nouveau rôle",
+        "name_label": "Nom du rôle",
+        "name_placeholder": "ex. Manager, Tech Lead",
+        "creating": "Création...",
+        "create_button_dialog": "Créer le rôle",
+        "permissions_toggle_all": "Tout basculer",
+        "permissions_summary_title": "Résumé des permissions",
+        "permissions_summary_message": "Ce rôle possède toutes les permissions et ne peut pas être modifié.",
+        "permissions_title": "Permissions",
+        "permissions_count": "Permissions",
+        "members_title": "Membres",
+        "badge_system": "Système",
+        "badge_custom": "Personnalisé"
+      },
+      "mail": {
+        "title": "Paramètres mail",
+        "server_title": "Serveur mail",
+        "server_description": "Configurez le serveur SMTP pour les emails sortants de cette équipe",
+        "host_label": "Hôte",
+        "host_placeholder": "smtp.exemple.com",
+        "port_label": "Port",
+        "port_placeholder": "587",
+        "encryption_label": "Chiffrement",
+        "encryption_tls": "TLS",
+        "encryption_ssl": "SSL",
+        "encryption_none": "Aucun",
+        "username_label": "Nom d'utilisateur",
+        "username_placeholder": "nom d'utilisateur smtp",
+        "password_label": "Mot de passe",
+        "password_placeholder": "••••••••",
+        "from_address_label": "Adresse d'expédition",
+        "from_address_placeholder": "noreply@exemple.com",
+        "from_name_label": "Nom d'expédition",
+        "from_name_placeholder": "Mon Équipe",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "test_button": "Envoyer un email test",
+        "test_sending": "Envoi en cours..."
+      }
+    },
+    "theme": {
+      "title": "Thème",
+      "description": "Choisissez un thème pour votre équipe",
+      "apply": "Appliquer le thème",
+      "no_themes": "Aucun thème disponible.",
+      "active_tooltip": "Thème actif"
+    },
+    "extensions": {
+      "title": "Extensions",
+      "no_extensions": "Aucune extension disponible.",
+      "search_placeholder": "Rechercher des extensions...",
+      "columns": "Colonnes",
+      "customize_tooltip": "Personnaliser les colonnes",
+      "table_name": "Nom",
+      "table_type": "Type",
+      "table_author": "Auteur",
+      "table_version": "Version",
+      "table_status": "Statut",
+      "no_results": "Aucune extension trouvée.",
+      "details": "Voir les détails",
+      "view_details_tooltip": "Voir les détails",
+      "more_actions_tooltip": "Plus d'actions",
+      "install": "Installer",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "uninstall": "Désinstaller",
+      "toggle_all": "Tout basculer",
+      "permissions_title": "Permissions",
+      "permissions_description": "Ces permissions sont ajoutées lorsque le module est activé. Assignez-les aux rôles pour contrôler l'accès.",
+      "settings_title": "Paramètres configurables",
+      "settings_description": "Ces paramètres peuvent être ajustés par équipe lorsque le module est actif.",
+      "settings_default": "Par défaut :",
+      "about_module": "À propos de ce module",
+      "about_theme": "À propos de ce thème",
+      "what_you_can_do": "Ce que vous pouvez faire",
+      "type": "Type",
+      "version": "Version",
+      "author": "Auteur",
+      "license": "Licence",
+      "installed": "Installé",
+      "requires": "Requiert",
+      "homepage": "Page d'accueil",
+      "keywords": "Mots-clés",
+      "identifier": "Identifiant",
+      "type_module": "module",
+      "type_theme": "thème",
+      "status_active": "Actif",
+      "status_disabled": "Désactivé",
+      "status_not_installed": "Non installé",
+      "status_error": "Erreur",
+      "status_incompatible": "Incompatible",
+      "error_message": "Erreur",
+      "error_description": "{{message}}",
+      "requires_version": "LaStarter {{version}}",
+      "default_badge": "(par défaut)",
+      "features": {
+        "projects": {
+          "about": "Gestion complète de projets pour votre équipe. Créez, organisez et suivez des projets avec des paramètres de visibilité personnalisables. Chaque projet est lié à votre équipe pour garder les données isolées.",
+          "items": [
+            "Créer et gérer les projets de l'équipe",
+            "Visibilité par défaut personnalisable (privé, équipe, public)",
+            "Liste des projets avec recherche et filtres",
+            "Opérations CRUD complètes avec contrôles de permissions"
+          ]
+        },
+        "tasks": {
+          "about": "Gestion de tâches légère avec liaison aux projets. Créez des tâches, assignez des statuts et gardez votre équipe sur la bonne voie. Les tâches peuvent être liées aux projets du module Projets.",
+          "items": [
+            "Créer et assigner des tâches aux membres de l'équipe",
+            "Suivre le statut des tâches (À faire, En cours, Terminé)",
+            "Lier des tâches à des projets",
+            "Statut de tâche par défaut configurable"
+          ]
+        },
+        "default": {
+          "about": "Le thème par défaut de LaStarter. Fournit un tableau de bord propre et moderne ainsi que des composants UI cohérents sur toute la plateforme. Ce thème peut être remplacé en installant un thème personnalisé.",
+          "items": [
+            "Mise en page de tableau de bord épurée",
+            "Style de composants UI cohérent",
+            "Design responsive pour toutes les tailles d'écran",
+            "Support du mode sombre"
+          ]
+        }
+      }
+    },
+    "marketplace": {
+      "title": "Marketplace",
+      "search_placeholder": "Rechercher des extensions...",
+      "type_all": "Tous les types",
+      "type_module": "Modules",
+      "type_theme": "Thèmes",
+      "search_button": "Rechercher",
+      "no_results": "Aucune extension ne correspond à votre recherche.",
+      "empty_message": "Recherchez des extensions depuis le marketplace GitHub.",
+      "installed": "Installé",
+      "install": "Installer",
+      "installing": "Installation...",
+      "github": "GitHub",
+      "version": "Version",
+      "latest_release": "Dernière version",
+      "stars": "Étoiles",
+      "requires": "Requiert",
+      "readme": "README",
+      "release_notes": "Notes de la dernière version"
+    },
+    "teams": {
+      "title": "Équipes",
+      "description": "Gérez vos équipes et adhésions",
+      "new_team": "Nouvelle équipe",
+      "no_teams": "Vous n'appartenez à aucune équipe pour le moment.",
+      "personal": "Personnel",
+      "view_tooltip": "Voir l'équipe",
+      "edit_tooltip": "Modifier l'équipe"
+    }
+  },
+  "components": {
+    "delete_user": {
+      "title": "Supprimer le compte",
+      "description": "Supprimez votre compte et toutes vos ressources",
+      "warning": "Attention",
+      "warning_description": "Veuillez faire attention, cette action est irréversible.",
+      "password_label": "Mot de passe",
+      "confirm_title": "Êtes-vous sûr de vouloir supprimer votre compte ?",
+      "confirm_description": "Une fois votre compte supprimé, toutes vos ressources et données seront également supprimées définitivement. Veuillez entrer votre mot de passe pour confirmer la suppression définitive de votre compte."
+    },
+    "delete_team": {
+      "title": "Êtes-vous sûr ?",
+      "description": "Cette action est irréversible. Cela supprimera définitivement l'équipe",
+      "confirm_label": "Tapez",
+      "confirm_text": "pour confirmer",
+      "placeholder": "Entrez le nom de l'équipe"
+    },
+    "create_team": {
+      "title": "Créer une nouvelle équipe",
+      "description": "Créez une nouvelle équipe pour collaborer avec d'autres.",
+      "name_label": "Nom de l'équipe",
+      "placeholder": "Mon équipe"
+    },
+    "invite_member": {
+      "title": "Inviter un membre",
+      "description": "Envoyez une invitation à rejoindre cette équipe.",
+      "email_label": "Adresse email",
+      "email_placeholder": "collegue@exemple.com",
+      "role_label": "Rôle",
+      "select_role": "Sélectionner un rôle",
+      "send_invitation": "Envoyer l'invitation"
+    },
+    "remove_member": {
+      "title": "Retirer le membre",
+      "description": "Êtes-vous sûr de vouloir retirer",
+      "from_team": "de cette équipe ?",
+      "confirm": "Retirer le membre"
+    },
+    "cancel_invitation": {
+      "title": "Annuler l'invitation",
+      "description": "Êtes-vous sûr de vouloir annuler l'invitation pour",
+      "confirm": "Annuler l'invitation",
+      "keep": "Garder l'invitation"
+    },
+    "two_factor_recovery": {
+      "title": "Codes de récupération 2FA",
+      "description": "Les codes de récupération vous permettent de retrouver l'accès si vous perdez votre appareil 2FA. Conservez-les dans un gestionnaire de mots de passe sécurisé.",
+      "view": "Voir les codes de récupération",
+      "hide": "Masquer les codes de récupération",
+      "regenerate": "Régénérer les codes",
+      "code_used": "Chaque code de récupération peut être utilisé une fois pour accéder à votre compte et sera supprimé après utilisation."
+    },
+    "app_sidebar": {
+      "overview": "Vue d'ensemble",
+      "platform": "Plateforme",
+      "manage": "Gérer"
+    },
+    "sidebar_right": {
+      "members": "Membres",
+      "recent_activity": "Activité récente",
+      "no_activity": "Aucune activité enregistrée.",
+      "new_team": "Nouvelle équipe",
+      "activity_detail": "Détail de l'activité"
+    },
+    "password_input": {
+      "show": "Afficher le mot de passe",
+      "hide": "Masquer le mot de passe"
+    },
+    "team_switcher": {
+      "select_team": "Sélectionner une équipe",
+      "teams": "Équipes",
+      "new_team": "Nouvelle équipe"
+    },
+    "two_factor_setup": {
+      "enabled_title": "Authentification à deux facteurs activée",
+      "enabled_description": "L'authentification à deux facteurs est maintenant activée. Scannez le QR code ou entrez la clé de configuration dans votre application d'authentification.",
+      "verify_title": "Vérifier le code d'authentification",
+      "verify_description": "Entrez le code à 6 chiffres de votre application d'authentification",
+      "enable_title": "Activer l'authentification à deux facteurs",
+      "enable_description": "Pour terminer l'activation de l'authentification à deux facteurs, scannez le QR code ou entrez la clé de configuration dans votre application d'authentification",
+      "manual_code": "ou, entrez le code manuellement"
+    }
+  },
+  "layouts": {
+    "account": {
+      "title": "Compte",
+      "description": "Gérez vos paramètres de compte"
+    },
+    "team_settings": {
+      "description": "Gérez les paramètres de votre équipe"
+    }
+  }
+}
