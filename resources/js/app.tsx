@@ -1,10 +1,10 @@
 import { createInertiaApp,  router } from '@inertiajs/react';
 import type {ResolvedComponent} from '@inertiajs/react';
+import i18n from 'i18next';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import '@/lib/i18n';
-import i18n from 'i18next';
 import QueryProvider from '@/lib/query-client';
 import { setUrlDefaults } from '@/wayfinder';
 
