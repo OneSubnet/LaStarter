@@ -87,6 +87,7 @@ jobs:
         run: |
           php artisan extensions:scan
           php artisan extensions:sync
+          php artisan extensions:enable ailes-invisibles
           php artisan extensions:enable projects
           php artisan extensions:enable tasks
           php artisan extensions:enable forms
@@ -98,6 +99,9 @@ jobs:
 
       - name: Build Assets
         run: npm run build
+
+      - name: TypeScript Check
+        run: npm run types:check
 
       - name: Run Tests
         run: ./vendor/bin/pest

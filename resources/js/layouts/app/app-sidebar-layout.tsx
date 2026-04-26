@@ -10,6 +10,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import CommandPalette from '@/components/command-palette';
+
 import { SidebarRight } from '@/components/sidebar-right';
 import {
     Drawer,
@@ -24,6 +26,13 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import type { BreadcrumbItem } from '@/types';
+
+type ExtensionNavItem = {
+    title: string;
+    href?: string;
+    icon: string | null;
+    children?: { title: string; href: string; icon: string | null }[];
+};
 
 const iconMap: Record<string, LucideIcon> = {
     LayoutGrid,
@@ -44,19 +53,42 @@ function getInitials(name: string) {
 export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
+    headerActions,
+    rightSidebar,
 }: {
     children: ReactNode;
     breadcrumbs?: BreadcrumbItem[];
+    headerActions?: ReactNode;
+    rightSidebar?: ReactNode;
 }) {
     const page = usePage();
     const isOpen = page.props.sidebarOpen;
     const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
     const currentTeam = page.props.currentTeam as { name: string; slug: string } | undefined;
-    const extensionNav = (page.props.navigation as { title: string; href: string; icon: string | null }[] | undefined) ?? [];
+    const extensionNav = (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
     const teamSlug = currentTeam?.slug ?? '';
     const currentPath = page.url;
     const { t } = useTranslation();
+
+    const footerLinks = (page.props.footerLinks as { title: string; href: string }[] | undefined) ?? [];
+
+    // Flatten extension nav items for mobile (include children from grouped items)
+    const flatExtNav = extensionNav.flatMap((ext) => {
+        if (ext.children && ext.children.length > 0) {
+            return ext.children.map((child) => ({
+                label: child.title,
+                icon: child.icon ? iconMap[child.icon] ?? LayoutGrid : LayoutGrid,
+                href: child.href,
+            }));
+        }
+
+        return ext.href ? [{
+            label: ext.title,
+            icon: ext.icon ? iconMap[ext.icon] ?? LayoutGrid : LayoutGrid,
+            href: ext.href,
+        }] : [];
+    });
 
     return (
         <SidebarProvider
@@ -92,17 +124,39 @@ export default function AppSidebarLayout({
                             <SidebarTrigger className="-ml-1" />
                             <Breadcrumbs breadcrumbs={breadcrumbs} />
                         </div>
+                        <div className="ml-auto flex items-center gap-1.5">
+                            {headerActions}
+                        </div>
                     </header>
 
                     {/* Page content */}
                     <div className="flex flex-1 flex-col gap-4 p-4">
                         {children}
                     </div>
+
+                    {/* Footer links */}
+                    {footerLinks.length > 0 && (
+                        <footer className="border-t py-3 text-center text-xs text-muted-foreground">
+                            <div className="flex items-center justify-center gap-4">
+                                {footerLinks.map((link) => (
+                                    <a
+                                        key={link.href}
+                                        href={link.href}
+                                        className="hover:text-foreground hover:underline"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {link.title}
+                                    </a>
+                                ))}
+                            </div>
+                        </footer>
+                    )}
                 </div>
             </SidebarInset>
 
             {/* Right sidebar (desktop only) */}
-            <SidebarRight />
+            {rightSidebar ?? <SidebarRight />}
 
             {/* Mobile drawer for full navigation */}
             <Drawer
@@ -118,11 +172,7 @@ export default function AppSidebarLayout({
                         <div className="space-y-1">
                             {[
                                 { label: t('common.dashboard'), icon: LayoutGrid, href: `/${teamSlug}` },
-                                ...extensionNav.map((ext) => ({
-                                    label: ext.title,
-                                    icon: ext.icon ? iconMap[ext.icon] ?? LayoutGrid : LayoutGrid,
-                                    href: ext.href,
-                                })),
+                                ...flatExtNav.slice(0, 6).map((item) => item),
                                 { label: t('common.settings'), icon: Settings, href: `/${teamSlug}/settings/general` },
                             ].map((item) => {
                                 const Icon = item.icon;
@@ -162,15 +212,15 @@ export default function AppSidebarLayout({
                     >
                         <LayoutGrid className="h-5 w-5" />
                     </Link>
-                    {extensionNav.slice(0, 2).map((ext) => {
-                        const Icon = ext.icon ? iconMap[ext.icon] ?? LayoutGrid : LayoutGrid;
+                    {flatExtNav.slice(0, 2).map((item) => {
+                        const Icon = item.icon;
 
                         return (
                             <Link
-                                key={ext.title}
-                                href={ext.href}
+                                key={item.href}
+                                href={item.href}
                                 className={`flex flex-col items-center justify-center py-3 text-xs ${
-                                    currentPath.startsWith(ext.href)
+                                    currentPath.startsWith(item.href)
                                         ? 'text-foreground'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
@@ -199,6 +249,7 @@ export default function AppSidebarLayout({
                     </button>
                 </div>
             </nav>
+        <CommandPalette />
         </SidebarProvider>
     );
 }

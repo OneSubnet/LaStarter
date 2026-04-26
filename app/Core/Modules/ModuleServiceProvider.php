@@ -80,6 +80,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
         $this->bootModule();
+        $this->loadModuleRoutes();
     }
 
     /**

@@ -6,7 +6,6 @@ import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import { zodValidator } from '@/lib/inertia-form';
 import { forgotPasswordSchema } from '@/lib/schemas';
@@ -24,77 +23,56 @@ export default function ForgotPassword({ status }: { status?: string }) {
     });
 
     return (
-        <AuthLayout
-            title={t('auth.forgot_password.title')}
-            description={t('auth.forgot_password.description')}
-        >
+        <AuthLayout title={t('auth.forgot_password.title')}>
             <Head title={t('auth.forgot_password.title')} />
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-primary">
+                <div className="w-full max-w-lg text-center text-sm font-medium text-primary">
                     {status}
                 </div>
             )}
 
-            <div className="space-y-6">
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.handleSubmit();
-                    }}
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.handleSubmit();
+                }}
+                className="flex w-full max-w-lg flex-col gap-4"
+            >
+                <form.Field name="email">
+                    {(field) => (
+                        <div>
+                            <Input
+                                type="email"
+                                value={field.state.value}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                onBlur={field.handleBlur}
+                                autoComplete="off"
+                                autoFocus
+                                placeholder={t('auth.forgot_password.email_placeholder')}
+                                className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"
+                            />
+                            <InputError
+                                message={field.state.meta.errors?.[0] as string | undefined}
+                            />
+                        </div>
+                    )}
+                </form.Field>
+
+                <Button
+                    type="submit"
+                    className="h-14 w-full rounded-full bg-foreground font-medium tracking-tight text-background hover:bg-foreground/90"
+                    disabled={!form.state.canSubmit || form.state.isSubmitting}
+                    data-test="email-password-reset-link-button"
                 >
-                    <form.Field name="email">
-                        {(field) => (
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">{t('auth.forgot_password.email_label')}</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={field.state.value}
-                                    onChange={(e) =>
-                                        field.handleChange(e.target.value)
-                                    }
-                                    onBlur={field.handleBlur}
-                                    autoComplete="off"
-                                    autoFocus
-                                    placeholder={t('auth.forgot_password.email_placeholder')}
-                                />
-                                <InputError
-                                    message={
-                                        field.state.meta.errors?.[0] as
-                                            | string
-                                            | undefined
-                                    }
-                                />
-                            </div>
-                        )}
-                    </form.Field>
+                    {form.state.isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                    {t('auth.forgot_password.submit')}
+                </Button>
+            </form>
 
-                    <form.Subscribe
-                        selector={(state) => [state.canSubmit, state.isSubmitting]}
-                    >
-                        {([canSubmit, isSubmitting]) => (
-                            <div className="my-6 flex items-center justify-start">
-                                <Button
-                                    className="w-full"
-                                    disabled={!canSubmit || isSubmitting}
-                                    data-test="email-password-reset-link-button"
-                                >
-                                    {isSubmitting && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    )}
-                                    {t('auth.forgot_password.submit')}
-                                </Button>
-                            </div>
-                        )}
-                    </form.Subscribe>
-                </form>
-
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>{t('auth.forgot_password.return_to')}</span>
-                    <TextLink href={login()}>{t('auth.forgot_password.login_link')}</TextLink>
-                </div>
-            </div>
+            <p className="w-full text-center text-sm tracking-tight text-foreground/40">
+                <TextLink href={login()}>{t('auth.forgot_password.login_link')}</TextLink>
+            </p>
         </AuthLayout>
     );
 }

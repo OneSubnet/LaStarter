@@ -39,7 +39,6 @@ return new class extends Migration
         // Module tables
         $moduleTables = [
             'projects' => ['team_id', 'status', 'priority'],
-            'tasks' => ['team_id', 'project_id', 'status', 'priority'],
             'forms' => ['team_id', 'user_id', 'status'],
             'form_questions' => ['form_id'],
             'form_submissions' => ['form_id', 'user_id'],
@@ -74,7 +73,6 @@ return new class extends Migration
             'team_members' => ['team_id', 'user_id', 'status'],
             'team_invitations' => ['team_id', 'email'],
             'projects' => ['team_id', 'status', 'priority'],
-            'tasks' => ['team_id', 'project_id', 'status', 'priority'],
             'forms' => ['team_id', 'user_id', 'status'],
             'form_questions' => ['form_id'],
             'form_submissions' => ['form_id', 'user_id'],

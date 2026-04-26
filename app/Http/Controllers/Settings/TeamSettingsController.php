@@ -30,6 +30,7 @@ class TeamSettingsController extends Controller
                 'isPersonal' => $team->is_personal,
                 'icon_url' => $team->iconUrl(),
             ],
+            'footerLinks' => json_decode(setting('footer_links') ?? '[]', true),
             'permissions' => $request->user()->getAllPermissions()->pluck('name'),
         ]);
     }
@@ -44,13 +45,15 @@ class TeamSettingsController extends Controller
         Gate::authorize('update', $team);
 
         DB::transaction(function () use ($request, $team) {
-            $team = Team::whereKey($team->id)->lockForUpdate()->firstOrFail();
-            $team->update(['name' => $request->validated('name')]);
+            $locked = Team::whereKey($team->id)->lockForUpdate()->firstOrFail();
+            $locked->update(['name' => $request->validated('name')]);
         });
+
+        $team->refresh();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team updated.')]);
 
-        return back();
+        return to_route('settings.team.general', ['current_team' => $team->slug]);
     }
 
     /**
@@ -62,34 +65,11 @@ class TeamSettingsController extends Controller
 
         Gate::authorize('update', $team);
 
-        $file = $request->file('icon');
+        $validated = $request->validate([
+            'icon' => ['required', 'image', 'mimes:jpeg,png,webp,svg', 'max:5120'],
+        ]);
 
-        if (! $file) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('No file selected.')]);
-
-            return back();
-        }
-
-        if (! $file->isValid()) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('Upload failed: ').$file->getErrorMessage()]);
-
-            return back();
-        }
-
-        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
-        $ext = strtolower($file->getClientOriginalExtension());
-
-        if (! in_array($ext, $allowed)) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('Invalid file type. Allowed: jpg, png, webp, svg')]);
-
-            return back();
-        }
-
-        if ($file->getSize() > 5 * 1024 * 1024) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('File too large. Max 5MB.')]);
-
-            return back();
-        }
+        $file = $validated['icon'];
 
         // Delete old icon
         if ($team->icon_path) {
@@ -120,6 +100,30 @@ class TeamSettingsController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team icon removed.')]);
+
+        return back();
+    }
+
+    /**
+     * Update footer links.
+     */
+    public function updateFooterLinks(Request $request): RedirectResponse
+    {
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('update', $team);
+
+        $links = $request->validate([
+            'links' => ['present', 'array'],
+            'links.*.title' => ['required_with:links.*.href', 'string', 'max:255'],
+            'links.*.href' => ['required_with:links.*.title', 'string', 'max:500'],
+        ])['links'];
+
+        $links = array_values(array_filter($links, fn ($l) => ! empty($l['title']) && ! empty($l['href'])));
+
+        setting_set('footer_links', json_encode($links));
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Footer links updated.')]);
 
         return back();
     }

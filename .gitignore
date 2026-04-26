@@ -36,3 +36,4 @@ extensions/*/.env
 # Internal/planning docs
 /Cahier_des_charges.md
 /ex_pelican_modules.md
+/.stoneforge/.worktrees/

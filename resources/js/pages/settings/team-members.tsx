@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/lib/format';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import Guard from '@/components/guard';
 import InviteMemberModal from '@/components/invite-member-modal';
@@ -276,7 +277,7 @@ export default function TeamMembers({
 
                     return (
                         <span className="text-sm text-muted-foreground">
-                            {new Date(date).toLocaleDateString('fr-FR', {
+                            {formatDate(date, {
                                 day: 'numeric',
                                 month: 'short',
                                 year: 'numeric',
@@ -656,13 +657,14 @@ export default function TeamMembers({
                                                 {invitation.invited_by ?? '—'}
                                             </TableCell>
                                             <TableCell className="text-sm text-muted-foreground">
-                                                {new Date(
+                                                {formatDate(
                                                     invitation.created_at,
-                                                ).toLocaleDateString('fr-FR', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                })}
+                                                   {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                    },
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Guard permission="invitation.cancel">

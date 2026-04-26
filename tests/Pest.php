@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /*
@@ -47,4 +48,11 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function setupTeamAuth($user, $team): void
+{
+    app(PermissionRegistrar::class)->setPermissionsTeamId($team->id);
+    test()->actingAs($user);
+    $user->switchTeam($team);
 }

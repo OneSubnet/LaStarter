@@ -1,4 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import DOMPurify from 'dompurify';
 import { Download, ExternalLink, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -201,7 +202,7 @@ export default function MarketplaceShow({
                         </h3>
                         <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
                             <div
-                                dangerouslySetInnerHTML={{ __html: readme }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(readme) }}
                             />
                         </div>
                     </div>
@@ -216,7 +217,7 @@ export default function MarketplaceShow({
                         <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
                             <div
                                 dangerouslySetInnerHTML={{
-                                    __html: release.body,
+                                    __html: DOMPurify.sanitize(release.body ?? ''),
                                 }}
                             />
                         </div>

@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import '@/lib/i18n';
-import QueryProvider from '@/lib/query-client';
+import '@/lib/echo';
 import { setUrlDefaults } from '@/wayfinder';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -18,6 +18,41 @@ const modulePages = import.meta.glob(
 const themeOverrides = import.meta.glob(
     '../../extensions/themes/*/resources/js/overrides/**/*.tsx',
 );
+const themeStyles = import.meta.glob(
+    '../../extensions/themes/*/resources/css/theme.css',
+    { eager: true },
+);
+const extensionLocales = import.meta.glob(
+    '../../extensions/modules/*/resources/locales/*.json',
+);
+
+function applyTheme(theme: string | null | undefined) {
+    if (typeof document === 'undefined') return;
+
+    const html = document.documentElement;
+
+    html.classList.forEach((cls) => {
+        if (cls.startsWith('theme-')) html.classList.remove(cls);
+    });
+
+    if (!theme) return;
+
+    html.classList.add(`theme-${theme}`);
+}
+
+async function loadExtensionLocales(locale: string) {
+    for (const path in extensionLocales) {
+        const match = path.match(/extensions[/\\]modules[/\\]([^/\\]+)[/\\]resources[/\\]locales[/\\]([a-z]{2}(?:-[A-Z]{2})?)\.json$/);
+        if (match && match[2] === locale) {
+            const mod = (await extensionLocales[path]()) as { default: Record<string, string> };
+            const ns = match[1];
+            const translations = mod.default ?? mod;
+            if (Object.keys(translations).length > 0) {
+                i18n.addResourceBundle(locale, ns, translations, true, true);
+            }
+        }
+    }
+}
 
 async function resolvePage(name: string): Promise<ResolvedComponent> {
     // 1. Theme overrides (highest priority)
@@ -70,12 +105,10 @@ createInertiaApp({
     strictMode: true,
     withApp(app) {
         return (
-            <QueryProvider>
-                <TooltipProvider delayDuration={0}>
-                    {app}
-                    <Toaster />
-                </TooltipProvider>
-            </QueryProvider>
+            <TooltipProvider delayDuration={0}>
+                {app}
+                <Toaster />
+            </TooltipProvider>
         );
     },
     progress: {
@@ -100,7 +133,10 @@ router.on('navigate', (event) => {
     const locale = event.detail.page.props.locale as string | undefined;
     if (locale && i18n.language !== locale) {
         i18n.changeLanguage(locale);
+        loadExtensionLocales(locale).catch(console.error);
     }
+
+    applyTheme(event.detail.page.props.theme as string | null | undefined);
 });
 
 // Also set on initial load
@@ -119,7 +155,10 @@ if (typeof document !== 'undefined') {
             const locale = page.props?.locale as string | undefined;
             if (locale && i18n.language !== locale) {
                 i18n.changeLanguage(locale);
+                loadExtensionLocales(locale).catch(console.error);
             }
+
+            applyTheme(page.props?.theme as string | null | undefined);
         } catch {
             // ignore
         }

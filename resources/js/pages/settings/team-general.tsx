@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm as useTanStackForm } from '@tanstack/react-form';
-import { Camera, Trash2 } from 'lucide-react';
+import { Camera, Plus, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DeleteTeamModal from '@/components/delete-team-modal';
@@ -21,6 +21,11 @@ import {
 } from '@/routes/settings/team';
 import { remove as iconRemoveUrl } from '@/routes/settings/team/icon';
 
+type FooterLink = {
+    title: string;
+    href: string;
+};
+
 type Props = {
     team: {
         id: number;
@@ -29,10 +34,11 @@ type Props = {
         isPersonal: boolean;
         icon_url: string | null;
     };
+    footerLinks: FooterLink[];
     permissions: string[];
 };
 
-export default function TeamGeneral({ team, permissions }: Props) {
+export default function TeamGeneral({ team, footerLinks: initialFooterLinks, permissions }: Props) {
     const { t } = useTranslation();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>(
@@ -40,6 +46,8 @@ export default function TeamGeneral({ team, permissions }: Props) {
     );
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [footerLinks, setFooterLinks] = useState<FooterLink[]>(initialFooterLinks);
+    const [savingFooterLinks, setSavingFooterLinks] = useState(false);
 
     const can = (permission: string) => permissions.includes(permission);
     const canUpdate = can('team.update');
@@ -253,6 +261,81 @@ fileInputRef.current.value = '';
                         </>
                     )}
                 </div>
+
+                {/* Footer Links */}
+                {canUpdate && (
+                    <div className="space-y-4">
+                        <Heading
+                            variant="small"
+                            title={t('settings.footer_links.title')}
+                            description={t('settings.footer_links.description')}
+                        />
+                        <div className="space-y-3">
+                            {footerLinks.map((link, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                    <Input
+                                        value={link.title}
+                                        onChange={(e) => {
+                                            const updated = [...footerLinks];
+                                            updated[i] = { ...updated[i], title: e.target.value };
+                                            setFooterLinks(updated);
+                                        }}
+                                        placeholder={t('settings.footer_links.title_placeholder')}
+                                        className="flex-1"
+                                    />
+                                    <Input
+                                        value={link.href}
+                                        onChange={(e) => {
+                                            const updated = [...footerLinks];
+                                            updated[i] = { ...updated[i], href: e.target.value };
+                                            setFooterLinks(updated);
+                                        }}
+                                        placeholder={t('settings.footer_links.url_placeholder')}
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="shrink-0 text-muted-foreground hover:text-destructive"
+                                        onClick={() => setFooterLinks(footerLinks.filter((_, idx) => idx !== i))}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setFooterLinks([...footerLinks, { title: '', href: '' }])}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    {t('settings.footer_links.add')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    disabled={savingFooterLinks}
+                                    onClick={() => {
+                                        setSavingFooterLinks(true);
+                                        router.post(
+                                            `/${team.slug}/settings/general/footer-links`,
+                                            { links: footerLinks },
+                                            {
+                                                preserveScroll: true,
+                                                onFinish: () => setSavingFooterLinks(false),
+                                            },
+                                        );
+                                    }}
+                                >
+                                    {savingFooterLinks ? t('settings.team.general.saving') : t('common.save')}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <Guard permission="team.delete">
                     {!team.isPersonal && canDelete ? (

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(array_filter(['dark' => ($appearance ?? 'system') == 'dark', $activeTheme ? "theme-{$activeTheme}" : null]))>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,6 +30,26 @@
             }
         </style>
 
+        <script>
+            (function() {
+                try {
+                    var page = JSON.parse(document.getElementById('app').dataset.page);
+                    if (page.props && page.props.theme) {
+                        document.documentElement.classList.add('theme-' + page.props.theme);
+                    }
+                } catch(e) {}
+            })();
+        </script>
+        <style>
+            html {
+                background-color: oklch(1.0000 0 0);
+            }
+
+            html.dark {
+                background-color: oklch(0.1797 0.0043 308.1928);
+            }
+        </style>
+
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -38,7 +58,7 @@
         <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700|merriweather:400,700|jetbrains-mono:400,500" rel="stylesheet" />
 
         @viteReactRefresh
-        @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @vite(['resources/css/app.css', 'resources/js/app.tsx'])
         <x-inertia::head>
             <title>{{ config('app.name', 'Laravel') }}</title>
         </x-inertia::head>

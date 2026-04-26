@@ -42,7 +42,7 @@ export default function TwoFactorRecoveryCodes({
                     behavior: 'smooth',
                     block: 'nearest',
                 });
-            });
+            }, 0);
         }
     }, [codesAreVisible, recoveryCodesList.length, fetchRecoveryCodes]);
 

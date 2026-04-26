@@ -154,9 +154,10 @@ function TwoFactorVerificationStep({
     const pinInputContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             pinInputContainerRef.current?.querySelector('input')?.focus();
         }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {

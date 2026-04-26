@@ -1,4 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { type FormEvent } from 'react';
 import {
     flexRender,
     getCoreRowModel,
@@ -119,6 +120,7 @@ export default function Extensions({ extensions }: Props) {
     const [rowSelection, setRowSelection] = useState({});
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [detailExtension, setDetailExtension] = useState<Extension | null>(null);
+    const [typeFilter, setTypeFilter] = useState<'all' | 'module' | 'theme'>('all');
 
     const stateConfig = useMemo<Record<
         ExtensionState,
@@ -131,7 +133,10 @@ export default function Extensions({ extensions }: Props) {
         incompatible: { label: t('settings.extensions.status_incompatible'), variant: 'destructive' },
     }), [t]);
 
-    const filteredData = useMemo(() => extensions, [extensions]);
+    const filteredData = useMemo(() => {
+        if (typeFilter === 'all') return extensions;
+        return extensions.filter((ext) => ext.type === typeFilter);
+    }, [extensions, typeFilter]);
 
     const postAction = useCallback(
         (url: string) => {
@@ -448,6 +453,71 @@ export default function Extensions({ extensions }: Props) {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2">
+                            <Guard permission="extension.manage">
+                                {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const selected = table.getFilteredSelectedRowModel().rows;
+                                                selected.forEach((row) => {
+                                                    if (row.original.state !== 'not_installed' && !row.original.is_enabled_for_team) {
+                                                        postAction(enableUrl({ current_team: teamSlug, extension: row.original.id }).url);
+                                                    }
+                                                });
+                                                setRowSelection({});
+                                            }}
+                                        >
+                                            <Power className="h-4 w-4" />
+                                            {t('settings.extensions.enable')}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const selected = table.getFilteredSelectedRowModel().rows;
+                                                selected.forEach((row) => {
+                                                    if (row.original.state !== 'not_installed' && row.original.is_enabled_for_team) {
+                                                        postAction(disableUrl({ current_team: teamSlug, extension: row.original.id }).url);
+                                                    }
+                                                });
+                                                setRowSelection({});
+                                            }}
+                                        >
+                                            <PowerOff className="h-4 w-4" />
+                                            {t('settings.extensions.disable')}
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => {
+                                                const selected = table.getFilteredSelectedRowModel().rows;
+                                                selected.forEach((row) => {
+                                                    if (row.original.state !== 'not_installed' && row.original.state !== 'errored' && row.original.state !== 'incompatible') {
+                                                        postAction(uninstallUrl({ current_team: teamSlug, extension: row.original.id }).url);
+                                                    }
+                                                });
+                                                setRowSelection({});
+                                            }}
+                                        >
+                                            <PackageX className="h-4 w-4" />
+                                            {t('settings.extensions.uninstall')}
+                                        </Button>
+                                        <Separator orientation="vertical" className="h-6" />
+                                    </div>
+                                )}
+                            </Guard>
+                            <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'module' | 'theme')}>
+                                <SelectTrigger size="sm" className="h-9 w-[140px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('settings.extensions.filter_all')}</SelectItem>
+                                    <SelectItem value="module">{t('settings.extensions.filter_modules')}</SelectItem>
+                                    <SelectItem value="theme">{t('settings.extensions.filter_themes')}</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
@@ -758,15 +828,6 @@ export default function Extensions({ extensions }: Props) {
                                     t('settings.extensions.features.projects.items.1'),
                                     t('settings.extensions.features.projects.items.2'),
                                     t('settings.extensions.features.projects.items.3'),
-                                ],
-                            },
-                            tasks: {
-                                about: t('settings.extensions.features.tasks.about'),
-                                features: [
-                                    t('settings.extensions.features.tasks.items.0'),
-                                    t('settings.extensions.features.tasks.items.1'),
-                                    t('settings.extensions.features.tasks.items.2'),
-                                    t('settings.extensions.features.tasks.items.3'),
                                 ],
                             },
                             default: {

@@ -10,7 +10,6 @@ use App\Models\Extension;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -85,27 +84,33 @@ class MarketplaceController extends Controller
     {
         Gate::authorize('manage', Extension::class);
 
-        $validated = Validator::make($request->all(), [
+        $validated = $request->validate([
             'owner' => 'required|string',
             'repo' => 'required|string',
-            'identifier' => 'nullable|string',
-        ])->validate();
+            'identifier' => 'required|string',
+        ]);
 
-        $release = $this->marketplace->getLatestRelease($validated['owner'], $validated['repo']);
+        $extensionData = $this->marketplace->findByIdentifier($validated['identifier']);
 
-        if (! $release || ! $release['zip_url']) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('No release ZIP found for this extension.')]);
+        if (! $extensionData || empty($extensionData['path'])) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Extension not found in marketplace index.')]);
 
             return back();
         }
 
-        try {
-            $identifier = $validated['identifier'] ?? $validated['repo'];
-            $path = $this->installer->installFromUrl($release['zip_url'], $identifier);
-            $this->extensions->sync();
+        $archiveUrl = "https://api.github.com/repos/{$validated['owner']}/{$validated['repo']}/zipball/main";
 
-            Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension downloaded. Run extensions:scan to register it.')]);
+        try {
+            $this->installer->installFromMonorepoArchive(
+                $archiveUrl,
+                $extensionData['path'],
+                $validated['identifier'],
+            );
+            $this->extensions->syncSingle($validated['identifier']);
+
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension installed successfully.')]);
         } catch (\Throwable $e) {
+            logger()->error('Marketplace error: '.$e->getMessage());
             Inertia::flash('toast', ['type' => 'error', 'message' => __('Installation failed: ').$e->getMessage()]);
         }
 
@@ -116,10 +121,10 @@ class MarketplaceController extends Controller
     {
         Gate::authorize('manage', Extension::class);
 
-        $validated = Validator::make($request->all(), [
+        $validated = $request->validate([
             'file' => 'required|file|mimes:zip|max:51200',
             'identifier' => 'required|string',
-        ])->validate();
+        ]);
 
         try {
             $this->installer->installFromUpload(
@@ -130,6 +135,7 @@ class MarketplaceController extends Controller
 
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension uploaded and registered.')]);
         } catch (\Throwable $e) {
+            logger()->error('Marketplace error: '.$e->getMessage());
             Inertia::flash('toast', ['type' => 'error', 'message' => __('Upload failed: ').$e->getMessage()]);
         }
 

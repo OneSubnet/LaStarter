@@ -18,8 +18,8 @@ import {
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { inertiaSubmit, zodValidator } from '@/lib/inertia-form';
 import { mailSettingsSchema } from '@/lib/schemas';
-import { mail as mailUrl, update as updateUrl } from '@/routes/settings/team';
-import { test as testUrl } from '@/routes/settings/team/mail';
+import { mail as mailUrl } from '@/routes/settings/team';
+import { update as updateUrl, test as testUrl } from '@/routes/settings/team/mail';
 
 type Props = {
     mail: {

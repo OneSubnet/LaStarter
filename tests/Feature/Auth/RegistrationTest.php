@@ -20,5 +20,5 @@ test('new users can register', function () {
 
     $user = User::where('email', 'test@example.com')->first();
     $team = $user->currentTeam;
-    $response->assertRedirect("/{$team->slug}/dashboard");
+    $response->assertRedirect("/{$team->slug}/onboarding");
 });
