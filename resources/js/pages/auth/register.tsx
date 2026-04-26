@@ -32,7 +32,10 @@ export default function Register() {
     const inputClass = 'h-14 rounded-full border-none bg-muted px-5 py-4 font-medium';
 
     return (
-        <AuthLayout title={t('auth.register.title')}>
+        <AuthLayout
+            title={t('auth.register.title')}
+            description={t('auth.register.description')}
+        >
             <Head title={t('auth.register.head_title')} />
 
             <form

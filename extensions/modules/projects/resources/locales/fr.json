@@ -1,0 +1,18 @@
+{
+    "nav_title": "Projets",
+    "page_title": "Projets",
+    "create": "Nouveau projet",
+    "search": "Rechercher des projets...",
+    "empty": "Aucun projet. Créez votre premier projet !",
+    "col_name": "Nom",
+    "col_status": "Statut",
+    "col_visibility": "Visibilité",
+    "col_deadline": "Échéance",
+    "col_description": "Description",
+    "status_active": "Actif",
+    "status_completed": "Terminé",
+    "status_on_hold": "En pause",
+    "status_cancelled": "Annulé",
+    "no_description": "Aucune description.",
+    "created": "Créé"
+}

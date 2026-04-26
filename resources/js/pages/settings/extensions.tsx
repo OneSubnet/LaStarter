@@ -830,6 +830,15 @@ export default function Extensions({ extensions }: Props) {
                                     t('settings.extensions.features.projects.items.3'),
                                 ],
                             },
+                            tasks: {
+                                about: t('settings.extensions.features.tasks.about'),
+                                features: [
+                                    t('settings.extensions.features.tasks.items.0'),
+                                    t('settings.extensions.features.tasks.items.1'),
+                                    t('settings.extensions.features.tasks.items.2'),
+                                    t('settings.extensions.features.tasks.items.3'),
+                                ],
+                            },
                             default: {
                                 about: t('settings.extensions.features.default.about'),
                                 features: [

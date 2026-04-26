@@ -1,0 +1,20 @@
+# Stoneforge Configuration
+
+database: stoneforge.db
+sync:
+  auto_export: true
+  elements_file: elements.jsonl
+  dependencies_file: dependencies.jsonl
+playbooks:
+  paths:
+    - playbooks
+identity:
+  mode: soft
+merge:
+  auto_merge: true
+  target_branch: null
+  require_approval: false
+workflow:
+  preset: auto
+agents:
+  permission_model: unrestricted

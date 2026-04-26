@@ -1,8 +1,19 @@
+import { Head, router, usePage } from '@inertiajs/react';
+import { Check, Paintbrush } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Head, router } from '@inertiajs/react';
-import { Paintbrush, Check } from 'lucide-react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import TeamSettingsLayout from '@/layouts/team-settings-layout';
+import { cn } from '@/lib/utils';
+import themeUrl from '@/routes/settings/team/theme';
+import { update as updateTheme } from '@/routes/settings/team/theme';
 
 interface Theme {
     identifier: string;
@@ -20,67 +31,138 @@ interface Props {
 
 export default function ThemeSettings({ themes, activeTheme }: Props) {
     const { t } = useTranslation();
+    const { currentTeam } = usePage().props;
+    const teamSlug = currentTeam?.slug ?? '';
+    const [selectedTheme, setSelectedTheme] = useState<string>(activeTheme ?? '');
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: t('settings.theme.title', 'Theme'), href: '/settings/theme' },
+    const hasChanges = selectedTheme !== activeTheme;
+
+    const breadcrumbs = [
+        {
+            title: t('settings.theme.title'),
+            href: themeUrl.edit.url(teamSlug),
+        },
     ];
 
-    const activateTheme = (identifier: string) => {
+    const handleSave = () => {
         router.put(
-            '/settings/theme',
-            { theme: identifier },
+            updateTheme(teamSlug).url,
+            { theme: selectedTheme },
             { preserveScroll: true },
         );
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={t('settings.theme.title', 'Theme')} />
+        <TeamSettingsLayout
+            activeTab="Theme"
+            breadcrumbs={breadcrumbs}
+        >
+            <Head title={t('settings.theme.title')} />
+            <h1 className="sr-only">{t('settings.theme.title')}</h1>
 
-            <div className="space-y-6 p-6">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">{t('settings.theme.title', 'Theme')}</h2>
-                    <p className="text-muted-foreground">{t('settings.theme.description', 'Choose the visual theme for your workspace.')}</p>
+            <div className="flex flex-col space-y-8">
+                <div className="flex items-center justify-between">
+                    <Heading
+                        variant="small"
+                        title={t('settings.theme.title')}
+                        description={t('settings.theme.description')}
+                    />
+
+                    {hasChanges && (
+                        <Button onClick={handleSave}>
+                            <Paintbrush />
+                            {t('settings.theme.apply')}
+                        </Button>
+                    )}
                 </div>
 
                 {themes.length === 0 ? (
-                    <div className="rounded-lg border border-dashed p-8 text-center">
-                        <Paintbrush className="mx-auto h-10 w-10 text-muted-foreground" />
-                        <p className="mt-4 text-muted-foreground">{t('settings.theme.no_themes', 'No themes available.')}</p>
-                    </div>
+                    <p className="py-8 text-center text-muted-foreground">
+                        {t('settings.theme.no_themes')}
+                    </p>
                 ) : (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {themes.map((theme) => (
-                            <button
-                                key={theme.identifier}
-                                onClick={() => activateTheme(theme.identifier)}
-                                className={`relative rounded-lg border p-6 text-left transition-all hover:shadow-md ${
-                                    activeTheme === theme.identifier
-                                        ? 'border-blue-500 ring-2 ring-blue-500'
-                                        : 'border-gray-200 dark:border-gray-700'
-                                }`}
-                            >
-                                {activeTheme === theme.identifier && (
-                                    <div className="absolute right-3 top-3 rounded-full bg-blue-500 p-1">
-                                        <Check className="h-3 w-3 text-white" />
+                    <div className="grid gap-6 sm:grid-cols-2">
+                        {themes.map((theme) => {
+                            const isActive =
+                                theme.identifier === activeTheme;
+                            const isSelected =
+                                theme.identifier === selectedTheme;
+
+                            return (
+                                <button
+                                    key={theme.identifier}
+                                    type="button"
+                                    className={cn(
+                                        'group relative flex flex-col rounded-xl border-2 p-0 text-left transition-all hover:shadow-md',
+                                        isSelected
+                                            ? 'border-primary shadow-sm'
+                                            : 'border-border hover:border-foreground/20',
+                                    )}
+                                    onClick={() =>
+                                        setSelectedTheme(theme.identifier)
+                                    }
+                                >
+                                    {isActive && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                                        <Check className="h-4 w-4" />
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {t('settings.theme.active_tooltip')}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
+
+                                    <div className="flex h-32 items-center justify-center rounded-t-xl bg-gradient-to-br from-muted/80 to-muted">
+                                        <div className="flex gap-1.5">
+                                            <div className="h-16 w-4 rounded-full bg-foreground/20" />
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className="h-3 w-20 rounded bg-foreground/15" />
+                                                <div className="h-2 w-16 rounded bg-foreground/10" />
+                                                <div className="h-2 w-24 rounded bg-foreground/10" />
+                                                <div className="mt-2 h-2 w-12 rounded bg-foreground/10" />
+                                            </div>
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className="h-3 w-16 rounded bg-foreground/15" />
+                                                <div className="h-2 w-20 rounded bg-foreground/10" />
+                                                <div className="h-2 w-14 rounded bg-foreground/10" />
+                                            </div>
+                                        </div>
                                     </div>
-                                )}
-                                <div className="flex items-center gap-3">
-                                    <div className="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-                                        <Paintbrush className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+
+                                    <div className="flex flex-col gap-1 p-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">
+                                                {theme.name}
+                                            </span>
+                                            {isActive && (
+                                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                                    {t('common.active')}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {theme.description && (
+                                            <p className="text-sm text-muted-foreground">
+                                                {theme.description}
+                                            </p>
+                                        )}
+                                        {theme.author && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {theme.author}
+                                            </p>
+                                        )}
+                                        <p className="text-xs text-muted-foreground">v{theme.version}</p>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold">{theme.name}</h3>
-                                        {theme.author && <p className="text-sm text-muted-foreground">{theme.author}</p>}
-                                    </div>
-                                </div>
-                                {theme.description && <p className="mt-3 text-sm text-muted-foreground">{theme.description}</p>}
-                                <p className="mt-2 text-xs text-muted-foreground">v{theme.version}</p>
-                            </button>
-                        ))}
+                                </button>
+                            );
+                        })}
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </TeamSettingsLayout>
     );
 }

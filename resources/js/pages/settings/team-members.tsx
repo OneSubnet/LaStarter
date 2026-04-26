@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import i18n from 'i18next';
 import {
     flexRender,
     getCoreRowModel,
@@ -25,7 +26,6 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/format';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import Guard from '@/components/guard';
@@ -91,7 +91,7 @@ export default function TeamMembers({
     permissions,
     availableRoles,
 }: Props) {
-    const { t } = useTranslation();
+    const t = i18n.t.bind(i18n);
     const getInitials = useInitials();
 
     const statusConfig = useMemo<Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }>>(() => ({

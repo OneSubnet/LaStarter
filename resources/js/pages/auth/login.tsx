@@ -40,7 +40,10 @@ export default function Login({
     });
 
     return (
-        <AuthLayout title={t('auth.login.title')}>
+        <AuthLayout
+            title={t('auth.login.title')}
+            description={t('auth.login.description')}
+        >
             <Head title={t('auth.login.head_title')} />
 
             <form

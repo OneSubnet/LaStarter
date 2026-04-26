@@ -34,7 +34,10 @@ export default function ResetPassword({ token, email }: Props) {
     const inputClass = 'h-14 rounded-full border-none bg-muted px-5 py-4 font-medium';
 
     return (
-        <AuthLayout title={t('auth.reset_password.title')}>
+        <AuthLayout
+            title={t('auth.reset_password.title')}
+            description={t('auth.reset_password.description')}
+        >
             <Head title={t('auth.reset_password.title')} />
 
             <form

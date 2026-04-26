@@ -3,30 +3,27 @@
 namespace Modules\Projects\Models;
 
 use App\Concerns\HasTeam;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
 {
-    use HasTeam;
-
-    protected $table = 'projects';
+    use HasFactory, HasTeam, SoftDeletes;
 
     protected $fillable = [
         'team_id',
         'name',
         'description',
         'status',
-        'priority',
-        'due_date',
-        'color',
+        'visibility',
+        'deadline',
     ];
 
     protected function casts(): array
     {
         return [
-            'status' => 'string',
-            'priority' => 'string',
-            'due_date' => 'date',
+            'deadline' => 'date',
         ];
     }
 }

@@ -3,16 +3,10 @@
 namespace Modules\Projects\Policies;
 
 use App\Models\User;
-use Modules\Projects\Models\Project;
 
 class ProjectPolicy
 {
-    public function viewAny(User $user): bool
-    {
-        return $user->hasPermissionTo('project.view');
-    }
-
-    public function view(User $user, Project $project): bool
+    public function view(User $user): bool
     {
         return $user->hasPermissionTo('project.view');
     }
@@ -22,12 +16,12 @@ class ProjectPolicy
         return $user->hasPermissionTo('project.create');
     }
 
-    public function update(User $user, Project $project): bool
+    public function update(User $user): bool
     {
         return $user->hasPermissionTo('project.update');
     }
 
-    public function delete(User $user, Project $project): bool
+    public function delete(User $user): bool
     {
         return $user->hasPermissionTo('project.delete');
     }
