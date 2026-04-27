@@ -14,7 +14,7 @@ class NavigationBuilder
     /**
      * Build navigation items for a sidebar, filtered by permissions and active extensions.
      *
-     * @return array<int, array{title: string, href: string, icon: ?string, order: int}>
+     * @return array<int, array{title: string, href?: string, icon: ?string, order: int, children?: array<int, array{title: string, href: string, icon: ?string, order: int}>}>
      */
     public function build(string $sidebar, int $teamId, User $user): array
     {
@@ -33,6 +33,51 @@ class NavigationBuilder
             $navItems = $manifest->navigation[$sidebar] ?? [];
 
             foreach ($navItems as $navItem) {
+                // Handle grouped navigation with children
+                if (isset($navItem['children']) && is_array($navItem['children'])) {
+                    $children = [];
+                    foreach ($navItem['children'] as $child) {
+                        // Filter by permission
+                        if (isset($child['permission']) && ! $user->hasPermissionTo($child['permission'])) {
+                            continue;
+                        }
+
+                        // Resolve route to relative URL
+                        $href = '#';
+                        if (isset($child['route'])) {
+                            try {
+                                $href = route($child['route'], ['current_team' => $teamSlug], false);
+                            } catch (\Exception) {
+                                $href = '#';
+                            }
+                        } elseif (isset($child['url'])) {
+                            $href = $child['url'];
+                        }
+
+                        $children[] = [
+                            'title' => $child['title'] ?? '',
+                            'href' => $href,
+                            'icon' => $child['icon'] ?? null,
+                            'order' => $child['order'] ?? 100,
+                            'group' => $child['group'] ?? null,
+                        ];
+                    }
+
+                    // Only add the group if it has visible children
+                    if (count($children) > 0) {
+                        usort($children, fn (array $a, array $b) => $a['order'] <=> $b['order']);
+
+                        $items[] = [
+                            'title' => $navItem['title'] ?? '',
+                            'icon' => $navItem['icon'] ?? null,
+                            'order' => $navItem['order'] ?? 100,
+                            'children' => $children,
+                        ];
+                    }
+
+                    continue;
+                }
+
                 // Filter by permission
                 if (isset($navItem['permission']) && ! $user->hasPermissionTo($navItem['permission'])) {
                     continue;

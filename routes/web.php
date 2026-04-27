@@ -1,7 +1,9 @@
 <?php
 
-use App\Core\Extensions\ExtensionManager;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardDataController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Settings\ExtensionController;
 use App\Http\Controllers\Settings\MarketplaceController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -10,10 +12,10 @@ use App\Http\Controllers\Settings\TeamMailController;
 use App\Http\Controllers\Settings\TeamMembersController;
 use App\Http\Controllers\Settings\TeamRolesController;
 use App\Http\Controllers\Settings\TeamSettingsController;
-use App\Http\Controllers\Settings\ThemeController;
 use App\Http\Controllers\Teams\TeamController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureTeamMembership;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -35,16 +37,41 @@ Route::prefix('settings')
             ->name('user-password.update');
 
         Route::inertia('appearance', 'settings/appearance')->name('appearance.edit');
+
+        Route::put('/settings/locale', function (Request $request) {
+            $validated = $request->validate(['locale' => 'required|string|in:en,fr']);
+
+            $user = $request->user();
+            $user->update(['locale' => $validated['locale']]);
+
+            // Also update team locale if user is in a team context
+            $team = $user->currentTeam;
+            if ($team) {
+                $team->update(['locale' => $validated['locale']]);
+            }
+
+            return back();
+        })->name('settings.locale.update');
     });
 
 // IMPORTANT: Do NOT use `php artisan route:cache` — module routes are loaded
-// dynamically below and must be resolved at runtime, not from a static cache.
+// dynamically by module service providers and must be resolved at runtime.
 
-// Team-scoped routes
+// Team-scoped routes — exclude 'portal' prefix so module portal routes don't collide
 Route::prefix('{current_team}')
+    ->where(['current_team' => '(?!portal)[^/]+'])
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
+        Route::get('dashboard/data', DashboardDataController::class)->name('dashboard.data');
+        Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
+        Route::post('onboarding', [OnboardingController::class, 'update'])->name('onboarding.update');
+
+        // Notifications
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
 
         // Settings
         Route::prefix('settings')->group(function () {
@@ -60,6 +87,7 @@ Route::prefix('{current_team}')
             Route::patch('general', [TeamSettingsController::class, 'update'])->name('settings.team.update');
             Route::post('general/icon', [TeamSettingsController::class, 'updateIcon'])->name('settings.team.icon');
             Route::delete('general/icon', [TeamSettingsController::class, 'removeIcon'])->name('settings.team.icon.remove');
+            Route::post('general/footer-links', [TeamSettingsController::class, 'updateFooterLinks'])->name('settings.team.footer-links');
             Route::delete('general', [TeamController::class, 'destroy'])->name('settings.team.destroy');
 
             // Members
@@ -97,30 +125,14 @@ Route::prefix('{current_team}')
             Route::post('mail/test', [TeamMailController::class, 'test'])->name('settings.team.mail.test');
 
             // Theme
-            Route::get('theme', [ThemeController::class, 'edit'])->name('settings.team.theme');
-            Route::patch('theme', [ThemeController::class, 'update'])->name('settings.team.theme.update');
+            Route::get('theme', [ThemeController::class, 'edit'])->name('settings.team.theme.edit');
+            Route::put('theme', [ThemeController::class, 'update'])->name('settings.team.theme.update');
         });
-
-        // Load module routes inside the team-scoped group
-        try {
-            $manager = app(ExtensionManager::class);
-            $manager->registerAutoloaders();
-
-            foreach ($manager->all() as $extension) {
-                if (! $extension->is_active || $extension->type !== 'module') {
-                    continue;
-                }
-
-                $routesPath = base_path($extension->path.'/routes/web.php');
-                if (file_exists($routesPath)) {
-                    require $routesPath;
-                }
-            }
-        } catch (Throwable $e) {
-            // Extensions not available during initial setup
-        }
     });
 
 Route::middleware(['auth'])->group(function () {
     Route::get('invitations/{invitation_code}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
 });
+
+Route::get('invitations/{invitation_code}', [TeamInvitationController::class, 'show'])->name('invitations.show');
+Route::post('invitations/{invitation_code}/register', [TeamInvitationController::class, 'register'])->name('invitations.register');

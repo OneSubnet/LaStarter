@@ -2,9 +2,8 @@ import { Head, router } from '@inertiajs/react';
 import { useForm } from '@tanstack/react-form';
 import { useTranslation } from 'react-i18next';
 import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { zodValidator } from '@/lib/inertia-form';
@@ -33,53 +32,50 @@ export default function ConfirmPassword() {
                     e.preventDefault();
                     form.handleSubmit();
                 }}
+                className="flex w-full max-w-lg flex-col gap-4"
             >
-                <div className="space-y-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">{t('auth.confirm_password.password_label')}</Label>
-                        <form.Field name="password">
-                            {(field) => (
-                                <>
-                                    <PasswordInput
-                                        id="password"
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        placeholder={t('auth.confirm_password.password_placeholder')}
-                                        autoComplete="current-password"
-                                        autoFocus
-                                    />
-                                    <InputError
-                                        message={
-                                            field.state.meta.errors?.[0] as
-                                                | string
-                                                | undefined
-                                        }
-                                    />
-                                </>
-                            )}
-                        </form.Field>
-                    </div>
+                <form.Field name="password">
+                    {(field) => (
+                        <div>
+                            <Input
+                                type="password"
+                                id="password"
+                                value={field.state.value}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
+                                onBlur={field.handleBlur}
+                                placeholder={t('auth.confirm_password.password_placeholder')}
+                                autoComplete="current-password"
+                                autoFocus
+                                className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"
+                            />
+                            <InputError
+                                message={
+                                    field.state.meta.errors?.[0] as
+                                        | string
+                                        | undefined
+                                }
+                            />
+                        </div>
+                    )}
+                </form.Field>
 
-                    <form.Subscribe
-                        selector={(state) => [state.canSubmit, state.isSubmitting]}
-                    >
-                        {([canSubmit, isSubmitting]) => (
-                            <div className="flex items-center">
-                                <Button
-                                    className="w-full"
-                                    disabled={!canSubmit || isSubmitting}
-                                    data-test="confirm-password-button"
-                                >
-                                    {isSubmitting && <Spinner />}
-                                    {t('auth.confirm_password.submit')}
-                                </Button>
-                            </div>
-                        )}
-                    </form.Subscribe>
-                </div>
+                <form.Subscribe
+                    selector={(state) => [state.canSubmit, state.isSubmitting]}
+                >
+                    {([canSubmit, isSubmitting]) => (
+                        <Button
+                            type="submit"
+                            className="h-14 w-full rounded-full bg-foreground font-medium tracking-tight text-background hover:bg-foreground/90"
+                            disabled={!canSubmit || isSubmitting}
+                            data-test="confirm-password-button"
+                        >
+                            {isSubmitting && <Spinner />}
+                            {t('auth.confirm_password.submit')}
+                        </Button>
+                    )}
+                </form.Subscribe>
             </form>
         </AuthLayout>
     );

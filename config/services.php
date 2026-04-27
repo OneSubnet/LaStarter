@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'nextcloud' => [
+        'url' => env('NEXTCLOUD_URL'),
+        'username' => env('NEXTCLOUD_USERNAME'),
+        'password' => env('NEXTCLOUD_PASSWORD'),
+        'base_path' => env('NEXTCLOUD_BASE_PATH', 'AilesInvisibles'),
+    ],
+
 ];

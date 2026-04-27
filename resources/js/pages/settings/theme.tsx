@@ -12,51 +12,50 @@ import {
 } from '@/components/ui/tooltip';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { cn } from '@/lib/utils';
-import { theme as themeUrl } from '@/routes/settings/team';
+import themeUrl from '@/routes/settings/team/theme';
 import { update as updateTheme } from '@/routes/settings/team/theme';
 
-type Theme = {
-    id: number;
-    name: string;
+interface Theme {
     identifier: string;
-    description: string;
-};
+    name: string;
+    description: string | null;
+    version: string;
+    author: string | null;
+    is_active: boolean;
+}
 
-type Props = {
+interface Props {
     themes: Theme[];
     activeTheme: string | null;
-};
+}
 
 export default function ThemeSettings({ themes, activeTheme }: Props) {
     const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = currentTeam?.slug ?? '';
-
-    const [selectedTheme, setSelectedTheme] = useState<string | null>(
-        activeTheme,
-    );
+    const [selectedTheme, setSelectedTheme] = useState<string>(activeTheme ?? '');
 
     const hasChanges = selectedTheme !== activeTheme;
 
-    const handleSave = () => {
-        if (!selectedTheme) {
-            return;
-        }
+    const breadcrumbs = [
+        {
+            title: t('settings.theme.title'),
+            href: themeUrl.edit.url(teamSlug),
+        },
+    ];
 
-        router.patch(updateTheme(teamSlug).url, {
-            theme: selectedTheme,
-        });
+    const handleSave = () => {
+        router.put(
+            updateTheme(teamSlug).url,
+            { theme: selectedTheme },
+            { preserveScroll: true },
+        );
     };
 
     return (
         <TeamSettingsLayout
             activeTab="Theme"
-            breadcrumbs={[
-                {
-                    title: t('settings.theme.title'),
-                    href: themeUrl(teamSlug).url,
-                },
-            ]}
+            breadcrumbs={breadcrumbs}
         >
             <Head title={t('settings.theme.title')} />
             <h1 className="sr-only">{t('settings.theme.title')}</h1>
@@ -91,7 +90,7 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
 
                             return (
                                 <button
-                                    key={theme.id}
+                                    key={theme.identifier}
                                     type="button"
                                     className={cn(
                                         'group relative flex flex-col rounded-xl border-2 p-0 text-left transition-all hover:shadow-md',
@@ -151,6 +150,12 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
                                                 {theme.description}
                                             </p>
                                         )}
+                                        {theme.author && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {theme.author}
+                                            </p>
+                                        )}
+                                        <p className="text-xs text-muted-foreground">v{theme.version}</p>
                                     </div>
                                 </button>
                             );

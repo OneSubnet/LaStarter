@@ -21,8 +21,14 @@ class RegisterResponse implements RegisterResponseContract
 
         URL::defaults(['current_team' => $team->slug]);
 
-        return $request->wantsJson()
-            ? new JsonResponse(['two_factor' => false], 201)
-            : redirect()->intended("/{$team->slug}".Fortify::redirects('register'));
+        if ($request->wantsJson()) {
+            return new JsonResponse(['two_factor' => false], 201);
+        }
+
+        if (! $user->onboarding_completed) {
+            return redirect()->to("/{$team->slug}/onboarding");
+        }
+
+        return redirect()->intended("/{$team->slug}".Fortify::redirects('register'));
     }
 }

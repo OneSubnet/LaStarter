@@ -1,7 +1,8 @@
 import { router, usePage } from '@inertiajs/react';
 import { Activity, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import { formatDateTime as fmtDateTimeLib } from '@/lib/format';
 import CreateTeamModal from '@/components/create-team-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -85,11 +86,9 @@ return `${hours}h ago`;
 }
 
 function formatDateTime(dateStr: string | null): string {
-    if (!dateStr) {
-return '—';
-}
+    if (!dateStr) return '—';
 
-    return new Date(dateStr).toLocaleString('fr-FR', {
+    return fmtDateTimeLib(dateStr, {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -99,7 +98,7 @@ return '—';
 }
 
 export function SidebarRight() {
-    const { t } = useTranslation();
+    const t = i18n.t.bind(i18n);
     const page = usePage();
 
     const currentTeam = page.props.currentTeam as { id: number; name: string; slug: string; iconUrl?: string } | undefined;

@@ -65,35 +65,16 @@ class TeamMailController extends Controller
             return back();
         }
 
+        $to = $this->settings->get('mail_from_address', $request->user()->email);
+
         try {
-            $this->sendTestEmail($request);
-            Inertia::flash('toast', ['type' => 'success', 'message' => __('Test email sent successfully.')]);
+            Mail::to($to)->send((new TestMail($request->user()->currentTeam->name))->locale($request->user()->locale ?? app()->getLocale()));
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Test email sent to :email.', ['email' => $to])]);
         } catch (\Throwable $e) {
+            logger()->error('Mail test failed: '.$e->getMessage());
             Inertia::flash('toast', ['type' => 'error', 'message' => __('Failed to send test email: ').$e->getMessage()]);
         }
 
         return back();
-    }
-
-    protected function sendTestEmail(Request $request): void
-    {
-        $team = $request->user()->currentTeam;
-
-        config([
-            'mail.mailers.team' => [
-                'transport' => 'smtp',
-                'host' => $this->settings->get('mail_host'),
-                'port' => (int) $this->settings->get('mail_port', 587),
-                'username' => $this->settings->get('mail_username'),
-                'password' => $this->settings->get('mail_password'),
-                'encryption' => $this->settings->get('mail_encryption', 'tls'),
-            ],
-            'mail.from.address' => $this->settings->get('mail_from_address', config('mail.from.address')),
-            'mail.from.name' => $this->settings->get('mail_from_name', config('mail.from.name')),
-        ]);
-
-        Mail::mailer('team')
-            ->to($request->user()->email)
-            ->send(new TestMail($team->name));
     }
 }

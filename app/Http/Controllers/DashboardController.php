@@ -14,8 +14,10 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response
     {
         $bag = new DashboardWidgetBag;
+        $from = $request->query('from');
+        $to = $request->query('to');
 
-        Event::dispatch('hooks.'.Hook::DASHBOARD_RENDER, $bag);
+        Event::dispatch('hooks.'.Hook::DASHBOARD_RENDER, [$bag, $from, $to]);
 
         return Inertia::render('dashboard', [
             'widgets' => $bag->all(),

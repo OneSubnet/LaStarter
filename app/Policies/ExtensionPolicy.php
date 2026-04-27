@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\Extension;
 use App\Models\User;
 
 class ExtensionPolicy
@@ -12,7 +11,7 @@ class ExtensionPolicy
         return $user->hasPermissionTo('extension.view');
     }
 
-    public function manage(User $user, Extension|string $extension): bool
+    public function manage(User $user): bool
     {
         return $user->hasPermissionTo('extension.manage')
             || $user->hasRole('owner');

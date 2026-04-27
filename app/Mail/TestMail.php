@@ -12,7 +12,7 @@ class TestMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject("Test email from {$this->teamName}")
+        return $this->subject(__('emails.test.subject', ['teamName' => $this->teamName]))
             ->markdown('emails.test', [
                 'teamName' => $this->teamName,
             ]);

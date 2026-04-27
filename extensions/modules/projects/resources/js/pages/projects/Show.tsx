@@ -1,215 +1,174 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Calendar } from 'lucide-react';
-import type { FormEvent } from 'react';
-import Guard from '@/components/guard';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useTranslation } from 'react-i18next';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
 
-type ProjectData = {
+interface Project {
     id: number;
     name: string;
     description: string | null;
     status: string;
-    priority: string;
-    due_date: string | null;
-    color: string | null;
+    visibility: string;
+    deadline: string | null;
     created_at: string;
     updated_at: string;
-};
+}
 
-export default function ProjectShow({ project }: { project: ProjectData }) {
-    const page = usePage();
-    const teamSlug = (page.props.currentTeam as { slug: string })?.slug ?? '';
-    const { data, setData, patch, processing } = useForm({
+interface Props {
+    project: Project;
+}
+
+export default function ProjectShow({ project }: Props) {
+    const { t } = useTranslation();
+    const { auth } = usePage().props as { auth: { permissions: string[] } };
+    const [editing, setEditing] = useState(false);
+    const [form, setForm] = useState({
         name: project.name,
-        description: project.description ?? '',
+        description: project.description || '',
         status: project.status,
-        priority: project.priority,
-        due_date: project.due_date ? project.due_date.split('T')[0] : '',
-        color: project.color ?? '',
+        visibility: project.visibility,
+        deadline: project.deadline || '',
     });
 
-    const submit = (e: FormEvent) => {
+    const canEdit = auth.permissions?.includes('project.update');
+    const canDelete = auth.permissions?.includes('project.delete');
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: t('extensions.projects.nav_title', 'Projects'), href: '/projects' },
+        { title: project.name, href: `/projects/${project.id}` },
+    ];
+
+    const statusConfig: Record<string, { label: string; className: string }> = {
+        active: { label: t('extensions.projects.status_active', 'Active'), className: 'bg-green-100 text-green-700' },
+        completed: { label: t('extensions.projects.status_completed', 'Completed'), className: 'bg-blue-100 text-blue-700' },
+        on_hold: { label: t('extensions.projects.status_on_hold', 'On Hold'), className: 'bg-yellow-100 text-yellow-700' },
+        cancelled: { label: t('extensions.projects.status_cancelled', 'Cancelled'), className: 'bg-gray-100 text-gray-700' },
+    };
+
+    const handleUpdate = (e: React.FormEvent) => {
         e.preventDefault();
-        patch(`/${teamSlug}/projects/${project.id}`);
+        router.put(`/projects/${project.id}`, form, {
+            onSuccess: () => setEditing(false),
+        });
     };
 
     return (
-        <AppLayout
-            breadcrumbs={[
-                {
-                    title: 'Projects',
-                    href: `/${teamSlug}/projects`,
-                },
-                {
-                    title: project.name,
-                    href: '#',
-                },
-            ]}
-        >
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={project.name} />
 
             <div className="space-y-6 p-6">
-                <Link
-                    href={`/${teamSlug}/projects`}
-                    className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-                >
-                    <ArrowLeft className="mr-1 h-4 w-4" />
-                    Back to Projects
-                </Link>
-
-                <div className="flex items-start justify-between">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        {project.color && (
-                            <div
-                                className="size-4 rounded-full"
-                                style={{ backgroundColor: project.color }}
-                            />
-                        )}
+                        <button onClick={() => router.get('/projects')} className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <ArrowLeft className="h-5 w-5" />
+                        </button>
                         <div>
-                            <h1 className="text-2xl font-bold">{project.name}</h1>
-                            <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                                <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
-                                {project.due_date && (
-                                    <>
-                                        <span>·</span>
-                                        <span className="inline-flex items-center gap-1">
-                                            <Calendar className="h-3.5 w-3.5" />
-                                            Due {new Date(project.due_date).toLocaleDateString()}
-                                        </span>
-                                    </>
-                                )}
+                            <h2 className="text-2xl font-bold tracking-tight">{project.name}</h2>
+                            <div className="mt-1 flex items-center gap-2">
+                                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusConfig[project.status]?.className || ''}`}>
+                                    {statusConfig[project.status]?.label || project.status}
+                                </span>
+                                <span className="text-sm text-muted-foreground capitalize">{project.visibility}</span>
                             </div>
                         </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                        {canEdit && (
+                            <button
+                                onClick={() => setEditing(!editing)}
+                                className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                {t('common.edit', 'Edit')}
+                            </button>
+                        )}
+                        {canDelete && (
+                            <button
+                                onClick={() => {
+                                    if (confirm(t('common.confirm_delete', 'Are you sure?'))) {
+                                        router.delete(`/projects/${project.id}`);
+                                    }
+                                }}
+                                className="inline-flex items-center gap-2 rounded-md border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                {t('common.delete', 'Delete')}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <Guard permission="project.update">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Edit Project</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={submit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input
-                                        id="name"
-                                        value={data.name}
-                                        onChange={(e) =>
-                                            setData('name', e.target.value)
-                                        }
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="description">
-                                        Description
-                                    </Label>
-                                    <Input
-                                        id="description"
-                                        value={data.description}
-                                        onChange={(e) =>
-                                            setData(
-                                                'description',
-                                                e.target.value,
-                                            )
-                                        }
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="status">Status</Label>
-                                        <select
-                                            id="status"
-                                            value={data.status}
-                                            onChange={(e) =>
-                                                setData('status', e.target.value)
-                                            }
-                                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                        >
-                                            <option value="active">Active</option>
-                                            <option value="completed">Completed</option>
-                                            <option value="archived">Archived</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="priority">Priority</Label>
-                                        <select
-                                            id="priority"
-                                            value={data.priority}
-                                            onChange={(e) =>
-                                                setData('priority', e.target.value)
-                                            }
-                                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                        >
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="due_date">Due date</Label>
-                                        <Input
-                                            id="due_date"
-                                            type="date"
-                                            value={data.due_date}
-                                            onChange={(e) =>
-                                                setData('due_date', e.target.value)
-                                            }
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="color">Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                id="color"
-                                                type="color"
-                                                value={data.color || 'hsl(var(--primary))'}
-                                                onChange={(e) =>
-                                                    setData('color', e.target.value)
-                                                }
-                                                className="h-9 w-12 cursor-pointer rounded border border-input"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                    >
-                                        Save Changes
-                                    </Button>
-                                    <Guard permission="project.delete">
-                                        <Button
-                                            variant="destructive"
-                                            onClick={() => {
-                                                if (
-                                                    confirm(
-                                                        'Are you sure you want to delete this project?',
-                                                    )
-                                                ) {
-                                                    router.delete(
-                                                        `/${teamSlug}/projects/${project.id}`,
-                                                    );
-                                                }
-                                            }}
-                                            type="button"
-                                        >
-                                            Delete
-                                        </Button>
-                                    </Guard>
-                                </div>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </Guard>
+                {editing ? (
+                    <form onSubmit={handleUpdate} className="space-y-4 rounded-lg border p-6">
+                        <div>
+                            <label className="text-sm font-medium">{t('extensions.projects.col_name', 'Name')}</label>
+                            <input
+                                type="text"
+                                required
+                                value={form.name}
+                                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium">{t('extensions.projects.col_description', 'Description')}</label>
+                            <textarea
+                                value={form.description}
+                                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                rows={4}
+                                className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                            />
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div>
+                                <label className="text-sm font-medium">{t('extensions.projects.col_status', 'Status')}</label>
+                                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800">
+                                    <option value="active">Active</option>
+                                    <option value="on_hold">On Hold</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">{t('extensions.projects.col_visibility', 'Visibility')}</label>
+                                <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value })} className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800">
+                                    <option value="private">Private</option>
+                                    <option value="public">Public</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">{t('extensions.projects.col_deadline', 'Deadline')}</label>
+                                <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800" />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button type="button" onClick={() => setEditing(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+                                {t('common.cancel', 'Cancel')}
+                            </button>
+                            <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                                {t('common.save', 'Save')}
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    <div className="rounded-lg border p-6">
+                        <h3 className="font-semibold">{t('extensions.projects.col_description', 'Description')}</h3>
+                        <p className="mt-2 text-muted-foreground whitespace-pre-wrap">{project.description || t('extensions.projects.no_description', 'No description provided.')}</p>
+
+                        <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span className="text-muted-foreground">{t('extensions.projects.col_deadline', 'Deadline')}:</span>
+                                <span className="ml-2 font-medium">{project.deadline || '—'}</span>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">{t('extensions.projects.created', 'Created')}:</span>
+                                <span className="ml-2 font-medium">{project.created_at}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

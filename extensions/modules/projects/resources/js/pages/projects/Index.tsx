@@ -1,252 +1,265 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Calendar, FolderKanban, PlusCircle } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import Guard from '@/components/guard';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FolderKanban, Plus, Pencil, Trash2 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
 
-type Project = {
+interface Project {
     id: number;
     name: string;
     description: string | null;
     status: string;
-    priority: string;
-    due_date: string | null;
-    color: string | null;
+    visibility: string;
+    deadline: string | null;
     created_at: string;
-};
+}
 
-const priorityConfig: Record<string, { label: string; className: string }> = {
-    high: { label: 'High', className: 'bg-destructive/10 text-destructive' },
-    medium: { label: 'Medium', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    low: { label: 'Low', className: 'bg-primary/10 text-primary' },
-};
+interface Props {
+    projects: {
+        data: Project[];
+        current_page: number;
+        last_page: number;
+        total: number;
+    };
+    filters: { search?: string; status?: string };
+}
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-    active: { label: 'Active', className: 'bg-secondary/10 text-secondary' },
-    completed: { label: 'Completed', className: 'bg-primary/10 text-primary' },
-    archived: { label: 'Archived', className: 'bg-muted text-muted-foreground' },
-};
+export default function ProjectsIndex({ projects, filters }: Props) {
+    const { t } = useTranslation();
+    const [showCreate, setShowCreate] = useState(false);
+    const [search, setSearch] = useState(filters.search || '');
+    const { auth } = usePage().props as { auth: { permissions: string[] } };
 
-export default function ProjectIndex({ projects }: { projects: Project[] }) {
-    const page = usePage();
-    const teamSlug = (page.props.currentTeam as { slug: string })?.slug ?? '';
-    const [open, setOpen] = useState(false);
-    const { data, setData, post, processing, reset } = useForm({
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: t('extensions.projects.nav_title', 'Projects'), href: '/projects' },
+    ];
+
+    const statusConfig: Record<string, { label: string; className: string }> = {
+        active: { label: t('extensions.projects.status_active', 'Active'), className: 'bg-green-100 text-green-700' },
+        completed: { label: t('extensions.projects.status_completed', 'Completed'), className: 'bg-blue-100 text-blue-700' },
+        on_hold: { label: t('extensions.projects.status_on_hold', 'On Hold'), className: 'bg-yellow-100 text-yellow-700' },
+        cancelled: { label: t('extensions.projects.status_cancelled', 'Cancelled'), className: 'bg-gray-100 text-gray-700' },
+    };
+
+    const canCreate = auth.permissions?.includes('project.create');
+    const canEdit = auth.permissions?.includes('project.update');
+    const canDelete = auth.permissions?.includes('project.delete');
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={t('extensions.projects.page_title', 'Projects')} />
+
+            <div className="space-y-6 p-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold tracking-tight">
+                        {t('extensions.projects.page_title', 'Projects')}
+                    </h2>
+                    {canCreate && (
+                        <button
+                            onClick={() => setShowCreate(true)}
+                            className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        >
+                            <Plus className="h-4 w-4" />
+                            {t('extensions.projects.create', 'New Project')}
+                        </button>
+                    )}
+                </div>
+
+                {/* Search */}
+                <div className="flex gap-4">
+                    <input
+                        type="text"
+                        placeholder={t('extensions.projects.search', 'Search projects...')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && router.get('/projects', { search }, { preserveState: true })}
+                        className="rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                    />
+                </div>
+
+                {/* Projects Table */}
+                {projects.data.length === 0 ? (
+                    <div className="rounded-lg border border-dashed p-8 text-center">
+                        <FolderKanban className="mx-auto h-10 w-10 text-muted-foreground" />
+                        <p className="mt-4 text-muted-foreground">
+                            {t('extensions.projects.empty', 'No projects yet. Create your first project!')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-hidden rounded-lg border">
+                        <table className="w-full text-sm">
+                            <thead className="border-b bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <th className="px-4 py-3 text-left font-medium">{t('extensions.projects.col_name', 'Name')}</th>
+                                    <th className="px-4 py-3 text-left font-medium">{t('extensions.projects.col_status', 'Status')}</th>
+                                    <th className="px-4 py-3 text-left font-medium">{t('extensions.projects.col_visibility', 'Visibility')}</th>
+                                    <th className="px-4 py-3 text-left font-medium">{t('extensions.projects.col_deadline', 'Deadline')}</th>
+                                    <th className="px-4 py-3 text-right font-medium">{t('common.actions', 'Actions')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {projects.data.map((project) => (
+                                    <tr key={project.id} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                        <td className="px-4 py-3">
+                                            <button
+                                                onClick={() => router.get(`/projects/${project.id}`)}
+                                                className="font-medium text-blue-600 hover:underline"
+                                            >
+                                                {project.name}
+                                            </button>
+                                            {project.description && (
+                                                <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{project.description}</p>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusConfig[project.status]?.className || 'bg-gray-100 text-gray-700'}`}>
+                                                {statusConfig[project.status]?.label || project.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 capitalize">{project.visibility}</td>
+                                        <td className="px-4 py-3 text-muted-foreground">{project.deadline || '—'}</td>
+                                        <td className="px-4 py-3 text-right">
+                                            <div className="flex items-center justify-end gap-1">
+                                                {canEdit && (
+                                                    <button className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <Pencil className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                                {canDelete && (
+                                                    <button
+                                                        onClick={() => {
+                                                            if (confirm(t('common.confirm_delete', 'Are you sure?'))) {
+                                                                router.delete(`/projects/${project.id}`);
+                                                            }
+                                                        }}
+                                                        className="rounded p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {projects.last_page > 1 && (
+                    <div className="flex items-center justify-center gap-2 text-sm">
+                        <button
+                            disabled={projects.current_page === 1}
+                            onClick={() => router.get('/projects', { page: projects.current_page - 1, search })}
+                            className="rounded border px-3 py-1 disabled:opacity-50"
+                        >
+                            {t('common.previous', 'Previous')}
+                        </button>
+                        <span>{projects.current_page} / {projects.last_page}</span>
+                        <button
+                            disabled={projects.current_page === projects.last_page}
+                            onClick={() => router.get('/projects', { page: projects.current_page + 1, search })}
+                            className="rounded border px-3 py-1 disabled:opacity-50"
+                        >
+                            {t('common.next', 'Next')}
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Create Dialog */}
+            {showCreate && <CreateProjectDialog onClose={() => setShowCreate(false)} />}
+        </AppLayout>
+    );
+}
+
+function CreateProjectDialog({ onClose }: { onClose: () => void }) {
+    const { t } = useTranslation();
+    const [form, setForm] = useState({
         name: '',
         description: '',
-        priority: 'medium' as string,
-        due_date: '' as string,
-        color: '' as string,
+        status: 'active',
+        visibility: 'private',
+        deadline: '',
     });
 
-    const submit = (e: FormEvent) => {
+    const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(`/${teamSlug}/projects`, {
-            onSuccess: () => {
-                setOpen(false);
-                reset();
-            },
+        router.post('/projects', form, {
+            onSuccess: () => onClose(),
         });
     };
 
     return (
-        <AppLayout
-            breadcrumbs={[
-                {
-                    title: 'Projects',
-                    href: `/${teamSlug}/projects`,
-                },
-            ]}
-        >
-            <Head title="Projects" />
-
-            <div className="space-y-6 p-6">
-                <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-lg font-semibold">{t('extensions.projects.create', 'New Project')}</h3>
+                <form onSubmit={submit} className="mt-4 space-y-4">
                     <div>
-                        <h1 className="text-2xl font-bold">Projects</h1>
-                        <p className="text-sm text-muted-foreground">
-                            {projects.length} project{projects.length !== 1 ? 's' : ''}
-                        </p>
+                        <label className="text-sm font-medium">{t('extensions.projects.col_name', 'Name')}</label>
+                        <input
+                            type="text"
+                            required
+                            value={form.name}
+                            onChange={(e) => setForm({ ...form, name: e.target.value })}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                        />
                     </div>
-                    <Guard permission="project.create">
-                        <Dialog open={open} onOpenChange={setOpen}>
-                            <DialogTrigger asChild>
-                                <Button>
-                                    <PlusCircle className="h-4 w-4" />
-                                    New Project
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Create Project</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={submit} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Name</Label>
-                                        <Input
-                                            id="name"
-                                            value={data.name}
-                                            onChange={(e) =>
-                                                setData('name', e.target.value)
-                                            }
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="description">
-                                            Description
-                                        </Label>
-                                        <Input
-                                            id="description"
-                                            value={data.description}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'description',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="priority">Priority</Label>
-                                            <select
-                                                id="priority"
-                                                value={data.priority}
-                                                onChange={(e) =>
-                                                    setData('priority', e.target.value)
-                                                }
-                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                            >
-                                                <option value="low">Low</option>
-                                                <option value="medium">Medium</option>
-                                                <option value="high">High</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="due_date">Due date</Label>
-                                            <Input
-                                                id="due_date"
-                                                type="date"
-                                                value={data.due_date}
-                                                onChange={(e) =>
-                                                    setData('due_date', e.target.value)
-                                                }
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="color">Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                id="color"
-                                                type="color"
-                                                value={data.color || 'hsl(var(--primary))'}
-                                                onChange={(e) =>
-                                                    setData('color', e.target.value)
-                                                }
-                                                className="h-9 w-12 cursor-pointer rounded border border-input"
-                                            />
-                                            <span className="text-sm text-muted-foreground">
-                                                Optional label color
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                    >
-                                        Create
-                                    </Button>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
-                    </Guard>
-                </div>
-
-                {projects.length === 0 ? (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <FolderKanban className="mb-4 h-12 w-12 text-muted-foreground" />
-                            <p className="text-muted-foreground">
-                                No projects yet. Create your first project to get started.
-                            </p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {projects.map((project) => {
-                            const priority = priorityConfig[project.priority] ?? priorityConfig.medium;
-                            const status = statusConfig[project.status] ?? statusConfig.active;
-
-                            return (
-                                <Link
-                                    key={project.id}
-                                    href={`/${teamSlug}/projects/${project.id}`}
-                                >
-                                    <Card className="transition-shadow hover:shadow-md">
-                                        <CardHeader className="pb-2">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    {project.color && (
-                                                        <div
-                                                            className="size-3 rounded-full shrink-0"
-                                                            style={{ backgroundColor: project.color }}
-                                                        />
-                                                    )}
-                                                    <CardTitle className="text-base">
-                                                        {project.name}
-                                                    </CardTitle>
-                                                </div>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={status.className}
-                                                >
-                                                    {status.label}
-                                                </Badge>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            {project.description && (
-                                                <p className="line-clamp-2 text-sm text-muted-foreground">
-                                                    {project.description}
-                                                </p>
-                                            )}
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <Badge
-                                                    variant="outline"
-                                                    className={priority.className}
-                                                >
-                                                    {priority.label}
-                                                </Badge>
-                                                {project.due_date && (
-                                                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {new Date(project.due_date).toLocaleDateString()}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            );
-                        })}
+                    <div>
+                        <label className="text-sm font-medium">{t('extensions.projects.col_description', 'Description')}</label>
+                        <textarea
+                            value={form.description}
+                            onChange={(e) => setForm({ ...form, description: e.target.value })}
+                            rows={3}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                        />
                     </div>
-                )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-sm font-medium">{t('extensions.projects.col_status', 'Status')}</label>
+                            <select
+                                value={form.status}
+                                onChange={(e) => setForm({ ...form, status: e.target.value })}
+                                className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                            >
+                                <option value="active">Active</option>
+                                <option value="on_hold">On Hold</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium">{t('extensions.projects.col_visibility', 'Visibility')}</label>
+                            <select
+                                value={form.visibility}
+                                onChange={(e) => setForm({ ...form, visibility: e.target.value })}
+                                className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                            >
+                                <option value="private">Private</option>
+                                <option value="public">Public</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium">{t('extensions.projects.col_deadline', 'Deadline')}</label>
+                        <input
+                            type="date"
+                            value={form.deadline}
+                            onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                        <button type="button" onClick={onClose} className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+                            {t('common.cancel', 'Cancel')}
+                        </button>
+                        <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                            {t('common.create', 'Create')}
+                        </button>
+                    </div>
+                </form>
             </div>
-        </AppLayout>
+        </div>
     );
 }

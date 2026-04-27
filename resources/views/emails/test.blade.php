@@ -1,9 +1,13 @@
 @component('mail::message')
-# Test Email
+# {{ __('emails.test.title') }}
 
-This is a test email from **{{ $teamName }}**.
+{{ __('emails.test.body', ['teamName' => $teamName]) }}
 
-If you received this email, your mail settings are configured correctly.
+@component('mail::panel')
+{{ __('emails.test.success_message') }}
+@endcomponent
+
+{{ __('emails.test.footer') }}
 
 Thanks,<br>
 {{ config('app.name') }}

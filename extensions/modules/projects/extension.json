@@ -3,14 +3,12 @@
     "name": "Projects",
     "type": "module",
     "version": "1.0.0",
-    "description": "Project management module for organizing work into projects",
-    "author": "LaStarter",
-    "license": "MIT",
-    "homepage": "https://github.com/OneSubnet/lastarter-module-projects",
+    "description": "Project management module with CRUD operations, team-scoping, and permission-based access.",
     "provider": "Modules\\Projects\\ProjectServiceProvider",
     "namespace": "Modules\\Projects",
-    "lastarterVersion": ">=1.0.0",
-    "keywords": ["projects", "management", "organization"],
+    "author": "OneSubnet",
+    "license": "MIT",
+    "lastarterVersion": "^1.0",
     "permissions": [
         "project.view",
         "project.create",
@@ -32,13 +30,9 @@
         {
             "key": "projects.default_visibility",
             "label": "Default Visibility",
-            "default": "private",
             "type": "select",
-            "options": [
-                { "label": "Private", "value": "private" },
-                { "label": "Team", "value": "team" },
-                { "label": "Public", "value": "public" }
-            ]
+            "options": ["private", "public"],
+            "default": "private"
         }
     ]
 }

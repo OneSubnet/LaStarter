@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Settings;
 
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Extensions\Marketplace\MarketplaceClient;
+use App\Core\Themes\ComponentResolver;
 use App\Http\Controllers\Controller;
 use App\Models\Extension;
+use App\Models\TeamSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -69,6 +71,7 @@ class ExtensionController extends Controller
                 $props['marketplace_results'] = $results;
                 $props['marketplace_query'] = $query;
             } catch (\Throwable $e) {
+                logger()->error('Extension operation failed: '.$e->getMessage());
                 $props['marketplace_results'] = [];
                 $props['marketplace_query'] = '';
             }
@@ -150,8 +153,13 @@ class ExtensionController extends Controller
 
         Gate::authorize('manage', $extension);
 
+        $teamId = $request->user()->currentTeam->id;
         $manager = app(ExtensionManager::class);
-        $manager->enable($extension->identifier, $request->user()->currentTeam->id);
+        $manager->enable($extension->identifier, $teamId);
+
+        if ($extension->type === 'theme') {
+            app(ComponentResolver::class)->setActiveTheme($teamId, $extension->identifier);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension enabled.')]);
 
@@ -165,8 +173,18 @@ class ExtensionController extends Controller
 
         Gate::authorize('manage', $extension);
 
+        $teamId = $request->user()->currentTeam->id;
         $manager = app(ExtensionManager::class);
-        $manager->disable($extension->identifier, $request->user()->currentTeam->id);
+        $manager->disable($extension->identifier, $teamId);
+
+        if ($extension->type === 'theme') {
+            $resolver = app(ComponentResolver::class);
+            if ($resolver->activeTheme($teamId) === $extension->identifier) {
+                TeamSetting::where('team_id', $teamId)
+                    ->where('key', 'active_theme')
+                    ->delete();
+            }
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension disabled.')]);
 

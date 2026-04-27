@@ -9,6 +9,7 @@ use App\Models\TeamExtension;
 use Composer\Semver\Semver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -220,10 +221,11 @@ class ExtensionManager
 
         TeamExtension::where('extension_id', $extension->id)->delete();
 
-        $extension->update([
-            'state' => ExtensionState::NotInstalled,
-            'installed_at' => null,
-        ]);
+        if ($extension->path && is_dir(base_path($extension->path))) {
+            File::deleteDirectory(base_path($extension->path));
+        }
+
+        $extension->delete();
 
         $this->clearCache();
 
@@ -356,6 +358,54 @@ class ExtensionManager
                 );
             }
         }
+    }
+
+    /**
+     * Sync a single extension by scanning its manifest file.
+     */
+    public function syncSingle(string $identifier): ?Extension
+    {
+        $manifest = $this->scan()->first(
+            fn (ExtensionManifest $m) => $m->identifier === $identifier,
+        );
+
+        if (! $manifest) {
+            return null;
+        }
+
+        $extension = Extension::where('identifier', $identifier)->first();
+
+        $data = [
+            'name' => $manifest->name,
+            'type' => $manifest->type,
+            'version' => $manifest->version,
+            'description' => $manifest->description,
+            'path' => $manifest->path,
+            'provider_class' => $manifest->providerClass,
+            'author' => $manifest->author,
+            'update_url' => $manifest->updateUrl,
+            'lastarter_version' => $manifest->lastarterVersion,
+            'manifest_json' => $manifest->toArray(),
+        ];
+
+        if ($extension) {
+            $extension->update($data);
+        } else {
+            $extension = Extension::create(array_merge($data, [
+                'identifier' => $identifier,
+                'is_active' => true,
+                'state' => ExtensionState::Enabled,
+                'installed_at' => now(),
+            ]));
+
+            $this->runExtensionMigrations($extension, 'up');
+        }
+
+        $this->syncPermissionsFromManifests(collect([$manifest]));
+        $this->ensureOwnerHasAllPermissions();
+        $this->clearCache();
+
+        return $extension;
     }
 
     protected function ensureOwnerHasAllPermissions(): void

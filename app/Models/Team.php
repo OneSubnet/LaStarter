@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'slug', 'is_personal', 'is_active', 'icon_path'])]
+#[Fillable(['name', 'slug', 'is_personal', 'is_active', 'locale', 'icon_path'])]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */

@@ -3,9 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Core\Context\AppContext;
+use App\Core\Extensions\ExtensionManager;
 use App\Core\Navigation\NavigationBuilder;
 use App\Core\Themes\ComponentResolver;
 use App\Models\AuditLog;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
@@ -38,8 +40,12 @@ class HandleInertiaRequests extends Middleware
             'teamMembers' => fn () => $this->resolveTeamMembers($ctx),
             'auditLogs' => fn () => $this->resolveAuditLogs($ctx),
             'theme' => fn () => $this->resolveTheme($ctx),
-            'locale' => $user->locale ?? app()->getLocale(),
+            'locale' => $ctx->team()?->locale ?? $user?->locale ?? app()->getLocale(),
             'fallbackLocale' => config('app.fallback_locale'),
+            'availableLocales' => config('app.available_locales', ['en', 'fr']),
+            'footerLinks' => fn () => $this->resolveFooterLinks($ctx),
+            'unreadNotifications' => fn () => $this->resolveUnreadNotificationCount($ctx),
+            'recentNotifications' => fn () => $this->resolveRecentNotifications($ctx),
         ];
     }
 
@@ -125,11 +131,78 @@ class HandleInertiaRequests extends Middleware
         }
 
         try {
-            return app(ComponentResolver::class)->activeTheme($team->id);
+            $identifier = app(ComponentResolver::class)->activeTheme($team->id);
+
+            if (! $identifier) {
+                return null;
+            }
+
+            $manager = app(ExtensionManager::class);
+
+            if (! $manager->isEnabled($identifier, $team->id)) {
+                return null;
+            }
+
+            return $identifier;
         } catch (\Throwable $e) {
             logger()->error('Failed to resolve theme: '.$e->getMessage());
 
             return null;
         }
+    }
+
+    protected function resolveFooterLinks(AppContext $ctx): array
+    {
+        $team = $ctx->team();
+
+        if (! $team) {
+            return [];
+        }
+
+        try {
+            $links = setting('footer_links');
+
+            if (! $links) {
+                return [];
+            }
+
+            return json_decode($links, true) ?? [];
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    protected function resolveUnreadNotificationCount(AppContext $ctx): int
+    {
+        $user = $ctx->user();
+
+        if (! $user) {
+            return 0;
+        }
+
+        return Notification::forUser($user->id)->unread()->count();
+    }
+
+    protected function resolveRecentNotifications(AppContext $ctx): array
+    {
+        $user = $ctx->user();
+
+        if (! $user) {
+            return [];
+        }
+
+        return Notification::forUser($user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(fn (Notification $n) => [
+                'id' => $n->id,
+                'title' => $n->title,
+                'body' => $n->body,
+                'data' => $n->data,
+                'read_at' => $n->read_at?->toISOString(),
+                'created_at' => $n->created_at->toISOString(),
+            ])
+            ->all();
     }
 }
