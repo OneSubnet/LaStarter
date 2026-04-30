@@ -9,8 +9,6 @@ class Hook
     // Standard hook names
     public const string SIDEBAR_BUILD = 'sidebar.build';
 
-    public const string DASHBOARD_RENDER = 'dashboard.render';
-
     public const string MODULE_BOOT = 'module.boot';
 
     public const string EXTENSION_ENABLED = 'extension.enabled';
@@ -36,7 +34,7 @@ class Hook
     /**
      * Dispatch a hook event.
      */
-    public static function dispatch(string $event, array $data = []): void
+    public static function dispatch(string $event, mixed $data = []): void
     {
         Event::dispatch("hooks.{$event}", $data);
     }
