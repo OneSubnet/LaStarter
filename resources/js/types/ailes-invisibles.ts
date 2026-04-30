@@ -177,6 +177,8 @@ export type Document = {
     status: string;
     requires_signature: boolean;
     instructions: string | null;
+    has_signed_file: boolean;
+    signed_uploaded_at: string | null;
     created_at: string;
 };
 
@@ -322,6 +324,9 @@ export type PortalDocument = {
     status: string;
     requires_signature: boolean;
     instructions: string | null;
+    has_signed_file: boolean;
+    signed_uploaded_at: string | null;
+    expires_at: string | null;
     created_at: string;
 };
 
@@ -338,108 +343,10 @@ export type PortalClient = {
 };
 
 // -----------------------------------------------------------------------------
-// Status Badge Configs
+// Status Badge Configs (Types)
 // -----------------------------------------------------------------------------
 
 export type StatusConfig = Record<string, { label: string; className: string }>;
-
-export const clientStatusConfig: StatusConfig = {
-    active: { label: 'ai.status.active', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    inactive: { label: 'ai.status.inactive', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    archived: { label: 'ai.status.archived', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' },
-};
-
-export const clientTypeConfig: StatusConfig = {
-    pro: { label: 'ai.status.pro', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    individual: { label: 'ai.status.individual', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-};
-
-export const invoiceStatusConfig: StatusConfig = {
-    draft: { label: 'ai.status.draft', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' },
-    sent: { label: 'ai.status.sent', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    viewed: { label: 'ai.status.viewed', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    paid: { label: 'ai.status.paid', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    partial: { label: 'ai.status.partial', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    overdue: { label: 'ai.status.overdue', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-    cancelled: { label: 'ai.status.cancelled', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' },
-};
-
-export const quoteStatusConfig: StatusConfig = {
-    draft: { label: 'ai.status.draft', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' },
-    sent: { label: 'ai.status.sent_m', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    viewed: { label: 'ai.status.viewed_m', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
-    accepted: { label: 'ai.status.accepted', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    rejected: { label: 'ai.status.rejected', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-    expired: { label: 'ai.status.expired', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-    converted: { label: 'ai.status.converted', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-};
-
-export const eventStatusConfig: StatusConfig = {
-    draft: { label: 'ai.status.draft', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' },
-    confirmed: { label: 'ai.status.confirmed', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    in_progress: { label: 'ai.status.in_progress', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-    completed: { label: 'ai.status.completed', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    cancelled: { label: 'ai.status.cancelled', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-};
-
-export const eventTypeConfig: StatusConfig = {
-    service: { label: 'ai.status.service', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    event: { label: 'ai.status.event', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-    consultation: { label: 'ai.status.consultation', className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' },
-    formation: { label: 'ai.status.formation', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-};
-
-export const documentStatusConfig: StatusConfig = {
-    uploaded: { label: 'ai.status.uploaded', className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' },
-    pending_signature: { label: 'ai.status.pending_signature', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-    signed: { label: 'ai.status.signed', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-    expired: { label: 'ai.status.expired', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-};
-
-export const conversationTypeConfig: StatusConfig = {
-    direct: { label: 'ai.status.direct', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    group: { label: 'ai.status.group', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-};
-
-// Portal-specific status configs (no dark mode variants)
-export const portalInvoiceStatusConfig: StatusConfig = {
-    draft: { label: 'ai.status.draft', className: 'bg-gray-100 text-gray-700' },
-    sent: { label: 'ai.status.sent', className: 'bg-blue-100 text-blue-700' },
-    viewed: { label: 'ai.status.viewed', className: 'bg-indigo-100 text-indigo-700' },
-    paid: { label: 'ai.status.paid', className: 'bg-green-100 text-green-700' },
-    partial: { label: 'ai.status.partial', className: 'bg-yellow-100 text-yellow-700' },
-    overdue: { label: 'ai.status.overdue', className: 'bg-red-100 text-red-700' },
-    cancelled: { label: 'ai.status.cancelled', className: 'bg-gray-100 text-gray-500' },
-};
-
-export const portalQuoteStatusConfig: StatusConfig = {
-    draft: { label: 'ai.status.draft', className: 'bg-gray-100 text-gray-700' },
-    sent: { label: 'ai.status.sent_m', className: 'bg-blue-100 text-blue-700' },
-    viewed: { label: 'ai.status.viewed_m', className: 'bg-indigo-100 text-indigo-700' },
-    accepted: { label: 'ai.status.accepted', className: 'bg-green-100 text-green-700' },
-    rejected: { label: 'ai.status.rejected', className: 'bg-red-100 text-red-700' },
-    expired: { label: 'ai.status.expired', className: 'bg-orange-100 text-orange-700' },
-    converted: { label: 'ai.status.converted', className: 'bg-purple-100 text-purple-700' },
-};
-
-export const portalDocumentStatusConfig: StatusConfig = {
-    uploaded: { label: 'ai.status.uploaded', className: 'bg-green-100 text-green-700' },
-    pending_signature: { label: 'ai.status.pending_signature', className: 'bg-yellow-100 text-yellow-700' },
-    signed: { label: 'ai.status.signed', className: 'bg-blue-100 text-blue-700' },
-    expired: { label: 'ai.status.expired', className: 'bg-red-100 text-red-700' },
-};
-
-// -----------------------------------------------------------------------------
-// Payment Method Labels
-// -----------------------------------------------------------------------------
-
-export const paymentMethodLabels: Record<string, string> = {
-    card: 'ai.invoices.method_card',
-    transfer: 'ai.invoices.method_transfer',
-    cheque: 'ai.invoices.method_cheque',
-    cash: 'ai.invoices.method_cash',
-    online: 'ai.invoices.method_online',
-};
 
 // -----------------------------------------------------------------------------
 // Utility
@@ -448,12 +355,18 @@ export const paymentMethodLabels: Record<string, string> = {
 export { formatCurrency } from '@/lib/format';
 
 export const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) {
+return '0 B';
+}
+
     const mb = bytes / 1024 / 1024;
+
     if (mb >= 1) {
         return `${mb.toFixed(1)} MB`;
     }
+
     const kb = bytes / 1024;
+
     return `${kb.toFixed(1)} KB`;
 };
 

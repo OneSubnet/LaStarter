@@ -1,8 +1,8 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { Bell, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
 import { index as notificationsIndex, read, readAll } from '@/routes/notifications';
 
 type NotificationItem = {
@@ -25,12 +25,25 @@ type Props = {
 
 function timeAgo(dateStr: string): string {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (seconds < 60) return 'now';
+
+    if (seconds < 60) {
+return 'now';
+}
+
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
+
+    if (minutes < 60) {
+return `${minutes}m`;
+}
+
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
+
+    if (hours < 24) {
+return `${hours}h`;
+}
+
     const days = Math.floor(hours / 24);
+
     return `${days}d`;
 }
 
@@ -86,9 +99,15 @@ export default function NotificationsIndex({ notifications }: Props) {
                                 key={notification.id}
                                 type="button"
                                 onClick={() => {
-                                    if (!notification.read_at) markRead(notification.id);
+                                    if (!notification.read_at) {
+markRead(notification.id);
+}
+
                                     const url = notification.data?.url as string | undefined;
-                                    if (url) router.visit(url);
+
+                                    if (url) {
+router.visit(url);
+}
                                 }}
                                 className={`w-full rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 ${
                                     notification.read_at ? 'opacity-60' : 'bg-muted/30'

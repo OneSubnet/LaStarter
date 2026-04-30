@@ -1,12 +1,12 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useForm } from '@tanstack/react-form';
 import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import AppLogoIcon from '@/components/app-logo-icon';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import AppLogoIcon from '@/components/app-logo-icon';
-import { z } from 'zod';
 
 type FooterLink = { title: string; href: string };
 

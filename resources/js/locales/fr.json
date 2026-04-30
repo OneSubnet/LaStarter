@@ -7,7 +7,13 @@
     "server_error": "Erreur serveur",
     "server_error_desc": "Une erreur est survenue de notre côté. Veuillez réessayer plus tard.",
     "go_home": "Retour à l'accueil",
-    "try_again": "Réessayer"
+    "try_again": "Réessayer",
+    "permission_denied": "Vous n'avez pas la permission d'effectuer cette action.",
+    "not_found": "La ressource demandée est introuvable.",
+    "session_expired": "Votre session a expiré. Veuillez rafraîchir la page.",
+    "server_error_generic": "Une erreur serveur est survenue. Veuillez réessayer.",
+    "generic": "Une erreur est survenue.",
+    "network": "Erreur réseau. Vérifiez votre connexion."
   },
   "common": {
     "save": "Enregistrer",
@@ -646,6 +652,7 @@
     "nav": {
       "overview": "Vue d'ensemble",
       "crm": "CRM",
+      "products": "Produits",
       "operations": "Opérations",
       "finance": "Finance",
       "communication": "Communication"
@@ -1011,6 +1018,7 @@
       "columns": "Colonnes",
       "customize_columns": "Personnaliser les colonnes",
       "create": "Créer un devis",
+      "upload": "Importer un devis",
       "select_client": "Sélectionner un client",
       "select_all": "Tout sélectionner",
       "select_row": "Sélectionner la ligne",
@@ -1088,6 +1096,7 @@
       },
       "total_ttc": "Total TTC",
       "create": "Créer une facture",
+      "upload": "Importer une facture",
       "select_client": "Sélectionner un client",
       "delete": "Supprimer",
       "view": "Voir",
@@ -1136,7 +1145,9 @@
       "document": "Document",
       "sign": "Signer",
       "sign_confirm": "Êtes-vous sûr de vouloir signer ce document ?",
-      "signature": "Signature"
+      "signature": "Signature",
+      "upload_signed": "Envoyer le signé",
+      "download_signed": "Télécharger le signé"
     },
     "accounting": {
       "breadcrumb": "Comptabilité",

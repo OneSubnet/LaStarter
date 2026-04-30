@@ -199,7 +199,9 @@ class HandleInertiaRequests extends Middleware
         }
 
         try {
-            return Conversation::notArchived()
+            $conversationClass = Conversation::class;
+
+            return $conversationClass::notArchived()
                 ->whereHas('participants', fn ($q) => $q->where('participant_type', get_class($user))->where('participant_id', $user->id))
                 ->withCount(['messages as unread_count' => fn ($q) => $q
                     ->where(fn ($q2) => $q2->where('sender_type', '!=', get_class($user))->orWhere(fn ($q3) => $q3->where('sender_type', get_class($user))->where('sender_id', '!=', $user->id)))

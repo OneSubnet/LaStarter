@@ -47,6 +47,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 function IconFor({ name, ...props }: { name: string | null; className?: string }) {
     const Icon = name ? iconMap[name] : LayoutGrid;
+
     return Icon ? <Icon {...props} /> : <LayoutGrid {...props} />;
 }
 
@@ -66,6 +67,7 @@ export default function CommandPalette() {
             }
         };
         document.addEventListener('keydown', down);
+
         return () => document.removeEventListener('keydown', down);
     }, []);
 
@@ -111,7 +113,10 @@ export default function CommandPalette() {
     }, [teamSlug, extensionNav, t]);
 
     const actionItems = useMemo(() => {
-        if (!teamSlug) return [];
+        if (!teamSlug) {
+return [];
+}
+
         return [
             { label: t('command.new_invoice'), href: `/${teamSlug}/ailes-invisibles/invoices/create`, icon: 'Receipt' },
             { label: t('command.new_client'), href: `/${teamSlug}/ailes-invisibles/clients/create`, icon: 'Users' },
@@ -122,10 +127,15 @@ export default function CommandPalette() {
 
     const grouped = useMemo(() => {
         const map = new Map<string, typeof navItems>();
+
         for (const item of navItems) {
-            if (!map.has(item.group)) map.set(item.group, []);
+            if (!map.has(item.group)) {
+map.set(item.group, []);
+}
+
             map.get(item.group)!.push(item);
         }
+
         return map;
     }, [navItems]);
 

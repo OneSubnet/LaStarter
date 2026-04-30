@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type SelectOption = { label: string; value: string };
 
@@ -91,7 +91,9 @@ export default function ExtensionSettingsForm({ extensionIdentifier, settings, v
         }
     };
 
-    if (settings.length === 0) return null;
+    if (settings.length === 0) {
+return null;
+}
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">

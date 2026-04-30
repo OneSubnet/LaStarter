@@ -25,12 +25,25 @@ type Notification = {
 
 function timeAgo(dateStr: string): string {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (seconds < 60) return `${seconds}s`;
+
+    if (seconds < 60) {
+return `${seconds}s`;
+}
+
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
+
+    if (minutes < 60) {
+return `${minutes}m`;
+}
+
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
+
+    if (hours < 24) {
+return `${hours}h`;
+}
+
     const days = Math.floor(hours / 24);
+
     return `${days}d`;
 }
 
@@ -88,11 +101,13 @@ export function NotificationBell() {
 
     const fetchNotifications = async () => {
         setLoading(true);
+
         try {
             const response = await fetch(`/${teamSlug}/notifications`, {
                 headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'same-origin',
             });
+
             if (response.ok) {
                 const data = await response.json();
                 setNotifications(data?.props?.notifications?.data ?? []);
@@ -100,12 +115,16 @@ export function NotificationBell() {
         } catch {
             // silent
         }
+
         setLoading(false);
     };
 
     const handleOpenChange = (isOpen: boolean) => {
         setOpen(isOpen);
-        if (isOpen) fetchNotifications();
+
+        if (isOpen) {
+fetchNotifications();
+}
     };
 
     const handleMarkRead = async (id: number) => {
@@ -113,12 +132,14 @@ export function NotificationBell() {
         setNotifications((prev) =>
             prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
         );
+
         try {
             await fetch(`/${teamSlug}/notifications/${id}/read`, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'same-origin',
             });
+
             if (notification?.data?.url) {
                 setOpen(false);
                 router.visit(notification.data.url);
@@ -134,6 +155,7 @@ export function NotificationBell() {
         setNotifications((prev) =>
             prev.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })),
         );
+
         try {
             await fetch(`/${teamSlug}/notifications/read-all`, {
                 method: 'POST',

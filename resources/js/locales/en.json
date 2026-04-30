@@ -7,7 +7,13 @@
     "server_error": "Server error",
     "server_error_desc": "Something went wrong on our end. Please try again later.",
     "go_home": "Go home",
-    "try_again": "Try again"
+    "try_again": "Try again",
+    "permission_denied": "You do not have permission to perform this action.",
+    "not_found": "The requested resource was not found.",
+    "session_expired": "Your session has expired. Please refresh the page.",
+    "server_error_generic": "A server error occurred. Please try again.",
+    "generic": "An error occurred.",
+    "network": "Network error. Check your connection."
   },
   "common": {
     "save": "Save",
@@ -647,6 +653,7 @@
     "nav": {
       "overview": "Overview",
       "crm": "CRM",
+      "products": "Products",
       "operations": "Operations",
       "finance": "Finance",
       "communication": "Communication"
@@ -1012,6 +1019,7 @@
       "columns": "Columns",
       "customize_columns": "Customize columns",
       "create": "Create quote",
+      "upload": "Upload quote",
       "select_client": "Select a client",
       "select_all": "Select all",
       "select_row": "Select row",
@@ -1089,6 +1097,7 @@
       },
       "total_ttc": "Total TTC",
       "create": "Create invoice",
+      "upload": "Upload invoice",
       "select_client": "Select a client",
       "delete": "Delete",
       "view": "View",
@@ -1137,7 +1146,9 @@
       "document": "Document",
       "sign": "Sign",
       "sign_confirm": "Are you sure you want to sign this document?",
-      "signature": "Signature"
+      "signature": "Signature",
+      "upload_signed": "Upload signed",
+      "download_signed": "Download signed"
     },
     "accounting": {
       "breadcrumb": "Accounting",

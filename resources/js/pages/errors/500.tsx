@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import { ServerCrash } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function ServerError() {
     const { t } = useTranslation();

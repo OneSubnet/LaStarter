@@ -4,10 +4,15 @@ import i18n from 'i18next';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
+
 import '@/lib/i18n';
-import '@/lib/echo';
-import QueryProvider from '@/lib/query-client';
+
 import { setUrlDefaults } from '@/wayfinder';
+
+// Initialize Echo WebSocket client-side only (SSR-safe)
+if (typeof window !== 'undefined') {
+    import('@/lib/echo');
+}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,24 +24,26 @@ const modulePages = import.meta.glob(
 const themeOverrides = import.meta.glob(
     '../../extensions/themes/*/resources/js/overrides/**/*.tsx',
 );
-const themeStyles = import.meta.glob(
-    '../../extensions/themes/*/resources/css/theme.css',
-    { eager: true },
-);
 const extensionLocales = import.meta.glob(
     '../../extensions/modules/*/resources/locales/*.json',
 );
 
 function applyTheme(theme: string | null | undefined) {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined') {
+	return;
+    }
 
     const html = document.documentElement;
 
     html.classList.forEach((cls) => {
-        if (cls.startsWith('theme-')) html.classList.remove(cls);
+        if (cls.startsWith('theme-')) {
+	html.classList.remove(cls);
+}
     });
 
-    if (!theme) return;
+    if (!theme) {
+	return;
+    }
 
     html.classList.add(`theme-${theme}`);
 }
@@ -44,10 +51,12 @@ function applyTheme(theme: string | null | undefined) {
 async function loadExtensionLocales(locale: string) {
     for (const path in extensionLocales) {
         const match = path.match(/extensions[/\\]modules[/\\]([^/\\]+)[/\\]resources[/\\]locales[/\\]([a-z]{2}(?:-[A-Z]{2})?)\.json$/);
+
         if (match && match[2] === locale) {
             const mod = (await extensionLocales[path]()) as { default: Record<string, string> };
             const ns = match[1];
             const translations = mod.default ?? mod;
+
             if (Object.keys(translations).length > 0) {
                 i18n.addResourceBundle(locale, ns, translations, true, true);
             }
@@ -55,49 +64,38 @@ async function loadExtensionLocales(locale: string) {
     }
 }
 
+// Pre-build page map for O(1) resolution — core first, modules overwrite, themes overwrite (highest priority)
+type PageLoader = () => Promise<{ default: ResolvedComponent }>;
+const pageMap = new Map<string, PageLoader>();
+
+function registerPages(
+    globs: Record<string, () => Promise<unknown>>,
+    pattern: RegExp,
+    overwrite: boolean,
+) {
+    for (const path in globs) {
+        const match = path.match(pattern);
+
+        if (match && (overwrite || !pageMap.has(match[1]))) {
+            pageMap.set(match[1], globs[path] as PageLoader);
+        }
+    }
+}
+
+registerPages(corePages, /^\.\/pages\/(.+)\.tsx$/, false);
+registerPages(modulePages, /extensions\/modules\/[^/]+\/resources\/js\/pages\/(.+)\.tsx$/, true);
+registerPages(themeOverrides, /extensions\/themes\/[^/]+\/resources\/js\/overrides\/(.+)\.tsx$/, true);
+
 async function resolvePage(name: string): Promise<ResolvedComponent> {
-    // 1. Theme overrides (highest priority)
-    for (const path in themeOverrides) {
-        const match = path.match(
-            /extensions\/themes\/([^/]+)\/resources\/js\/overrides\/(.+)\.tsx$/,
-        );
+    const loader = pageMap.get(name);
 
-        if (match && match[2] === name) {
-            const module = (await themeOverrides[path]()) as {
-                default: ResolvedComponent;
-            };
-
-            return module.default ?? module;
-        }
+    if (!loader) {
+        throw new Error(`Page not found: ${name}`);
     }
 
-    // 2. Module pages
-    for (const path in modulePages) {
-        const match = path.match(
-            /extensions\/modules\/([^/]+)\/resources\/js\/pages\/(.+)\.tsx$/,
-        );
+    const module = await loader();
 
-        if (match && match[2] === name) {
-            const module = (await modulePages[path]()) as {
-                default: ResolvedComponent;
-            };
-
-            return module.default ?? module;
-        }
-    }
-
-    // 3. Core pages (fallback)
-    const corePath = `./pages/${name}.tsx`;
-
-    if (corePages[corePath]) {
-        const module = (await corePages[corePath]()) as {
-            default: ResolvedComponent;
-        };
-
-        return module.default ?? module;
-    }
-
-    throw new Error(`Page not found: ${name}`);
+    return module.default ?? module;
 }
 
 createInertiaApp({
@@ -132,6 +130,7 @@ router.on('navigate', (event) => {
     }
 
     const locale = event.detail.page.props.locale as string | undefined;
+
     if (locale && i18n.language !== locale) {
         i18n.changeLanguage(locale);
         loadExtensionLocales(locale).catch(console.error);
@@ -154,6 +153,7 @@ if (typeof document !== 'undefined') {
             }
 
             const locale = page.props?.locale as string | undefined;
+
             if (locale && i18n.language !== locale) {
                 i18n.changeLanguage(locale);
                 loadExtensionLocales(locale).catch(console.error);
