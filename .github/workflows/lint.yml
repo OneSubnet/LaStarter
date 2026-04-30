@@ -48,7 +48,6 @@ jobs:
         run: |
           php artisan extensions:scan
           php artisan extensions:sync
-          php artisan extensions:enable ailes-invisibles
           php artisan extensions:enable projects
           php artisan extensions:enable default
 
