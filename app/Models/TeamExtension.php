@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Core\Extensions\ExtensionState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,6 +12,7 @@ class TeamExtension extends Model
         'team_id',
         'extension_id',
         'is_active',
+        'state',
         'settings',
     ];
 
@@ -18,6 +20,7 @@ class TeamExtension extends Model
     {
         return [
             'is_active' => 'boolean',
+            'state' => ExtensionState::class,
             'settings' => 'array',
         ];
     }

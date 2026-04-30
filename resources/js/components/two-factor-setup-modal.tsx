@@ -157,6 +157,7 @@ function TwoFactorVerificationStep({
         const timer = setTimeout(() => {
             pinInputContainerRef.current?.querySelector('input')?.focus();
         }, 0);
+
         return () => clearTimeout(timer);
     }, []);
 

@@ -32,6 +32,7 @@ database/database.sqlite
 pnpm-lock.yaml
 extensions/*/node_modules/
 extensions/*/.env
+extensions/modules/ailes-invisibles/
 
 # Internal/planning docs
 /Cahier_des_charges.md

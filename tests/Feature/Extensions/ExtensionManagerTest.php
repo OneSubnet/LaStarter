@@ -17,6 +17,7 @@ beforeEach(function () {
         'type' => 'module',
         'version' => '1.0.0',
         'description' => 'A test module',
+        'path' => 'extensions/modules/test-module',
         'is_active' => true,
         'state' => ExtensionState::Enabled,
         'installed_at' => now(),
@@ -80,6 +81,7 @@ describe('ExtensionManager', function () {
             'name' => 'Install Test',
             'type' => 'module',
             'version' => '1.0.0',
+            'path' => 'extensions/modules/install-test',
             'state' => ExtensionState::NotInstalled,
         ]);
 
@@ -97,24 +99,32 @@ describe('ExtensionManager', function () {
     });
 
     test('syncPermissionsFromManifests creates permissions', function () {
-        Permission::where('name', 'test.perm')->delete();
+        Permission::where('name', 'test.perm.view')->delete();
+        Permission::where('name', 'test.perm.create')->delete();
 
-        // Create extension with permissions
-        Extension::create([
+        // Create a temporary extension manifest with permissions
+        $tmpDir = base_path('extensions/modules/perm-test');
+        mkdir($tmpDir, 0755, true);
+        file_put_contents($tmpDir.'/extension.json', json_encode([
             'identifier' => 'perm-test',
             'name' => 'Perm Test',
             'type' => 'module',
             'version' => '1.0.0',
-            'state' => ExtensionState::Enabled,
-            'manifest_json' => [
-                'permissions' => ['test.perm.view', 'test.perm.create'],
-            ],
-        ]);
+            'permissions' => ['test.perm.view', 'test.perm.create'],
+        ]));
 
-        // Re-scan to pick up permissions
-        $this->manager->sync();
+        try {
+            $this->manager->sync();
 
-        expect(Permission::where('name', 'test.perm.view')->exists())->toBeTrue();
-        expect(Permission::where('name', 'test.perm.create')->exists())->toBeTrue();
+            expect(Permission::where('name', 'test.perm.view')->exists())->toBeTrue();
+            expect(Permission::where('name', 'test.perm.create')->exists())->toBeTrue();
+        } finally {
+            // Clean up temp extension
+            if (is_dir($tmpDir)) {
+                array_map('unlink', glob($tmpDir.'/*.*'));
+                rmdir($tmpDir);
+            }
+            Extension::where('identifier', 'perm-test')->delete();
+        }
     });
 });

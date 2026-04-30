@@ -13,7 +13,6 @@ class ExtensionPolicy
 
     public function manage(User $user): bool
     {
-        return $user->hasPermissionTo('extension.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermissionTo('extension.manage');
     }
 }

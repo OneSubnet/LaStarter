@@ -4,7 +4,6 @@ import {
     Calculator,
     Calendar,
     CheckSquare,
-    ChevronDown,
     Check,
     Feather,
     FileText,
@@ -31,7 +30,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavUser } from '@/components/nav-user';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { TeamSwitcher } from '@/components/team-switcher';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -50,8 +49,8 @@ import {
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import { index as notificationsIndex, read as readNotification, readAll as readAllNotifications } from '@/routes/notifications';
 import { edit as editAppearance } from '@/routes/appearance';
+import { index as notificationsIndex, read as readNotification, readAll as readAllNotifications } from '@/routes/notifications';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import {
@@ -141,12 +140,25 @@ type SidebarNotification = {
 
 function timeAgo(dateStr: string): string {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (seconds < 60) return 'now';
+
+    if (seconds < 60) {
+return 'now';
+}
+
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
+
+    if (minutes < 60) {
+return `${minutes}m`;
+}
+
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
+
+    if (hours < 24) {
+return `${hours}h`;
+}
+
     const days = Math.floor(hours / 24);
+
     return `${days}d`;
 }
 
@@ -203,8 +215,12 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                                     !n.read_at && 'bg-muted/30',
                                 )}
                                 onClick={() => {
-                                    if (!n.read_at) markRead(n.id);
+                                    if (!n.read_at) {
+markRead(n.id);
+}
+
                                     const url = n.data?.url as string | undefined;
+
                                     if (url) {
                                         setOpen(false);
                                         router.visit(url);
@@ -234,15 +250,6 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
     );
 }
 
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-}
-
 function urlMatches(currentUrl: string, patterns: string[]): boolean {
     return patterns.some((pattern) => currentUrl === pattern || currentUrl.startsWith(pattern + '/'));
 }
@@ -251,6 +258,8 @@ function urlMatches(currentUrl: string, patterns: string[]): boolean {
 
 function ModulePanel({ module }: { module: NavModule }) {
     const { isCurrentUrl } = useCurrentUrl();
+    const page = usePage();
+    const unreadMessageCount = (page.props.unreadMessageCount as number) ?? 0;
 
     return (
         <div className="space-y-4 px-4 py-3 text-sm">
@@ -264,6 +273,8 @@ function ModulePanel({ module }: { module: NavModule }) {
                     <SidebarMenu>
                         {section.items.map((item) => {
                             const Icon = item.icon;
+                            const isMessaging = item.href.includes('/ai/conversations/inbox');
+                            const badge = isMessaging && unreadMessageCount > 0 ? unreadMessageCount : null;
 
                             return (
                                 <SidebarMenuItem
@@ -278,6 +289,11 @@ function ModulePanel({ module }: { module: NavModule }) {
                                         <Link href={item.href} prefetch>
                                             <Icon className="size-4" />
                                             <span>{item.label}</span>
+                                            {badge !== null && (
+                                                <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                                                    {badge > 99 ? '99+' : badge}
+                                                </span>
+                                            )}
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -298,8 +314,6 @@ export function AppSidebar() {
     const { setOpen, isMobile } = useSidebar();
 
     const teamSlug = (page.props.currentTeam as { slug: string } | null)?.slug ?? '';
-    const teamIconUrl = (page.props.currentTeam as { iconUrl?: string } | null)?.iconUrl ?? null;
-    const teamName = page.props.currentTeam ? (page.props.currentTeam as { name: string }).name : t('common.team');
     const permissions = (page.props.auth?.permissions as string[]) ?? [];
     const can = (perm: string | undefined) => !perm || permissions.includes(perm);
 
@@ -339,21 +353,28 @@ export function AppSidebar() {
 
                 // Group children by their `group` field
                 const groupMap = new Map<string, typeof ext.children>();
+
                 for (const child of ext.children) {
                     const key = child.group ?? '';
-                    if (!groupMap.has(key)) groupMap.set(key, []);
+
+                    if (!groupMap.has(key)) {
+groupMap.set(key, []);
+}
+
                     groupMap.get(key)!.push(child);
                 }
 
                 const groupLabelMap: Record<string, string> = {
                     overview: t('ai.nav.overview'),
                     crm: t('ai.nav.crm'),
+                    produits: t('ai.nav.products'),
                     operations: t('ai.nav.operations'),
                     finance: t('ai.nav.finance'),
                     communication: t('ai.nav.communication'),
                 };
 
                 const sections: NavSection[] = [];
+
                 for (const [groupKey, children] of groupMap) {
                     sections.push({
                         title: groupKey ? (groupLabelMap[groupKey] ?? groupKey) : undefined,
@@ -493,30 +514,6 @@ export function AppSidebar() {
                 collapsible="none"
                 className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
             >
-                <SidebarHeader className="h-14 border-b">
-                    <SidebarMenu className="my-auto">
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                size="lg"
-                                className="md:h-8 md:w-8 md:p-0 md:justify-center"
-                                tooltip={{ children: teamName }}
-                            >
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                                    {teamIconUrl ? (
-                                        <Avatar className="size-8 rounded-lg">
-                                            <AvatarImage src={teamIconUrl} alt={teamName} />
-                                        </Avatar>
-                                    ) : (
-                                        <span className="text-xs font-semibold">
-                                            {getInitials(teamName)}
-                                        </span>
-                                    )}
-                                </div>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarHeader>
-
                 <SidebarContent>
                     <SidebarGroup>
                         <SidebarGroupContent className="px-1.5 md:px-0">
@@ -553,11 +550,9 @@ export function AppSidebar() {
 
             {/* ── Expanded Panel ────────────────────────────── */}
             <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-                <SidebarHeader className="h-14 border-b px-4">
-                    <div className="flex w-full items-center justify-between">
-                        <div className="my-auto text-base font-medium text-foreground">
-                            {activeModule?.label}
-                        </div>
+                <SidebarHeader className="px-2">
+                    <div className="flex w-full items-center gap-2">
+                        <TeamSwitcher />
                         <NotificationBell teamSlug={teamSlug} />
                     </div>
                 </SidebarHeader>

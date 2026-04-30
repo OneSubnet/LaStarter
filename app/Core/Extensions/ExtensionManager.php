@@ -2,6 +2,7 @@
 
 namespace App\Core\Extensions;
 
+use App\Core\Hooks\Events\ExtensionStateChangedEvent;
 use App\Core\Hooks\Hook;
 use App\Enums\TeamRole;
 use App\Models\Extension;
@@ -149,10 +150,10 @@ class ExtensionManager
         $this->clearCache();
 
         if ($extension->type === 'theme') {
-            Hook::dispatch(Hook::THEME_CHANGED, ['identifier' => $identifier, 'team_id' => $teamId]);
+            Hook::dispatch(Hook::THEME_CHANGED, new ExtensionStateChangedEvent($identifier, $teamId));
         }
 
-        Hook::dispatch(Hook::EXTENSION_ENABLED, ['identifier' => $identifier, 'team_id' => $teamId]);
+        Hook::dispatch(Hook::EXTENSION_ENABLED, new ExtensionStateChangedEvent($identifier, $teamId));
     }
 
     public function disable(string $identifier, ?int $teamId = null): void
@@ -176,7 +177,7 @@ class ExtensionManager
 
         $this->clearCache();
 
-        Hook::dispatch(Hook::EXTENSION_DISABLED, ['identifier' => $identifier, 'team_id' => $teamId]);
+        Hook::dispatch(Hook::EXTENSION_DISABLED, new ExtensionStateChangedEvent($identifier, $teamId));
     }
 
     public function install(string $identifier): void
@@ -206,7 +207,7 @@ class ExtensionManager
 
         $this->runExtensionMigrations($extension, 'up');
 
-        Hook::dispatch(Hook::EXTENSION_INSTALLED, ['identifier' => $identifier]);
+        Hook::dispatch(Hook::EXTENSION_INSTALLED, new ExtensionStateChangedEvent($identifier));
     }
 
     public function uninstall(string $identifier): void
@@ -229,7 +230,7 @@ class ExtensionManager
 
         $this->clearCache();
 
-        Hook::dispatch(Hook::EXTENSION_UNINSTALLED, ['identifier' => $identifier]);
+        Hook::dispatch(Hook::EXTENSION_UNINSTALLED, new ExtensionStateChangedEvent($identifier));
     }
 
     public function checkCompatibility(ExtensionManifest $manifest): bool

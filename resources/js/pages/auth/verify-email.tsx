@@ -9,6 +9,7 @@ import { send } from '@/routes/verification';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     const { t } = useTranslation();
+
     return (
         <AuthLayout
             title={t('auth.verify_email.title')}

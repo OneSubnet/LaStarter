@@ -32,6 +32,7 @@ describe('Extension Lifecycle', function () {
             'name' => 'Lifecycle Test',
             'type' => 'module',
             'version' => '1.0.0',
+            'path' => 'extensions/modules/lifecycle-test',
             'state' => ExtensionState::Enabled,
         ]);
 
@@ -57,6 +58,7 @@ describe('Extension Lifecycle', function () {
             'name' => 'Active Check',
             'type' => 'module',
             'version' => '1.0.0',
+            'path' => 'extensions/modules/active-check',
             'state' => ExtensionState::Enabled,
         ]);
 
@@ -78,9 +80,12 @@ describe('Extension Lifecycle', function () {
             'name' => 'Manifest Test',
             'type' => 'module',
             'version' => '2.0.0',
+            'path' => 'extensions/modules/manifest-test',
             'state' => ExtensionState::Enabled,
             'manifest_json' => [
                 'identifier' => 'manifest-test',
+                'name' => 'Manifest Test',
+                'type' => 'module',
                 'permissions' => ['manifest.test.view'],
             ],
         ]);

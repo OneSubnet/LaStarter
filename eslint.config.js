@@ -111,6 +111,7 @@ export default [
             'node_modules',
             'public',
             'bootstrap/ssr',
+            '.stoneforge',
             'tailwind.config.js',
             'vite.config.ts',
             'resources/js/actions/**',

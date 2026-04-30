@@ -4,33 +4,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Modular multi-tenant platform core built on **Laravel 13 + React 19 + TypeScript + Inertia.js 3**. Teams act as organizations with dynamic roles and permissions via `spatie/laravel-permission` (teams mode). A global scope ensures automatic data isolation between teams. The extension system supports dynamic modules and themes.
+Modular multi-tenant platform core built on **Laravel 13 + React 19 + TypeScript + Inertia.js 3**. Teams act as organizations with dynamic roles and permissions via `spatie/laravel-permission` (teams mode). A global scope ensures automatic data isolation between teams. The extension system supports dynamic modules and themes. i18n supports EN/FR. Real-time via Laravel Reverb + Echo.
 
 ## Commands
 
 ```bash
 composer dev              # Start all (PHP server + queue + Vite)
-composer setup            # Full setup from scratch
+composer setup            # Full setup from scratch (install + migrate + build)
 composer run lint         # Pint fix (PHP)
 composer run lint:check   # Pint check (PHP)
+composer run analyze      # PHPStan static analysis
 composer run test         # Pint check + Pest tests
 npm run dev               # Vite dev server
 npm run build             # Production build
+npm run build:ssr         # Production build + SSR bundle
 npm run lint              # ESLint fix
+npm run lint:check        # ESLint check only
 npm run format            # Prettier write (resources/)
+npm run format:check      # Prettier check
 npm run types:check       # TypeScript check (tsc --noEmit)
+./vendor/bin/pest         # Run all Pest tests
+./vendor/bin/pest tests/Feature/Teams/TeamTest.php  # Run single test file
+./vendor/bin/pest --filter=test_name                # Run test by name
+php artisan wayfinder:generate             # Regenerate type-safe route helpers
 ```
 
 Extension CLI commands:
 ```bash
 php artisan extensions:scan        # Scan /extensions/ for extension.json manifests
 php artisan extensions:sync        # Sync permissions from manifests to Spatie
-php artisan extensions:enable {id} # Enable extension globally
-php artisan extensions:enable {id} --team=ID  # Enable for specific team
-php artisan extensions:disable {id}            # Disable globally or per team
+php artisan extensions:list        # List all registered extensions
+php artisan extensions:make {slug} # Scaffold a new extension
+php artisan extensions:install {id}              # Install (run migrations, set disabled)
+php artisan extensions:install {id} --team=ID    # Install for specific team
+php artisan extensions:enable {id}               # Enable extension globally
+php artisan extensions:enable {id} --team=ID     # Enable for specific team
+php artisan extensions:disable {id}              # Disable globally or per team
+php artisan extensions:uninstall {id}            # Rollback migrations, remove from registry
 ```
 
 ## Architecture
+
+### AppContext (Request Context)
+
+`App\Core\Context\AppContext` is a singleton providing lazy-loaded access to the current request context:
+- `app(AppContext::class)->user()` — current authenticated user
+- `app(AppContext::class)->team()` — current team (from `$user->currentTeam`)
+- `app(AppContext::class)->membership()` — current membership on that team
+- `app(AppContext::class)->permissions()` — all permission names for the user in team context
+
+Used in middleware (`HandleInertiaRequests`, `SetAppLocale`) and controllers instead of injecting `Request` directly for team/user context.
 
 ### Multi-Tenancy
 
@@ -38,15 +61,18 @@ php artisan extensions:disable {id}            # Disable globally or per team
 - **Global Scope**: `App\Concerns\HasTeam` trait + `TeamScope` class auto-filter all queries by `current_team_id`. Future module models MUST use this trait.
 - **Spatie teams mode**: `config/permission.php` has `'teams' => true`. Roles are scoped per team via `team_id` on the `roles` table.
 - **Context middleware**: `SetPermissionsTeamId` calls `setPermissionsTeamId()` before every request so `$user->hasPermissionTo()` checks are team-scoped.
+- **TeamRole enum**: `App\Enums\TeamRole` — `Owner`, `Admin`, `Member`. The `owner` role is protected and cannot be renamed/modified/deleted via UI.
 
 ### Extension System
 
 - **Extensions** live in `/extensions/{type}/{slug}/` with an `extension.json` manifest
-- **Types**: `module` (business logic) and `theme` (UI overrides)
+- **Types**: `module` (business logic), `theme` (UI overrides), `language` (translations)
+- **Active modules**: `ailes-invisibles` (CRM/messaging), `projects`; theme: `default`
 - **ExtensionManager** (`app/Core/Extensions/ExtensionManager.php`): singleton that scans, syncs, enables/disables extensions
 - **Module ServiceProvider**: abstract base at `app/Core/Modules/ModuleServiceProvider.php`. Each module extends it and implements `registerModule()` + `bootModule()`
 - **Module autoloading**: uses `spl_autoload_register` in ExtensionManager — no `composer dump-autoload` needed after adding modules
 - **Database**: `extensions` table (global registry), `team_extensions` pivot (per-team activation), `team_settings` (per-team key-value settings)
+- **Marketplace**: `MarketplaceClient` (`app/Core/Extensions/Marketplace/MarketplaceClient.php`) handles extension discovery and installation from a GitHub-based marketplace
 
 ### Page Resolution (Inertia + React)
 
@@ -73,7 +99,7 @@ php artisan extensions:disable {id}            # Disable globally or per team
 - **Hook** (`app/Core/Hooks/Hook.php`): thin wrapper over Laravel Events with `hooks.` prefix
 - `Hook::listen('event', $callback)` → `Event::listen('hooks.event', $callback)`
 - `Hook::dispatch('event', $data)` → `Event::dispatch('hooks.event', $data)`
-- Standard hooks: `sidebar.build`, `dashboard.render`, `module.boot`, `extension.enabled`, `extension.disabled`
+- Standard hooks (use constants): `SIDEBAR_BUILD`, `MODULE_BOOT`, `EXTENSION_ENABLED`, `EXTENSION_DISABLED`, `EXTENSION_INSTALLED`, `EXTENSION_UNINSTALLED`, `EXTENSION_ERROR`, `THEME_CHANGED`
 
 ### Authorization Flow
 
@@ -82,6 +108,33 @@ php artisan extensions:disable {id}            # Disable globally or per team
 3. **Users** get roles assigned in team context via `model_has_roles` (includes `team_id`).
 4. **Policies** check `$user->hasPermissionTo('permission.name')` — NEVER role names.
 5. **Frontend** receives `auth.permissions` (string array) via Inertia shared data. The `<Guard>` component hides/shows UI elements.
+
+### i18n (Internationalization)
+
+- **i18next + react-i18next** on the frontend
+- **Core locales**: `resources/js/locales/{en,fr}.json`
+- **Extension locales**: `extensions/modules/*/resources/locales/{en,fr}.json` — loaded dynamically via `import.meta.glob`
+- **Language selection**: shared via Inertia as `locale`, `fallbackLocale`, `availableLocales` props. Language switches on navigation via `router.on('navigate')`.
+- **Backend locale**: `SetAppLocale` middleware sets `app()->setLocale()` from team or user preference
+
+### Real-Time (WebSocket)
+
+- **Laravel Reverb** (self-hosted) as default broadcast driver, Pusher as alternative
+- **Client**: `laravel-echo` + `pusher-js`, initialized in `resources/js/lib/echo.ts` (client-side only, SSR-safe)
+- **Channels**: defined in `routes/channels.php` (e.g. `conversation.{id}` for messaging)
+- Broadcasting is enabled when `BROADCAST_DRIVER=reverb` in `.env`
+
+### Audit
+
+- **AuditLogger** (`app/Core/Audit/AuditLogger.php`): singleton service for logging team-scoped audit trails
+- Logs: `action`, `subject` (polymorphic), `properties`, `ip_address`, `user_agent`, `trace_id`, `module`
+- Auto-fills `team_id` and `user_id` from current auth context
+- Shared via Inertia as `auditLogs`
+
+### Shared Inertia Props
+
+`HandleInertiaRequests` shares these props to every page:
+`auth.user`, `auth.permissions`, `currentTeam`, `teams`, `navigation`, `teamMembers` (with online status), `auditLogs`, `theme`, `locale`, `fallbackLocale`, `availableLocales`, `footerLinks`, `unreadNotifications`, `recentNotifications`, `unreadMessageCount`, `sidebarOpen`
 
 ### Key Models
 
@@ -97,10 +150,10 @@ php artisan extensions:disable {id}            # Disable globally or per team
 
 ### Backend Structure
 
-- **Core**: `app/Core/Extensions/`, `app/Core/Modules/`, `app/Core/Navigation/`, `app/Core/Settings/`, `app/Core/Hooks/`, `app/Core/Themes/`
+- **Core**: `app/Core/` — `Context/`, `Extensions/`, `Modules/`, `Navigation/`, `Settings/`, `Hooks/`, `Themes/`
 - **Controllers**: `app/Http/Controllers/Teams/` — TeamController, TeamMemberController, TeamInvitationController, RoleController
 - **Policies**: `app/Policies/` — TeamPolicy, RolePolicy (all use `hasPermissionTo`, never role name checks)
-- **Middleware**: `SetPermissionsTeamId` (Spatie context), `EnsureTeamMembership` (team access + optional permission check)
+- **Middleware**: `SetPermissionsTeamId` (Spatie context), `ConfigureTeamMailer` (team-specific mail config), `EnsureTeamMembership` (team access + optional permission check), `SetAppLocale`, `SetTeamUrlDefaults`
 - **Actions**: `app/Actions/Teams/CreateTeam` — creates team + owner role + assigns all permissions
 - **Extensions**: `extensions/modules/{slug}/` and `extensions/themes/{slug}/` with `extension.json` manifest
 
@@ -112,6 +165,27 @@ php artisan extensions:disable {id}            # Disable globally or per team
 - **Pages**: `resources/js/pages/` (core), `extensions/modules/*/resources/js/pages/` (modules), `extensions/themes/*/resources/js/overrides/` (theme overrides)
 - **Routes**: Wayfinder auto-generates type-safe route helpers in `resources/js/routes/`
 - **Permissions injected**: `HandleInertiaRequests` shares `auth.permissions` as `string[]`
+- **UI stack**: Tailwind CSS v4, Radix UI primitives (shadcn/ui pattern), Tanstack Query/Form/Table, Lucide icons
+- **ESLint**: flat config with import ordering enforced — keep `@/` imports after external packages
+
+### Testing
+
+- **Framework**: Pest 4 (PHPUnit wrapper). Feature tests use `RefreshDatabase` trait (auto-applied via `tests/Pest.php`).
+- **Database**: SQLite in-memory for tests.
+- **Helpers**:
+  - `setupTeamAuth($user, $team)` — sets permissions team context + acts as user + switches team
+  - `CreatesTeams` trait (`tests/Concerns/CreatesTeams.php`) — `createTeamWithOwner()`, `createTeamForUser()`, `addMemberToTeam()`, `givePermission()`
+  - `WithAilesInvisibles` trait — enables the ailes-invisibles module for tests that need it
+- **Test location**: `tests/Feature/` for feature tests, `tests/Unit/` for unit tests
+
+### CI (GitHub Actions)
+
+Three workflows on push/PR to `main` and `develop`:
+- **lint.yml**: Pint + Prettier + ESLint + TypeScript check
+- **tests.yml**: Pest tests on PHP 8.4/8.5 × SQLite/PostgreSQL matrix. Also builds assets and runs `types:check`.
+- **release.yml**: Asset compilation + GitHub release on tags
+
+Both lint and test workflows run `extensions:scan`, `extensions:sync`, enable all modules, and run `wayfinder:generate` before checks.
 
 ### Adding a New Module
 
@@ -123,13 +197,13 @@ php artisan extensions:disable {id}            # Disable globally or per team
 6. Register Policy in `AppServiceProvider::boot()`
 7. Run `php artisan extensions:scan` to register in DB
 8. Run `php artisan extensions:sync` to seed permissions
-9. Run `php artisan extensions:enable {slug} --team=ID` to activate
-10. Run `php artisan migrate` to run module migrations
+9. Run `php artisan extensions:install {slug}` to run migrations
+10. Run `php artisan extensions:enable {slug} --team=ID` to activate
 
 ### Database
 
 - Single shared database, logical isolation via `team_id` column
-- SQLite for tests, configurable for production (MySQL/PostgreSQL)
+- SQLite for local dev/tests, PostgreSQL tested in CI, MySQL supported
 
 ## Critical Rules
 
@@ -140,3 +214,4 @@ php artisan extensions:disable {id}            # Disable globally or per team
 - Permissions are global (not per-team). Roles are per-team.
 - Module pages must use `@/` imports (resolved by Vite relative to `resources/js/`).
 - Module routes are auto-registered via ServiceProvider, wrapped in `{current_team}` prefix with `EnsureTeamMembership` middleware.
+- Run `php artisan wayfinder:generate` after adding/modifying routes to keep frontend route helpers in sync.

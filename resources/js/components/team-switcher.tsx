@@ -59,7 +59,7 @@ export function TeamSwitcher() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground md:h-8 md:p-0 md:justify-center"
+                            className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
                             data-test="team-switcher-trigger"
                         >
                             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-foreground">

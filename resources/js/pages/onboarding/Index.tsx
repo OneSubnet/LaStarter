@@ -67,6 +67,7 @@ export default function OnboardingIndex({ user, team }: Props) {
                 if (selectedRole) {
                     saveStep(3, { role: selectedRole });
                 }
+
                 break;
         }
     };

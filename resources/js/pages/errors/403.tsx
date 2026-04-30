@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { Link } from '@inertiajs/react';
 import { ShieldX } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Forbidden() {
     const { t } = useTranslation();

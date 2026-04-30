@@ -46,8 +46,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/",
-            "Modules\\AilesInvisibles\\": "extensions/modules/ailes-invisibles/src/"
+            "Tests\\": "tests/"
         }
     },
     "scripts": {

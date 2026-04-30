@@ -1,5 +1,5 @@
-import AppLogoIcon from '@/components/app-logo-icon';
 import { useTranslation } from 'react-i18next';
+import AppLogoIcon from '@/components/app-logo-icon';
 
 export default function AppLogo() {
     const { t } = useTranslation();

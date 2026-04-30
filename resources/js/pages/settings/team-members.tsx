@@ -1,5 +1,4 @@
 import { Head, router } from '@inertiajs/react';
-import i18n from 'i18next';
 import {
     flexRender,
     getCoreRowModel,
@@ -9,6 +8,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import type { ColumnDef, SortingState, VisibilityState } from '@tanstack/react-table';
+import i18n from 'i18next';
 import {
     ArrowUpDown,
     ChevronsLeft,
@@ -26,7 +26,6 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-import { formatDate } from '@/lib/format';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import Guard from '@/components/guard';
 import InviteMemberModal from '@/components/invite-member-modal';
@@ -67,6 +66,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useInitials } from '@/hooks/use-initials';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
+import { formatDate } from '@/lib/format';
 import { members as membersUrl } from '@/routes/settings/team';
 import { update as updateMember } from '@/routes/settings/team/members';
 import type {

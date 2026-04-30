@@ -12,7 +12,6 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import CommandPalette from '@/components/command-palette';
 
-import { SidebarRight } from '@/components/sidebar-right';
 import {
     Drawer,
     DrawerContent,
@@ -54,12 +53,10 @@ export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
     headerActions,
-    rightSidebar,
 }: {
     children: ReactNode;
     breadcrumbs?: BreadcrumbItem[];
     headerActions?: ReactNode;
-    rightSidebar?: ReactNode;
 }) {
     const page = usePage();
     const isOpen = page.props.sidebarOpen;
@@ -102,7 +99,7 @@ export default function AppSidebarLayout({
 
             {/* Main content area */}
             <SidebarInset className="pb-20 md:pb-0">
-                <div className="flex flex-1 flex-col gap-4">
+                <div className="flex flex-1 flex-col gap-4 min-h-0">
                     {/* Mobile header */}
                     <div className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-background px-4 md:hidden">
                         <SidebarTrigger />
@@ -130,7 +127,7 @@ export default function AppSidebarLayout({
                     </header>
 
                     {/* Page content */}
-                    <div className="flex flex-1 flex-col gap-4 p-4">
+                    <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
                         {children}
                     </div>
 
@@ -154,9 +151,6 @@ export default function AppSidebarLayout({
                     )}
                 </div>
             </SidebarInset>
-
-            {/* Right sidebar (desktop only) */}
-            {rightSidebar ?? <SidebarRight />}
 
             {/* Mobile drawer for full navigation */}
             <Drawer

@@ -1,5 +1,4 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { type FormEvent } from 'react';
 import {
     flexRender,
     getCoreRowModel,
@@ -134,7 +133,10 @@ export default function Extensions({ extensions }: Props) {
     }), [t]);
 
     const filteredData = useMemo(() => {
-        if (typeFilter === 'all') return extensions;
+        if (typeFilter === 'all') {
+return extensions;
+}
+
         return extensions.filter((ext) => ext.type === typeFilter);
     }, [extensions, typeFilter]);
 

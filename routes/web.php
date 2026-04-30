@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DashboardDataController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Settings\ExtensionController;
@@ -63,7 +62,6 @@ Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
-        Route::get('dashboard/data', DashboardDataController::class)->name('dashboard.data');
         Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
         Route::post('onboarding', [OnboardingController::class, 'update'])->name('onboarding.update');
 

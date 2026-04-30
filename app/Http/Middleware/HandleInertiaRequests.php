@@ -11,6 +11,7 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
+use Modules\AilesInvisibles\Models\Conversation;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -46,6 +47,7 @@ class HandleInertiaRequests extends Middleware
             'footerLinks' => fn () => $this->resolveFooterLinks($ctx),
             'unreadNotifications' => fn () => $this->resolveUnreadNotificationCount($ctx),
             'recentNotifications' => fn () => $this->resolveRecentNotifications($ctx),
+            'unreadMessageCount' => fn () => $this->resolveUnreadMessageCount($ctx),
         ];
     }
 
@@ -181,6 +183,35 @@ class HandleInertiaRequests extends Middleware
         }
 
         return Notification::forUser($user->id)->unread()->count();
+    }
+
+    protected function resolveUnreadMessageCount(AppContext $ctx): int
+    {
+        $user = $ctx->user();
+        $team = $ctx->team();
+
+        if (! $user || ! $team) {
+            return 0;
+        }
+
+        if (! class_exists(Conversation::class)) {
+            return 0;
+        }
+
+        try {
+            $conversationClass = Conversation::class;
+
+            return $conversationClass::notArchived()
+                ->whereHas('participants', fn ($q) => $q->where('participant_type', get_class($user))->where('participant_id', $user->id))
+                ->withCount(['messages as unread_count' => fn ($q) => $q
+                    ->where(fn ($q2) => $q2->where('sender_type', '!=', get_class($user))->orWhere(fn ($q3) => $q3->where('sender_type', get_class($user))->where('sender_id', '!=', $user->id)))
+                    ->whereDoesntHave('readReceipts', fn ($q2) => $q2->where('reader_type', get_class($user))->where('reader_id', $user->id)),
+                ])
+                ->get()
+                ->sum('unread_count');
+        } catch (\Throwable) {
+            return 0;
+        }
     }
 
     protected function resolveRecentNotifications(AppContext $ctx): array
