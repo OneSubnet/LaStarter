@@ -60,25 +60,25 @@ type AuditEntry = {
 
 function formatTimeAgo(dateStr: string | null): string {
     if (!dateStr) {
-return '';
-}
+        return '';
+    }
 
     const diff = Date.now() - new Date(dateStr).getTime();
     const minutes = Math.floor(diff / 60000);
 
     if (minutes < 1) {
-return 'just now';
-}
+        return 'just now';
+    }
 
     if (minutes < 60) {
-return `${minutes}m ago`;
-}
+        return `${minutes}m ago`;
+    }
 
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-return `${hours}h ago`;
-}
+        return `${hours}h ago`;
+    }
 
     const days = Math.floor(hours / 24);
 
@@ -87,8 +87,8 @@ return `${hours}h ago`;
 
 function formatDateTime(dateStr: string | null): string {
     if (!dateStr) {
-return '—';
-}
+        return '—';
+    }
 
     return fmtDateTimeLib(dateStr, {
         day: 'numeric',
@@ -103,8 +103,16 @@ export function SidebarRight() {
     const t = i18n.t.bind(i18n);
     const page = usePage();
 
-    const currentTeam = page.props.currentTeam as { id: number; name: string; slug: string; iconUrl?: string } | undefined;
-    const teams = (page.props.teams as { id: number; name: string; slug: string; iconUrl?: string }[]) ?? [];
+    const currentTeam = page.props.currentTeam as
+        | { id: number; name: string; slug: string; iconUrl?: string }
+        | undefined;
+    const teams =
+        (page.props.teams as {
+            id: number;
+            name: string;
+            slug: string;
+            iconUrl?: string;
+        }[]) ?? [];
     const teamMembers = (page.props.teamMembers as TeamMember[]) ?? [];
     const auditLogs = (page.props.auditLogs as AuditEntry[]) ?? [];
 
@@ -112,7 +120,10 @@ export function SidebarRight() {
 
     const switchTeam = (team: { slug: string }) => {
         router.visit(
-            switchMethod({ current_team: currentTeam?.slug ?? '', team: team.slug }).url,
+            switchMethod({
+                current_team: currentTeam?.slug ?? '',
+                team: team.slug,
+            }).url,
             { method: 'post' },
         );
     };
@@ -133,17 +144,25 @@ export function SidebarRight() {
                             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                                 {currentTeam?.iconUrl ? (
                                     <Avatar className="size-8 rounded-lg">
-                                        <AvatarImage src={currentTeam.iconUrl} alt={currentTeam.name} />
+                                        <AvatarImage
+                                            src={currentTeam.iconUrl}
+                                            alt={currentTeam.name}
+                                        />
                                     </Avatar>
                                 ) : (
                                     <span className="text-xs font-semibold">
-                                        {currentTeam ? getInitials(currentTeam.name) : '?'}
+                                        {currentTeam
+                                            ? getInitials(currentTeam.name)
+                                            : '?'}
                                     </span>
                                 )}
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
-                                    {currentTeam?.name ?? t('components.team_switcher.select_team')}
+                                    {currentTeam?.name ??
+                                        t(
+                                            'components.team_switcher.select_team',
+                                        )}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground">
                                     {currentTeam?.slug}
@@ -169,7 +188,10 @@ export function SidebarRight() {
                                 <div className="flex size-6 items-center justify-center rounded-sm border">
                                     {team.iconUrl ? (
                                         <Avatar className="size-6 rounded-sm">
-                                            <AvatarImage src={team.iconUrl} alt={team.name} />
+                                            <AvatarImage
+                                                src={team.iconUrl}
+                                                alt={team.name}
+                                            />
                                         </Avatar>
                                     ) : (
                                         <span className="text-xs">
@@ -208,7 +230,8 @@ export function SidebarRight() {
                         {/* Members */}
                         <section className="space-y-3">
                             <SidebarGroupLabel className="text-xs font-medium tracking-wide text-muted-foreground">
-                                {t('components.sidebar_right.members')} ({teamMembers.length})
+                                {t('components.sidebar_right.members')} (
+                                {teamMembers.length})
                             </SidebarGroupLabel>
                             <div className="space-y-1">
                                 {teamMembers.map((member) => {
@@ -222,14 +245,17 @@ export function SidebarRight() {
                                             <div className="relative">
                                                 <Avatar className="h-7 w-7">
                                                     {member.avatar && (
-                                                        <AvatarImage src={member.avatar} alt={member.name} />
+                                                        <AvatarImage
+                                                            src={member.avatar}
+                                                            alt={member.name}
+                                                        />
                                                     )}
                                                     <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
                                                         {initials}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <span
-                                                    className={`absolute -bottom-0.5 -right-0.5 block size-2.5 rounded-full ring-2 ring-background ${
+                                                    className={`absolute -right-0.5 -bottom-0.5 block size-2.5 rounded-full ring-2 ring-background ${
                                                         member.is_online
                                                             ? 'bg-green-500'
                                                             : 'bg-muted-foreground/30'
@@ -241,7 +267,9 @@ export function SidebarRight() {
                                                     {member.name}
                                                 </div>
                                                 <div className="truncate text-xs text-muted-foreground">
-                                                    {member.is_online ? t('common.online') : member.role_label}
+                                                    {member.is_online
+                                                        ? t('common.online')
+                                                        : member.role_label}
                                                 </div>
                                             </div>
                                         </div>
@@ -265,8 +293,10 @@ export function SidebarRight() {
                                         <button
                                             key={entry.id}
                                             type="button"
-                                            className="flex w-full gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-accent transition-colors"
-                                            onClick={() => setSelectedLog(entry)}
+                                            className="flex w-full gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
+                                            onClick={() =>
+                                                setSelectedLog(entry)
+                                            }
                                         >
                                             <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted">
                                                 <Activity className="size-3 text-muted-foreground" />
@@ -281,8 +311,11 @@ export function SidebarRight() {
                                                     </span>
                                                 </p>
                                                 <p className="text-[11px] text-muted-foreground/60">
-                                                    {formatTimeAgo(entry.created_at)}
-                                                    {entry.module && ` · ${entry.module}`}
+                                                    {formatTimeAgo(
+                                                        entry.created_at,
+                                                    )}
+                                                    {entry.module &&
+                                                        ` · ${entry.module}`}
                                                 </p>
                                             </div>
                                         </button>
@@ -295,7 +328,10 @@ export function SidebarRight() {
             </SidebarContent>
 
             {/* Audit log detail dialog */}
-            <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+            <Dialog
+                open={!!selectedLog}
+                onOpenChange={(open) => !open && setSelectedLog(null)}
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
@@ -308,42 +344,58 @@ export function SidebarRight() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="rounded-lg border p-3">
-                                    <p className="text-xs text-muted-foreground">User</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        User
+                                    </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {selectedLog.user ?? 'System'}
                                     </p>
                                 </div>
                                 <div className="rounded-lg border p-3">
-                                    <p className="text-xs text-muted-foreground">Action</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Action
+                                    </p>
                                     <Badge variant="secondary" className="mt-1">
                                         {selectedLog.action}
                                     </Badge>
                                 </div>
                                 <div className="rounded-lg border p-3">
-                                    <p className="text-xs text-muted-foreground">Module</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Module
+                                    </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {selectedLog.module ?? '—'}
                                     </p>
                                 </div>
                                 <div className="rounded-lg border p-3">
-                                    <p className="text-xs text-muted-foreground">Date</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Date
+                                    </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {formatDateTime(selectedLog.created_at)}
                                     </p>
                                 </div>
                             </div>
 
-                            {selectedLog.properties && Object.keys(selectedLog.properties).length > 0 && (
-                                <>
-                                    <Separator />
-                                    <div>
-                                        <p className="text-xs text-muted-foreground mb-2">Details</p>
-                                        <pre className="rounded-lg bg-muted p-3 text-xs overflow-x-auto max-h-60">
-                                            {JSON.stringify(selectedLog.properties, null, 2)}
-                                        </pre>
-                                    </div>
-                                </>
-                            )}
+                            {selectedLog.properties &&
+                                Object.keys(selectedLog.properties).length >
+                                    0 && (
+                                    <>
+                                        <Separator />
+                                        <div>
+                                            <p className="mb-2 text-xs text-muted-foreground">
+                                                Details
+                                            </p>
+                                            <pre className="max-h-60 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
+                                                {JSON.stringify(
+                                                    selectedLog.properties,
+                                                    null,
+                                                    2,
+                                                )}
+                                            </pre>
+                                        </div>
+                                    </>
+                                )}
                         </div>
                     )}
                 </DialogContent>

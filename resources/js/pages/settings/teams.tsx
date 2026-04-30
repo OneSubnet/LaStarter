@@ -89,16 +89,21 @@ export default function TeamsIndex({ teams }: Props) {
                                                     asChild
                                                 >
                                                     <Link
-                                                        href={general(
-                                                            team.slug,
-                                                        ).url}
+                                                        href={
+                                                            general(team.slug)
+                                                                .url
+                                                        }
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>{t('settings.teams.view_tooltip')}</p>
+                                                <p>
+                                                    {t(
+                                                        'settings.teams.view_tooltip',
+                                                    )}
+                                                </p>
                                             </TooltipContent>
                                         </Tooltip>
                                     ) : (
@@ -111,16 +116,21 @@ export default function TeamsIndex({ teams }: Props) {
                                                     asChild
                                                 >
                                                     <Link
-                                                        href={general(
-                                                            team.slug,
-                                                        ).url}
+                                                        href={
+                                                            general(team.slug)
+                                                                .url
+                                                        }
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>{t('settings.teams.edit_tooltip')}</p>
+                                                <p>
+                                                    {t(
+                                                        'settings.teams.edit_tooltip',
+                                                    )}
+                                                </p>
                                             </TooltipContent>
                                         </Tooltip>
                                     )}

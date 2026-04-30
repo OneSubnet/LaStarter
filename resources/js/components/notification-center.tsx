@@ -24,30 +24,38 @@ type Notification = {
 };
 
 function timeAgo(dateStr: string): string {
-    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    const seconds = Math.floor(
+        (Date.now() - new Date(dateStr).getTime()) / 1000,
+    );
 
     if (seconds < 60) {
-return `${seconds}s`;
-}
+        return `${seconds}s`;
+    }
 
     const minutes = Math.floor(seconds / 60);
 
     if (minutes < 60) {
-return `${minutes}m`;
-}
+        return `${minutes}m`;
+    }
 
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-return `${hours}h`;
-}
+        return `${hours}h`;
+    }
 
     const days = Math.floor(hours / 24);
 
     return `${days}d`;
 }
 
-function NotificationItem({ notification, onRead }: { notification: Notification; onRead: (id: number) => void }) {
+function NotificationItem({
+    notification,
+    onRead,
+}: {
+    notification: Notification;
+    onRead: (id: number) => void;
+}) {
     const isUnread = notification.read_at === null;
 
     return (
@@ -63,7 +71,9 @@ function NotificationItem({ notification, onRead }: { notification: Notification
             }}
         >
             <div className="flex items-start justify-between gap-2">
-                <span className={`text-sm ${isUnread ? 'font-medium' : 'text-muted-foreground'}`}>
+                <span
+                    className={`text-sm ${isUnread ? 'font-medium' : 'text-muted-foreground'}`}
+                >
                     {notification.title}
                 </span>
                 <span className="shrink-0 text-[10px] text-muted-foreground">
@@ -71,7 +81,9 @@ function NotificationItem({ notification, onRead }: { notification: Notification
                 </span>
             </div>
             {notification.body && (
-                <p className="line-clamp-2 text-xs text-muted-foreground">{notification.body}</p>
+                <p className="line-clamp-2 text-xs text-muted-foreground">
+                    {notification.body}
+                </p>
             )}
             {isUnread && (
                 <div className="mt-1 flex items-center gap-1 text-[10px] text-primary">
@@ -97,14 +109,18 @@ export function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const teamSlug = (page.props.currentTeam as { slug: string } | undefined)?.slug ?? '';
+    const teamSlug =
+        (page.props.currentTeam as { slug: string } | undefined)?.slug ?? '';
 
     const fetchNotifications = async () => {
         setLoading(true);
 
         try {
             const response = await fetch(`/${teamSlug}/notifications`, {
-                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
                 credentials: 'same-origin',
             });
 
@@ -123,14 +139,16 @@ export function NotificationBell() {
         setOpen(isOpen);
 
         if (isOpen) {
-fetchNotifications();
-}
+            fetchNotifications();
+        }
     };
 
     const handleMarkRead = async (id: number) => {
         const notification = notifications.find((n) => n.id === id);
         setNotifications((prev) =>
-            prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
+            prev.map((n) =>
+                n.id === id ? { ...n, read_at: new Date().toISOString() } : n,
+            ),
         );
 
         try {
@@ -153,7 +171,10 @@ fetchNotifications();
 
     const handleMarkAllRead = async () => {
         setNotifications((prev) =>
-            prev.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })),
+            prev.map((n) => ({
+                ...n,
+                read_at: n.read_at ?? new Date().toISOString(),
+            })),
         );
 
         try {
@@ -171,10 +192,14 @@ fetchNotifications();
     return (
         <Drawer open={open} onOpenChange={handleOpenChange}>
             <DrawerTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-8 w-8">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-8 w-8"
+                >
                     <Bell className="h-4 w-4" />
                     {unreadCount > 0 && (
-                        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                        <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
                             {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                     )}
@@ -184,7 +209,12 @@ fetchNotifications();
                 <DrawerHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                     <DrawerTitle>{t('notifications.title')}</DrawerTitle>
                     {unreadCount > 0 && (
-                        <Button variant="ghost" size="sm" className="text-xs" onClick={handleMarkAllRead}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                            onClick={handleMarkAllRead}
+                        >
                             <Check className="mr-1 h-3 w-3" />
                             {t('notifications.mark_all_read')}
                         </Button>
@@ -199,13 +229,19 @@ fetchNotifications();
                     ) : notifications.length > 0 ? (
                         <div className="space-y-1">
                             {notifications.map((n) => (
-                                <NotificationItem key={n.id} notification={n} onRead={handleMarkRead} />
+                                <NotificationItem
+                                    key={n.id}
+                                    notification={n}
+                                    onRead={handleMarkRead}
+                                />
                             ))}
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-muted-foreground">
                             <Bell className="h-8 w-8" />
-                            <p className="text-sm">{t('notifications.empty')}</p>
+                            <p className="text-sm">
+                                {t('notifications.empty')}
+                            </p>
                         </div>
                     )}
                 </ScrollArea>

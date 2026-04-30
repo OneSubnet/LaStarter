@@ -19,7 +19,10 @@ import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { inertiaSubmit, zodValidator } from '@/lib/inertia-form';
 import { mailSettingsSchema } from '@/lib/schemas';
 import { mail as mailUrl } from '@/routes/settings/team';
-import { update as updateUrl, test as testUrl } from '@/routes/settings/team/mail';
+import {
+    update as updateUrl,
+    test as testUrl,
+} from '@/routes/settings/team/mail';
 
 type Props = {
     mail: {
@@ -101,7 +104,9 @@ export default function TeamMail({ mail }: Props) {
                     className="space-y-6"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="host">{t('settings.team.mail.host_label')}</Label>
+                        <Label htmlFor="host">
+                            {t('settings.team.mail.host_label')}
+                        </Label>
                         <form.Field name="host">
                             {(field) => (
                                 <>
@@ -112,13 +117,15 @@ export default function TeamMail({ mail }: Props) {
                                             field.handleChange(e.target.value)
                                         }
                                         onBlur={field.handleBlur}
-                                        placeholder={t('settings.team.mail.host_placeholder')}
+                                        placeholder={t(
+                                            'settings.team.mail.host_placeholder',
+                                        )}
                                     />
                                     <InputError
                                         message={
-                                            field.state.meta.errors?.[0] as
+                                            (field.state.meta.errors?.[0] as
                                                 | string
-                                                | undefined ??
+                                                | undefined) ??
                                             serverErrors.host
                                         }
                                     />
@@ -129,7 +136,9 @@ export default function TeamMail({ mail }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="port">{t('settings.team.mail.port_label')}</Label>
+                            <Label htmlFor="port">
+                                {t('settings.team.mail.port_label')}
+                            </Label>
                             <form.Field name="port">
                                 {(field) => (
                                     <>
@@ -144,13 +153,16 @@ export default function TeamMail({ mail }: Props) {
                                                 )
                                             }
                                             onBlur={field.handleBlur}
-                                            placeholder={t('settings.team.mail.port_placeholder')}
+                                            placeholder={t(
+                                                'settings.team.mail.port_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={
-                                                field.state.meta.errors?.[0] as
+                                                (field.state.meta
+                                                    .errors?.[0] as
                                                     | string
-                                                    | undefined ??
+                                                    | undefined) ??
                                                 serverErrors.port
                                             }
                                         />
@@ -160,7 +172,9 @@ export default function TeamMail({ mail }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="encryption">{t('settings.team.mail.encryption_label')}</Label>
+                            <Label htmlFor="encryption">
+                                {t('settings.team.mail.encryption_label')}
+                            </Label>
                             <form.Field name="encryption">
                                 {(field) => (
                                     <>
@@ -180,13 +194,19 @@ export default function TeamMail({ mail }: Props) {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="tls">
-                                                    {t('settings.team.mail.encryption_tls')}
+                                                    {t(
+                                                        'settings.team.mail.encryption_tls',
+                                                    )}
                                                 </SelectItem>
                                                 <SelectItem value="ssl">
-                                                    {t('settings.team.mail.encryption_ssl')}
+                                                    {t(
+                                                        'settings.team.mail.encryption_ssl',
+                                                    )}
                                                 </SelectItem>
                                                 <SelectItem value="none">
-                                                    {t('settings.team.mail.encryption_none')}
+                                                    {t(
+                                                        'settings.team.mail.encryption_none',
+                                                    )}
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>
@@ -201,7 +221,9 @@ export default function TeamMail({ mail }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="username">{t('settings.team.mail.username_label')}</Label>
+                            <Label htmlFor="username">
+                                {t('settings.team.mail.username_label')}
+                            </Label>
                             <form.Field name="username">
                                 {(field) => (
                                     <>
@@ -209,10 +231,14 @@ export default function TeamMail({ mail }: Props) {
                                             id="username"
                                             value={field.state.value}
                                             onChange={(e) =>
-                                                field.handleChange(e.target.value)
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
                                             }
                                             onBlur={field.handleBlur}
-                                            placeholder={t('settings.team.mail.username_placeholder')}
+                                            placeholder={t(
+                                                'settings.team.mail.username_placeholder',
+                                            )}
                                             autoComplete="off"
                                         />
                                         <InputError
@@ -224,7 +250,9 @@ export default function TeamMail({ mail }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="password">{t('settings.team.mail.password_label')}</Label>
+                            <Label htmlFor="password">
+                                {t('settings.team.mail.password_label')}
+                            </Label>
                             <form.Field name="password">
                                 {(field) => (
                                     <>
@@ -233,10 +261,14 @@ export default function TeamMail({ mail }: Props) {
                                             type="password"
                                             value={field.state.value}
                                             onChange={(e) =>
-                                                field.handleChange(e.target.value)
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
                                             }
                                             onBlur={field.handleBlur}
-                                            placeholder={t('settings.team.mail.password_placeholder')}
+                                            placeholder={t(
+                                                'settings.team.mail.password_placeholder',
+                                            )}
                                             autoComplete="new-password"
                                         />
                                         <InputError
@@ -250,7 +282,9 @@ export default function TeamMail({ mail }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="from_address">{t('settings.team.mail.from_address_label')}</Label>
+                            <Label htmlFor="from_address">
+                                {t('settings.team.mail.from_address_label')}
+                            </Label>
                             <form.Field name="from_address">
                                 {(field) => (
                                     <>
@@ -259,16 +293,21 @@ export default function TeamMail({ mail }: Props) {
                                             type="email"
                                             value={field.state.value}
                                             onChange={(e) =>
-                                                field.handleChange(e.target.value)
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
                                             }
                                             onBlur={field.handleBlur}
-                                            placeholder={t('settings.team.mail.from_address_placeholder')}
+                                            placeholder={t(
+                                                'settings.team.mail.from_address_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={
-                                                field.state.meta.errors?.[0] as
+                                                (field.state.meta
+                                                    .errors?.[0] as
                                                     | string
-                                                    | undefined ??
+                                                    | undefined) ??
                                                 serverErrors.from_address
                                             }
                                         />
@@ -278,7 +317,9 @@ export default function TeamMail({ mail }: Props) {
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="from_name">{t('settings.team.mail.from_name_label')}</Label>
+                            <Label htmlFor="from_name">
+                                {t('settings.team.mail.from_name_label')}
+                            </Label>
                             <form.Field name="from_name">
                                 {(field) => (
                                     <>
@@ -286,10 +327,14 @@ export default function TeamMail({ mail }: Props) {
                                             id="from_name"
                                             value={field.state.value}
                                             onChange={(e) =>
-                                                field.handleChange(e.target.value)
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
                                             }
                                             onBlur={field.handleBlur}
-                                            placeholder={t('settings.team.mail.from_name_placeholder')}
+                                            placeholder={t(
+                                                'settings.team.mail.from_name_placeholder',
+                                            )}
                                         />
                                         <InputError
                                             message={serverErrors.from_name}
@@ -302,14 +347,19 @@ export default function TeamMail({ mail }: Props) {
 
                     <div className="flex items-center gap-3">
                         <form.Subscribe
-                            selector={(state) => [state.canSubmit, state.isSubmitting]}
+                            selector={(state) => [
+                                state.canSubmit,
+                                state.isSubmitting,
+                            ]}
                         >
                             {([canSubmit, isSubmitting]) => (
                                 <Button
                                     type="submit"
                                     disabled={!canSubmit || isSubmitting}
                                 >
-                                    {isSubmitting ? t('settings.team.mail.saving') : t('settings.team.mail.save')}
+                                    {isSubmitting
+                                        ? t('settings.team.mail.saving')
+                                        : t('settings.team.mail.save')}
                                 </Button>
                             )}
                         </form.Subscribe>
@@ -321,7 +371,9 @@ export default function TeamMail({ mail }: Props) {
                             onClick={handleTestEmail}
                         >
                             <Mail className="h-4 w-4" />
-                            {sendingTest ? t('settings.team.mail.test_sending') : t('settings.team.mail.test_button')}
+                            {sendingTest
+                                ? t('settings.team.mail.test_sending')
+                                : t('settings.team.mail.test_button')}
                         </Button>
                     </div>
                 </form>

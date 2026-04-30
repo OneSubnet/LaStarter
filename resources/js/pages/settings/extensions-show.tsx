@@ -47,7 +47,13 @@ type Extension = {
     homepage: string | null;
     keywords: string[];
     lastarter_version: string | null;
-    settings: { key: string; label: string; type: string; default?: string; options?: { label: string; value: string }[] }[];
+    settings: {
+        key: string;
+        label: string;
+        type: string;
+        default?: string;
+        options?: { label: string; value: string }[];
+    }[];
 };
 
 type Props = {
@@ -59,19 +65,39 @@ export default function ExtensionsShow({ extension }: Props) {
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
 
-    const stateConfig = useMemo<Record<
-        ExtensionState,
-        {
-            label: string;
-            variant: 'default' | 'secondary' | 'destructive' | 'outline';
-        }
-    >>(() => ({
-        enabled: { label: t('settings.extensions.status_active'), variant: 'default' },
-        disabled: { label: t('settings.extensions.status_disabled'), variant: 'secondary' },
-        not_installed: { label: t('settings.extensions.status_not_installed'), variant: 'outline' },
-        errored: { label: t('settings.extensions.status_error'), variant: 'destructive' },
-        incompatible: { label: t('settings.extensions.status_incompatible'), variant: 'destructive' },
-    }), [t]);
+    const stateConfig = useMemo<
+        Record<
+            ExtensionState,
+            {
+                label: string;
+                variant: 'default' | 'secondary' | 'destructive' | 'outline';
+            }
+        >
+    >(
+        () => ({
+            enabled: {
+                label: t('settings.extensions.status_active'),
+                variant: 'default',
+            },
+            disabled: {
+                label: t('settings.extensions.status_disabled'),
+                variant: 'secondary',
+            },
+            not_installed: {
+                label: t('settings.extensions.status_not_installed'),
+                variant: 'outline',
+            },
+            errored: {
+                label: t('settings.extensions.status_error'),
+                variant: 'destructive',
+            },
+            incompatible: {
+                label: t('settings.extensions.status_incompatible'),
+                variant: 'destructive',
+            },
+        }),
+        [t],
+    );
 
     const config = stateConfig[extension.state];
 
@@ -146,7 +172,9 @@ export default function ExtensionsShow({ extension }: Props) {
                                                     )
                                                 }
                                             >
-                                                {t('settings.extensions.disable')}
+                                                {t(
+                                                    'settings.extensions.disable',
+                                                )}
                                             </Button>
                                         ) : (
                                             <Button
@@ -161,7 +189,9 @@ export default function ExtensionsShow({ extension }: Props) {
                                                     )
                                                 }
                                             >
-                                                {t('settings.extensions.enable')}
+                                                {t(
+                                                    'settings.extensions.enable',
+                                                )}
                                             </Button>
                                         )}
                                         <Button
@@ -204,9 +234,7 @@ export default function ExtensionsShow({ extension }: Props) {
                             <Tag className="h-4 w-4" />
                             {t('settings.extensions.version')}
                         </div>
-                        <p className="mt-1 font-medium">
-                            v{extension.version}
-                        </p>
+                        <p className="mt-1 font-medium">v{extension.version}</p>
                     </div>
 
                     {extension.author && (
@@ -240,7 +268,9 @@ export default function ExtensionsShow({ extension }: Props) {
                                 {t('settings.extensions.installed')}
                             </div>
                             <p className="mt-1 font-medium">
-                                {new Date(extension.installed_at).toLocaleDateString()}
+                                {new Date(
+                                    extension.installed_at,
+                                ).toLocaleDateString()}
                             </p>
                         </div>
                     )}

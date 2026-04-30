@@ -77,17 +77,23 @@ export default function TwoFactorRecoveryCodes({
                             className="size-4"
                             aria-hidden="true"
                         />
-                        {codesAreVisible ? t('components.two_factor_recovery.hide') : t('components.two_factor_recovery.view')}
+                        {codesAreVisible
+                            ? t('components.two_factor_recovery.hide')
+                            : t('components.two_factor_recovery.view')}
                     </Button>
 
                     {canRegenerateCodes && (
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                router.post(regenerateRecoveryCodes().url, undefined, {
-                                    preserveScroll: true,
-                                    onSuccess: () => fetchRecoveryCodes(),
-                                });
+                                router.post(
+                                    regenerateRecoveryCodes().url,
+                                    undefined,
+                                    {
+                                        preserveScroll: true,
+                                        onSuccess: () => fetchRecoveryCodes(),
+                                    },
+                                );
                             }}
                         >
                             <Button
@@ -95,7 +101,8 @@ export default function TwoFactorRecoveryCodes({
                                 type="submit"
                                 aria-describedby="regenerate-warning"
                             >
-                                <RefreshCw /> {t('components.two_factor_recovery.regenerate')}
+                                <RefreshCw />{' '}
+                                {t('components.two_factor_recovery.regenerate')}
                             </Button>
                         </form>
                     )}
@@ -147,7 +154,9 @@ export default function TwoFactorRecoveryCodes({
 
                                 <div className="text-xs text-muted-foreground select-none">
                                     <p id="regenerate-warning">
-                                        {t('components.two_factor_recovery.code_used')}
+                                        {t(
+                                            'components.two_factor_recovery.code_used',
+                                        )}
                                     </p>
                                 </div>
                             </>

@@ -66,12 +66,12 @@ export default function Security({
                 onSuccess: () => formApi.reset(),
                 onError: (errors) => {
                     if (errors.password) {
-currentPasswordInput.current?.focus();
-}
+                        currentPasswordInput.current?.focus();
+                    }
 
                     if (errors.current_password) {
-currentPasswordInput.current?.focus();
-}
+                        currentPasswordInput.current?.focus();
+                    }
                 },
             });
         },
@@ -101,7 +101,9 @@ currentPasswordInput.current?.focus();
                     className="space-y-6"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="current_password">{t('settings.security.current_password_label')}</Label>
+                        <Label htmlFor="current_password">
+                            {t('settings.security.current_password_label')}
+                        </Label>
                         <form.Field name="current_password">
                             {(field) => (
                                 <>
@@ -115,7 +117,9 @@ currentPasswordInput.current?.focus();
                                         onBlur={field.handleBlur}
                                         className="mt-1 block w-full"
                                         autoComplete="current-password"
-                                        placeholder={t('settings.security.current_password_placeholder')}
+                                        placeholder={t(
+                                            'settings.security.current_password_placeholder',
+                                        )}
                                     />
                                     <InputError
                                         message={
@@ -129,7 +133,9 @@ currentPasswordInput.current?.focus();
                         </form.Field>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="password">{t('settings.security.new_password_label')}</Label>
+                        <Label htmlFor="password">
+                            {t('settings.security.new_password_label')}
+                        </Label>
                         <form.Field name="password">
                             {(field) => (
                                 <>
@@ -142,7 +148,9 @@ currentPasswordInput.current?.focus();
                                         onBlur={field.handleBlur}
                                         className="mt-1 block w-full"
                                         autoComplete="new-password"
-                                        placeholder={t('settings.security.new_password_placeholder')}
+                                        placeholder={t(
+                                            'settings.security.new_password_placeholder',
+                                        )}
                                     />
                                     <InputError
                                         message={
@@ -171,7 +179,9 @@ currentPasswordInput.current?.focus();
                                         onBlur={field.handleBlur}
                                         className="mt-1 block w-full"
                                         autoComplete="new-password"
-                                        placeholder={t('settings.security.confirm_password_placeholder')}
+                                        placeholder={t(
+                                            'settings.security.confirm_password_placeholder',
+                                        )}
                                     />
                                     <InputError
                                         message={
@@ -185,7 +195,10 @@ currentPasswordInput.current?.focus();
                         </form.Field>
                     </div>
                     <form.Subscribe
-                        selector={(state) => [state.canSubmit, state.isSubmitting]}
+                        selector={(state) => [
+                            state.canSubmit,
+                            state.isSubmitting,
+                        ]}
                     >
                         {([canSubmit, isSubmitting]) => (
                             <div className="flex items-center gap-4">
@@ -194,7 +207,9 @@ currentPasswordInput.current?.focus();
                                     disabled={!canSubmit || isSubmitting}
                                     data-test="update-password-button"
                                 >
-                                    {isSubmitting ? t('settings.security.saving') : t('settings.security.save')}
+                                    {isSubmitting
+                                        ? t('settings.security.saving')
+                                        : t('settings.security.save')}
                                 </Button>
                             </div>
                         )}
@@ -207,7 +222,9 @@ currentPasswordInput.current?.focus();
                     <Heading
                         variant="small"
                         title={t('settings.security.two_factor_title')}
-                        description={t('settings.security.two_factor_description')}
+                        description={t(
+                            'settings.security.two_factor_description',
+                        )}
                     />
                     {twoFactorEnabled ? (
                         <div className="flex flex-col items-start justify-start space-y-4">
@@ -259,7 +276,9 @@ currentPasswordInput.current?.focus();
                                             );
                                         }}
                                     >
-                                        <Button type="submit">{t('settings.security.enable_2fa')}</Button>
+                                        <Button type="submit">
+                                            {t('settings.security.enable_2fa')}
+                                        </Button>
                                     </form>
                                 )}
                             </div>

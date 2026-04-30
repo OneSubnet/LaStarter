@@ -40,7 +40,10 @@ export default function Profile({
         defaultValues: {
             name: auth.user.name as string,
             email: auth.user.email as string,
-            locale: (auth.user as { locale?: string }).locale || i18n.language || 'en',
+            locale:
+                (auth.user as { locale?: string }).locale ||
+                i18n.language ||
+                'en',
         },
         validators: { onChange: zodValidator(profileSchema) },
         onSubmit: ({ value }) => {
@@ -76,7 +79,9 @@ export default function Profile({
                     className="space-y-6"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="name">{t('settings.profile.name_label')}</Label>
+                        <Label htmlFor="name">
+                            {t('settings.profile.name_label')}
+                        </Label>
                         <form.Field name="name">
                             {(field) => (
                                 <>
@@ -89,7 +94,9 @@ export default function Profile({
                                         }
                                         onBlur={field.handleBlur}
                                         autoComplete="name"
-                                        placeholder={t('settings.profile.name_placeholder')}
+                                        placeholder={t(
+                                            'settings.profile.name_placeholder',
+                                        )}
                                     />
                                     <InputError
                                         className="mt-2"
@@ -105,7 +112,9 @@ export default function Profile({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">{t('settings.profile.email_label')}</Label>
+                        <Label htmlFor="email">
+                            {t('settings.profile.email_label')}
+                        </Label>
                         <form.Field name="email">
                             {(field) => (
                                 <>
@@ -119,7 +128,9 @@ export default function Profile({
                                         }
                                         onBlur={field.handleBlur}
                                         autoComplete="username"
-                                        placeholder={t('settings.profile.email_placeholder')}
+                                        placeholder={t(
+                                            'settings.profile.email_placeholder',
+                                        )}
                                     />
                                     <InputError
                                         className="mt-2"
@@ -135,7 +146,9 @@ export default function Profile({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="locale">{t('settings.profile.locale_label')}</Label>
+                        <Label htmlFor="locale">
+                            {t('settings.profile.locale_label')}
+                        </Label>
                         <form.Field name="locale">
                             {(field) => (
                                 <Select
@@ -150,7 +163,10 @@ export default function Profile({
                                     </SelectTrigger>
                                     <SelectContent>
                                         {availableLocales.map((loc) => (
-                                            <SelectItem key={loc.value} value={loc.value}>
+                                            <SelectItem
+                                                key={loc.value}
+                                                value={loc.value}
+                                            >
                                                 {loc.label}
                                             </SelectItem>
                                         ))}
@@ -173,19 +189,26 @@ export default function Profile({
                                         as="button"
                                         className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
                                     >
-                                        {t('settings.profile.resend_verification')}
+                                        {t(
+                                            'settings.profile.resend_verification',
+                                        )}
                                     </Link>
                                 </p>
                                 {status === 'verification-link-sent' && (
                                     <div className="mt-2 text-sm font-medium text-primary">
-                                        {t('settings.profile.verification_sent')}
+                                        {t(
+                                            'settings.profile.verification_sent',
+                                        )}
                                     </div>
                                 )}
                             </div>
                         )}
 
                     <form.Subscribe
-                        selector={(state) => [state.canSubmit, state.isSubmitting]}
+                        selector={(state) => [
+                            state.canSubmit,
+                            state.isSubmitting,
+                        ]}
                     >
                         {([canSubmit, isSubmitting]) => (
                             <div className="flex items-center gap-4">
@@ -194,7 +217,9 @@ export default function Profile({
                                     disabled={!canSubmit || isSubmitting}
                                     data-test="update-profile-button"
                                 >
-                                    {isSubmitting ? t('settings.profile.saving') : t('settings.profile.save')}
+                                    {isSubmitting
+                                        ? t('settings.profile.saving')
+                                        : t('settings.profile.save')}
                                 </Button>
                             </div>
                         )}

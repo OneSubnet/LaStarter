@@ -29,7 +29,8 @@ export default function Register() {
         },
     });
 
-    const inputClass = 'h-14 rounded-full border-none bg-muted px-5 py-4 font-medium';
+    const inputClass =
+        'h-14 rounded-full border-none bg-muted px-5 py-4 font-medium';
 
     return (
         <AuthLayout
@@ -58,7 +59,9 @@ export default function Register() {
                                 autoFocus
                                 tabIndex={1}
                                 autoComplete="name"
-                                placeholder={t('auth.register.name_placeholder')}
+                                placeholder={t(
+                                    'auth.register.name_placeholder',
+                                )}
                                 className={inputClass}
                             />
                             <InputError
@@ -84,7 +87,9 @@ export default function Register() {
                                 onBlur={field.handleBlur}
                                 tabIndex={2}
                                 autoComplete="email"
-                                placeholder={t('auth.register.email_placeholder')}
+                                placeholder={t(
+                                    'auth.register.email_placeholder',
+                                )}
                                 className={inputClass}
                             />
                             <InputError
@@ -110,7 +115,9 @@ export default function Register() {
                                 onBlur={field.handleBlur}
                                 tabIndex={3}
                                 autoComplete="new-password"
-                                placeholder={t('auth.register.password_placeholder')}
+                                placeholder={t(
+                                    'auth.register.password_placeholder',
+                                )}
                                 className={inputClass}
                             />
                             <InputError
@@ -136,7 +143,9 @@ export default function Register() {
                                 onBlur={field.handleBlur}
                                 tabIndex={4}
                                 autoComplete="new-password"
-                                placeholder={t('auth.register.confirm_password_placeholder')}
+                                placeholder={t(
+                                    'auth.register.confirm_password_placeholder',
+                                )}
                                 className={inputClass}
                             />
                             <InputError

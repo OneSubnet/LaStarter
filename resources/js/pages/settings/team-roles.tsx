@@ -8,7 +8,11 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import type { ColumnDef, SortingState, VisibilityState } from '@tanstack/react-table';
+import type {
+    ColumnDef,
+    SortingState,
+    VisibilityState,
+} from '@tanstack/react-table';
 import {
     ArrowUpDown,
     Check,
@@ -129,7 +133,9 @@ function PermissionCategory({
                     className="h-7 text-xs"
                     onClick={onToggleAll}
                 >
-                    {allSelected ? t('settings.team.roles.remove_all') : t('settings.team.roles.toggle_all')}
+                    {allSelected
+                        ? t('settings.team.roles.remove_all')
+                        : t('settings.team.roles.toggle_all')}
                 </Button>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -166,7 +172,9 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [rowSelection, setRowSelection] = useState({});
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {},
+    );
 
     const [detailRole, setDetailRole] = useState<Role | null>(null);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -189,7 +197,9 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                         setCreateDialogOpen(false);
                         createForm.reset();
 
-                        const flash = (page as unknown as { props: { roles: Role[] } }).props?.roles;
+                        const flash = (
+                            page as unknown as { props: { roles: Role[] } }
+                        ).props?.roles;
 
                         if (flash && flash.length > 0) {
                             const newRole = flash[flash.length - 1];
@@ -217,8 +227,8 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
 
     const handleUpdate = () => {
         if (!detailRole || detailRole.is_protected) {
-return;
-}
+            return;
+        }
 
         setEditErrors({});
         router.patch(
@@ -237,8 +247,8 @@ return;
             {
                 onSuccess: () => {
                     if (detailRole?.id === roleId) {
-closeDetail();
-}
+                        closeDetail();
+                    }
 
                     setDeleteConfirmId(null);
                 },
@@ -248,23 +258,35 @@ closeDetail();
 
     const togglePermission = (perm: string) => {
         setEditPermissions((prev) =>
-            prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm],
+            prev.includes(perm)
+                ? prev.filter((p) => p !== perm)
+                : [...prev, perm],
         );
     };
 
     const toggleCategory = (category: string) => {
-        const categoryPerms = (allPermissions[category] ?? []).map((p) => p.name);
-        const allSelected = categoryPerms.every((p) => editPermissions.includes(p));
+        const categoryPerms = (allPermissions[category] ?? []).map(
+            (p) => p.name,
+        );
+        const allSelected = categoryPerms.every((p) =>
+            editPermissions.includes(p),
+        );
 
         if (allSelected) {
-            setEditPermissions((prev) => prev.filter((p) => !categoryPerms.includes(p)));
+            setEditPermissions((prev) =>
+                prev.filter((p) => !categoryPerms.includes(p)),
+            );
         } else {
-            setEditPermissions((prev) => [...new Set([...prev, ...categoryPerms])]);
+            setEditPermissions((prev) => [
+                ...new Set([...prev, ...categoryPerms]),
+            ]);
         }
     };
 
     const toggleAll = () => {
-        const allPerms = Object.values(allPermissions).flat().map((p) => p.name);
+        const allPerms = Object.values(allPermissions)
+            .flat()
+            .map((p) => p.name);
 
         if (allPerms.every((p) => editPermissions.includes(p))) {
             setEditPermissions([]);
@@ -282,7 +304,8 @@ closeDetail();
                         <Checkbox
                             checked={
                                 table.getIsAllPageRowsSelected() ||
-                                (table.getIsSomePageRowsSelected() && 'indeterminate')
+                                (table.getIsSomePageRowsSelected() &&
+                                    'indeterminate')
                             }
                             onCheckedChange={(value) =>
                                 table.toggleAllPageRowsSelected(!!value)
@@ -347,7 +370,9 @@ closeDetail();
                 ),
                 cell: ({ row }) => (
                     <span className="text-sm text-muted-foreground">
-                        {t('settings.team.roles.member_count', { count: row.original.users_count })}
+                        {t('settings.team.roles.member_count', {
+                            count: row.original.users_count,
+                        })}
                     </span>
                 ),
             },
@@ -365,10 +390,18 @@ closeDetail();
                 header: t('settings.team.roles.table_status'),
                 cell: ({ row }) => {
                     if (row.original.is_protected) {
-                        return <Badge variant="outline">{t('settings.team.roles.badge_system')}</Badge>;
+                        return (
+                            <Badge variant="outline">
+                                {t('settings.team.roles.badge_system')}
+                            </Badge>
+                        );
                     }
 
-                    return <Badge variant="secondary">{t('settings.team.roles.badge_custom')}</Badge>;
+                    return (
+                        <Badge variant="secondary">
+                            {t('settings.team.roles.badge_custom')}
+                        </Badge>
+                    );
                 },
             },
             {
@@ -388,7 +421,9 @@ closeDetail();
                                             onClick={() => openDetail(role)}
                                         >
                                             <Eye className="h-4 w-4" />
-                                            <span className="sr-only">{t('common.details')}</span>
+                                            <span className="sr-only">
+                                                {t('common.details')}
+                                            </span>
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -406,14 +441,24 @@ closeDetail();
                                                     variant="ghost"
                                                     size="icon"
                                                     className="size-8 text-muted-foreground hover:text-destructive"
-                                                    onClick={() => setDeleteConfirmId(role.id)}
+                                                    onClick={() =>
+                                                        setDeleteConfirmId(
+                                                            role.id,
+                                                        )
+                                                    }
                                                 >
                                                     <Trash2 className="h-4 w-4" />
-                                                    <span className="sr-only">{t('settings.team.roles.delete_title')}</span>
+                                                    <span className="sr-only">
+                                                        {t(
+                                                            'settings.team.roles.delete_title',
+                                                        )}
+                                                    </span>
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                {t('settings.team.roles.delete_title')}
+                                                {t(
+                                                    'settings.team.roles.delete_title',
+                                                )}
                                             </TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
@@ -459,12 +504,16 @@ closeDetail();
                 { title: t('common.roles'), href: '#' },
             ]}
         >
-            <Head title={`${t('settings.team.roles.table_permissions')} - ${team.name}`} />
+            <Head
+                title={`${t('settings.team.roles.table_permissions')} - ${team.name}`}
+            />
 
             {roles.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                     <Shield className="mb-4 h-12 w-12 opacity-20" />
-                    <p className="text-sm">{t('settings.team.roles.no_roles')}</p>
+                    <p className="text-sm">
+                        {t('settings.team.roles.no_roles')}
+                    </p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -484,9 +533,11 @@ closeDetail();
 
                         <div className="flex items-center gap-2">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder={t('settings.team.roles.search_placeholder')}
+                                    placeholder={t(
+                                        'settings.team.roles.search_placeholder',
+                                    )}
                                     value={globalFilter}
                                     onChange={(e) =>
                                         setGlobalFilter(e.target.value)
@@ -499,21 +550,31 @@ closeDetail();
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" size="sm">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
                                                     <Columns3 className="h-4 w-4" />
                                                     <span className="hidden lg:inline">
-                                                        {t('settings.team.roles.columns')}
+                                                        {t(
+                                                            'settings.team.roles.columns',
+                                                        )}
                                                     </span>
                                                     <ChevronDown className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            {t('settings.team.roles.customize_tooltip')}
+                                            {t(
+                                                'settings.team.roles.customize_tooltip',
+                                            )}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                                <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-48"
+                                >
                                     {table
                                         .getAllColumns()
                                         .filter(
@@ -534,11 +595,19 @@ closeDetail();
                                                 }
                                             >
                                                 {column.id === 'users_count'
-                                                    ? t('settings.team.roles.table_members')
-                                                    : column.id === 'permissions_count'
-                                                      ? t('settings.team.roles.table_permissions')
-                                                      : column.id === 'is_protected'
-                                                        ? t('settings.team.roles.table_status')
+                                                    ? t(
+                                                          'settings.team.roles.table_members',
+                                                      )
+                                                    : column.id ===
+                                                        'permissions_count'
+                                                      ? t(
+                                                            'settings.team.roles.table_permissions',
+                                                        )
+                                                      : column.id ===
+                                                          'is_protected'
+                                                        ? t(
+                                                              'settings.team.roles.table_status',
+                                                          )
                                                         : column.id}
                                             </DropdownMenuCheckboxItem>
                                         ))}
@@ -561,8 +630,7 @@ closeDetail();
                                                     ? null
                                                     : flexRender(
                                                           header.column
-                                                              .columnDef
-                                                              .header,
+                                                              .columnDef.header,
                                                           header.getContext(),
                                                       )}
                                             </TableHead>
@@ -576,17 +644,21 @@ closeDetail();
                                         <TableRow
                                             key={row.id}
                                             data-state={
-                                                row.getIsSelected() && 'selected'
+                                                row.getIsSelected() &&
+                                                'selected'
                                             }
                                         >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    {flexRender(
-                                                        cell.column.columnDef.cell,
-                                                        cell.getContext(),
-                                                    )}
-                                                </TableCell>
-                                            ))}
+                                            {row
+                                                .getVisibleCells()
+                                                .map((cell) => (
+                                                    <TableCell key={cell.id}>
+                                                        {flexRender(
+                                                            cell.column
+                                                                .columnDef.cell,
+                                                            cell.getContext(),
+                                                        )}
+                                                    </TableCell>
+                                                ))}
                                         </TableRow>
                                     ))
                                 ) : (
@@ -606,7 +678,9 @@ closeDetail();
                     <div className="flex items-center justify-between px-1">
                         <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
                             {t('settings.team.roles.selected_rows', {
-                                selected: table.getFilteredSelectedRowModel().rows.length,
+                                selected:
+                                    table.getFilteredSelectedRowModel().rows
+                                        .length,
                                 total: table.getFilteredRowModel().rows.length,
                             })}
                         </div>
@@ -651,8 +725,7 @@ closeDetail();
                                 </Select>
                             </div>
                             <div className="flex w-fit items-center justify-center text-sm font-medium">
-                                Page{' '}
-                                {table.getState().pagination.pageIndex + 1}{' '}
+                                Page {table.getState().pagination.pageIndex + 1}{' '}
                                 of {table.getPageCount()}
                             </div>
                             <div className="ml-auto flex items-center gap-2 lg:ml-0">
@@ -713,9 +786,7 @@ closeDetail();
                                                 variant="outline"
                                                 size="icon"
                                                 className="size-8"
-                                                onClick={() =>
-                                                    table.nextPage()
-                                                }
+                                                onClick={() => table.nextPage()}
                                                 disabled={
                                                     !table.getCanNextPage()
                                                 }
@@ -766,104 +837,168 @@ closeDetail();
             )}
 
             {/* Role Detail Sheet */}
-            <Sheet open={!!detailRole} onOpenChange={(open) => !open && closeDetail()}>
-                <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
-                    {detailRole && (() => {
-                        const role = detailRole;
+            <Sheet
+                open={!!detailRole}
+                onOpenChange={(open) => !open && closeDetail()}
+            >
+                <SheetContent
+                    side="right"
+                    className="overflow-y-auto sm:max-w-lg"
+                >
+                    {detailRole &&
+                        (() => {
+                            const role = detailRole;
 
-                        return (
-                            <>
-                                <SheetHeader>
-                                    <div className="flex items-center gap-2">
-                                        {role.is_protected && (
-                                            <Shield className="h-5 w-5 text-yellow-500" />
-                                        )}
-                                        <SheetTitle>{role.name}</SheetTitle>
-                                    </div>
-                                    <SheetDescription>
-                                        {role.is_protected
-                                            ? t('settings.team.roles.permissions_summary_message')
-                                            : t('settings.team.roles.permissions_summary_title')}
-                                    </SheetDescription>
-                                </SheetHeader>
+                            return (
+                                <>
+                                    <SheetHeader>
+                                        <div className="flex items-center gap-2">
+                                            {role.is_protected && (
+                                                <Shield className="h-5 w-5 text-yellow-500" />
+                                            )}
+                                            <SheetTitle>{role.name}</SheetTitle>
+                                        </div>
+                                        <SheetDescription>
+                                            {role.is_protected
+                                                ? t(
+                                                      'settings.team.roles.permissions_summary_message',
+                                                  )
+                                                : t(
+                                                      'settings.team.roles.permissions_summary_title',
+                                                  )}
+                                        </SheetDescription>
+                                    </SheetHeader>
 
-                                <div className="flex flex-col gap-6 px-4 pb-6">
-                                    {/* Members count */}
-                                    <div className="rounded-lg border p-3">
-                                        <p className="text-xs text-muted-foreground">{t('settings.team.roles.members_title')}</p>
-                                        <p className="mt-1 text-sm font-medium">
-                                            {t('settings.team.roles.member_count', { count: role.users_count })}
-                                        </p>
-                                    </div>
+                                    <div className="flex flex-col gap-6 px-4 pb-6">
+                                        {/* Members count */}
+                                        <div className="rounded-lg border p-3">
+                                            <p className="text-xs text-muted-foreground">
+                                                {t(
+                                                    'settings.team.roles.members_title',
+                                                )}
+                                            </p>
+                                            <p className="mt-1 text-sm font-medium">
+                                                {t(
+                                                    'settings.team.roles.member_count',
+                                                    { count: role.users_count },
+                                                )}
+                                            </p>
+                                        </div>
 
-                                    {!role.is_protected ? (
-                                        <Guard permission="role.update">
-                                            <div className="space-y-6">
-                                                <div className="grid gap-2">
-                                                    <Label htmlFor="edit-role-name">{t('settings.team.roles.name_label')}</Label>
-                                                    <Input
-                                                        id="edit-role-name"
-                                                        value={editName}
-                                                        onChange={(e) =>
-                                                            setEditName(e.target.value)
-                                                        }
-                                                    />
-                                                    <InputError
-                                                        message={editErrors.name}
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label>
-                                                            {t('settings.team.roles.permissions_title')} ({editPermissions.length})
+                                        {!role.is_protected ? (
+                                            <Guard permission="role.update">
+                                                <div className="space-y-6">
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="edit-role-name">
+                                                            {t(
+                                                                'settings.team.roles.name_label',
+                                                            )}
                                                         </Label>
+                                                        <Input
+                                                            id="edit-role-name"
+                                                            value={editName}
+                                                            onChange={(e) =>
+                                                                setEditName(
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                        />
+                                                        <InputError
+                                                            message={
+                                                                editErrors.name
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label>
+                                                                {t(
+                                                                    'settings.team.roles.permissions_title',
+                                                                )}{' '}
+                                                                (
+                                                                {
+                                                                    editPermissions.length
+                                                                }
+                                                                )
+                                                            </Label>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 text-xs"
+                                                                onClick={
+                                                                    toggleAll
+                                                                }
+                                                            >
+                                                                {t(
+                                                                    'settings.team.roles.permissions_toggle_all',
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                        <div className="space-y-4">
+                                                            {Object.entries(
+                                                                allPermissions,
+                                                            ).map(
+                                                                ([
+                                                                    category,
+                                                                    perms,
+                                                                ]) => (
+                                                                    <PermissionCategory
+                                                                        key={
+                                                                            category
+                                                                        }
+                                                                        category={
+                                                                            category
+                                                                        }
+                                                                        permissions={
+                                                                            perms
+                                                                        }
+                                                                        selected={
+                                                                            editPermissions
+                                                                        }
+                                                                        onToggle={
+                                                                            togglePermission
+                                                                        }
+                                                                        onToggleAll={() =>
+                                                                            toggleCategory(
+                                                                                category,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-end">
                                                         <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 text-xs"
-                                                            onClick={toggleAll}
+                                                            onClick={
+                                                                handleUpdate
+                                                            }
                                                         >
-                                                            {t('settings.team.roles.permissions_toggle_all')}
+                                                            {t('common.save')}
                                                         </Button>
                                                     </div>
-                                                    <div className="space-y-4">
-                                                        {Object.entries(allPermissions).map(
-                                                            ([category, perms]) => (
-                                                                <PermissionCategory
-                                                                    key={category}
-                                                                    category={category}
-                                                                    permissions={perms}
-                                                                    selected={editPermissions}
-                                                                    onToggle={togglePermission}
-                                                                    onToggleAll={() =>
-                                                                        toggleCategory(category)
-                                                                    }
-                                                                />
-                                                            ),
+                                                </div>
+                                            </Guard>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <h4 className="text-sm font-semibold">
+                                                        {t(
+                                                            'settings.team.roles.permissions_summary_title',
                                                         )}
-                                                    </div>
+                                                    </h4>
+                                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                                        {t(
+                                                            'settings.team.roles.permissions_summary_message',
+                                                        )}
+                                                    </p>
                                                 </div>
-
-                                                <div className="flex justify-end">
-                                                    <Button onClick={handleUpdate}>
-                                                        {t('common.save')}
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </Guard>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            <div>
-                                                <h4 className="text-sm font-semibold">
-                                                    {t('settings.team.roles.permissions_summary_title')}
-                                                </h4>
-                                                <p className="mt-0.5 text-xs text-muted-foreground">
-                                                    {t('settings.team.roles.permissions_summary_message')}
-                                                </p>
-                                            </div>
-                                            {Object.entries(allPermissions).map(
-                                                ([category, perms]) => (
+                                                {Object.entries(
+                                                    allPermissions,
+                                                ).map(([category, perms]) => (
                                                     <div
                                                         key={category}
                                                         className="flex items-center justify-between rounded-md border px-4 py-3"
@@ -872,17 +1007,19 @@ closeDetail();
                                                             {category}
                                                         </span>
                                                         <span className="text-sm text-muted-foreground">
-                                                            {perms.length} {perms.length !== 1 ? 'permissions' : 'permission'}
+                                                            {perms.length}{' '}
+                                                            {perms.length !== 1
+                                                                ? 'permissions'
+                                                                : 'permission'}
                                                         </span>
                                                     </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </>
-                        );
-                    })()}
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            );
+                        })()}
                 </SheetContent>
             </Sheet>
 
@@ -890,7 +1027,9 @@ closeDetail();
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{t('settings.team.roles.create_title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('settings.team.roles.create_title')}
+                        </DialogTitle>
                     </DialogHeader>
 
                     <form
@@ -900,7 +1039,9 @@ closeDetail();
                         }}
                     >
                         <div className="grid gap-2">
-                            <Label htmlFor="create-role-name">{t('settings.team.roles.name_label')}</Label>
+                            <Label htmlFor="create-role-name">
+                                {t('settings.team.roles.name_label')}
+                            </Label>
                             <createForm.Field name="name">
                                 {(field) => (
                                     <>
@@ -908,10 +1049,14 @@ closeDetail();
                                             id="create-role-name"
                                             value={field.state.value}
                                             onChange={(e) =>
-                                                field.handleChange(e.target.value)
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
                                             }
                                             onBlur={field.handleBlur}
-                                            placeholder={t('settings.team.roles.name_placeholder')}
+                                            placeholder={t(
+                                                'settings.team.roles.name_placeholder',
+                                            )}
                                             autoFocus
                                         />
                                         <InputError
@@ -934,7 +1079,10 @@ closeDetail();
                                 {t('common.cancel')}
                             </Button>
                             <createForm.Subscribe
-                                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                                selector={(state) => [
+                                    state.canSubmit,
+                                    state.isSubmitting,
+                                ]}
                             >
                                 {([canSubmit, isSubmitting]) => (
                                     <Button
@@ -943,7 +1091,9 @@ closeDetail();
                                     >
                                         {isSubmitting
                                             ? t('settings.team.roles.creating')
-                                            : t('settings.team.roles.create_button_dialog')}
+                                            : t(
+                                                  'settings.team.roles.create_button_dialog',
+                                              )}
                                     </Button>
                                 )}
                             </createForm.Subscribe>
@@ -959,7 +1109,9 @@ closeDetail();
             >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{t('settings.team.roles.delete_title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('settings.team.roles.delete_title')}
+                        </DialogTitle>
                     </DialogHeader>
                     <p className="text-sm text-muted-foreground">
                         {t('settings.team.roles.delete_message')}
@@ -975,8 +1127,8 @@ closeDetail();
                             variant="destructive"
                             onClick={() => {
                                 if (deleteConfirmId) {
-handleDelete(deleteConfirmId);
-}
+                                    handleDelete(deleteConfirmId);
+                                }
                             }}
                         >
                             {t('settings.team.roles.delete_confirm')}

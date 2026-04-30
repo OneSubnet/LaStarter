@@ -50,9 +50,13 @@ export default function InviteMemberModal({
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        router.post(storeInvitation(team.slug).url, Object.fromEntries(formData), {
-            onSuccess: () => onOpenChange(false),
-        });
+        router.post(
+            storeInvitation(team.slug).url,
+            Object.fromEntries(formData),
+            {
+                onSuccess: () => onOpenChange(false),
+            },
+        );
     };
 
     return (
@@ -64,7 +68,9 @@ export default function InviteMemberModal({
                     className="space-y-6"
                 >
                     <DialogHeader>
-                        <DialogTitle>{t('components.invite_member.title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('components.invite_member.title')}
+                        </DialogTitle>
                         <DialogDescription>
                             {t('components.invite_member.description')}
                         </DialogDescription>
@@ -72,31 +78,39 @@ export default function InviteMemberModal({
 
                     <div className="grid gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="email">{t('components.invite_member.email_label')}</Label>
+                            <Label htmlFor="email">
+                                {t('components.invite_member.email_label')}
+                            </Label>
                             <Input
                                 id="email"
                                 name="email"
                                 type="email"
                                 data-test="invite-email"
-                                placeholder={t('components.invite_member.email_placeholder')}
+                                placeholder={t(
+                                    'components.invite_member.email_placeholder',
+                                )}
                                 required
                             />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="role">{t('components.invite_member.role_label')}</Label>
+                            <Label htmlFor="role">
+                                {t('components.invite_member.role_label')}
+                            </Label>
                             <Select
                                 name="role"
                                 data-test="invite-role"
                                 value={inviteRole}
                                 onValueChange={(value) =>
-                                    setInviteRole(
-                                        value as RoleOption['value'],
-                                    )
+                                    setInviteRole(value as RoleOption['value'])
                                 }
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={t('components.invite_member.select_role')} />
+                                    <SelectValue
+                                        placeholder={t(
+                                            'components.invite_member.select_role',
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableRoles.map((role) => (
@@ -114,13 +128,12 @@ export default function InviteMemberModal({
 
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
-                            <Button variant="secondary">{t('common.cancel')}</Button>
+                            <Button variant="secondary">
+                                {t('common.cancel')}
+                            </Button>
                         </DialogClose>
 
-                        <Button
-                            type="submit"
-                            data-test="invite-submit"
-                        >
+                        <Button type="submit" data-test="invite-submit">
                             {t('components.invite_member.send_invitation')}
                         </Button>
                     </DialogFooter>

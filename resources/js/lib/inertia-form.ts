@@ -26,8 +26,8 @@ export function zodValidator<T>(schema: ZodSchema<T>) {
         const result = schema.safeParse(value);
 
         if (result.success) {
-return;
-}
+            return;
+        }
 
         const errors: Record<string, string> = {};
 

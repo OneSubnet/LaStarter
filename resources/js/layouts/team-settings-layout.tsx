@@ -25,9 +25,7 @@ export default function TeamSettingsLayout({
                     title={`${teamName} ${t('common.settings').toLowerCase()}`}
                     description={t('layouts.team_settings.description')}
                 />
-                <div className="mt-6 space-y-6">
-                    {children}
-                </div>
+                <div className="mt-6 space-y-6">{children}</div>
             </div>
         </AppSidebarLayout>
     );

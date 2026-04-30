@@ -33,7 +33,9 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
     const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = currentTeam?.slug ?? '';
-    const [selectedTheme, setSelectedTheme] = useState<string>(activeTheme ?? '');
+    const [selectedTheme, setSelectedTheme] = useState<string>(
+        activeTheme ?? '',
+    );
 
     const hasChanges = selectedTheme !== activeTheme;
 
@@ -53,10 +55,7 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
     };
 
     return (
-        <TeamSettingsLayout
-            activeTab="Theme"
-            breadcrumbs={breadcrumbs}
-        >
+        <TeamSettingsLayout activeTab="Theme" breadcrumbs={breadcrumbs}>
             <Head title={t('settings.theme.title')} />
             <h1 className="sr-only">{t('settings.theme.title')}</h1>
 
@@ -83,8 +82,7 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2">
                         {themes.map((theme) => {
-                            const isActive =
-                                theme.identifier === activeTheme;
+                            const isActive = theme.identifier === activeTheme;
                             const isSelected =
                                 theme.identifier === selectedTheme;
 
@@ -106,12 +104,14 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div className="absolute right-3 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                                    <div className="absolute top-3 right-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
                                                         <Check className="h-4 w-4" />
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    {t('settings.theme.active_tooltip')}
+                                                    {t(
+                                                        'settings.theme.active_tooltip',
+                                                    )}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
@@ -155,7 +155,9 @@ export default function ThemeSettings({ themes, activeTheme }: Props) {
                                                 {theme.author}
                                             </p>
                                         )}
-                                        <p className="text-xs text-muted-foreground">v{theme.version}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            v{theme.version}
+                                        </p>
                                     </div>
                                 </button>
                             );
