@@ -52,7 +52,9 @@ export default function DeleteUser() {
             />
             <div className="space-y-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
                 <div className="relative space-y-0.5 text-destructive">
-                    <p className="font-medium">{t('components.delete_user.warning')}</p>
+                    <p className="font-medium">
+                        {t('components.delete_user.warning')}
+                    </p>
                     <p className="text-sm">
                         {t('components.delete_user.warning_description')}
                     </p>
@@ -75,15 +77,9 @@ export default function DeleteUser() {
                             {t('components.delete_user.confirm_description')}
                         </DialogDescription>
 
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-6"
-                        >
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="password"
-                                    className="sr-only"
-                                >
+                                <Label htmlFor="password" className="sr-only">
                                     {t('components.delete_user.password_label')}
                                 </Label>
 
@@ -100,10 +96,7 @@ export default function DeleteUser() {
 
                             <DialogFooter className="gap-2">
                                 <DialogClose asChild>
-                                    <Button
-                                        variant="secondary"
-                                        type="button"
-                                    >
+                                    <Button variant="secondary" type="button">
                                         {t('common.cancel')}
                                     </Button>
                                 </DialogClose>

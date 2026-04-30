@@ -11,7 +11,10 @@ export default function Appearance() {
     return (
         <AccountLayout
             breadcrumbs={[
-                { title: t('settings.appearance.title'), href: editAppearance().url },
+                {
+                    title: t('settings.appearance.title'),
+                    href: editAppearance().url,
+                },
             ]}
         >
             <Head title={t('settings.appearance.title')} />

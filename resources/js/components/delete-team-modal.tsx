@@ -54,7 +54,9 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                     className="space-y-6"
                 >
                     <DialogHeader>
-                        <DialogTitle>{t('components.delete_team.title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('components.delete_team.title')}
+                        </DialogTitle>
                         <DialogDescription>
                             {t('components.delete_team.description')}{' '}
                             <strong>"{team.name}"</strong>.
@@ -64,7 +66,9 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                     <div className="space-y-4 py-4">
                         <div className="grid gap-2">
                             <Label htmlFor="confirmation-name">
-                                {t('components.delete_team.confirm_label')} <strong>"{team.name}"</strong> {t('components.delete_team.confirm_text')}
+                                {t('components.delete_team.confirm_label')}{' '}
+                                <strong>"{team.name}"</strong>{' '}
+                                {t('components.delete_team.confirm_text')}
                             </Label>
                             <Input
                                 id="confirmation-name"
@@ -72,11 +76,11 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                                 data-test="delete-team-name"
                                 value={confirmationName}
                                 onChange={(event) =>
-                                    setConfirmationName(
-                                        event.target.value,
-                                    )
+                                    setConfirmationName(event.target.value)
                                 }
-                                placeholder={t('components.delete_team.placeholder')}
+                                placeholder={t(
+                                    'components.delete_team.placeholder',
+                                )}
                                 autoComplete="off"
                             />
                         </div>
@@ -84,7 +88,9 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
 
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
-                            <Button variant="secondary">{t('common.cancel')}</Button>
+                            <Button variant="secondary">
+                                {t('common.cancel')}
+                            </Button>
                         </DialogClose>
 
                         <Button

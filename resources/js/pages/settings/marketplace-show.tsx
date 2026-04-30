@@ -115,7 +115,9 @@ export default function MarketplaceShow({
 
                     <div className="flex items-center gap-2">
                         {installed ? (
-                            <Badge variant="default">{t('settings.marketplace.installed')}</Badge>
+                            <Badge variant="default">
+                                {t('settings.marketplace.installed')}
+                            </Badge>
                         ) : (
                             <Guard permission="extension.manage">
                                 <Button
@@ -149,9 +151,7 @@ export default function MarketplaceShow({
                             <div className="text-xs text-muted-foreground">
                                 {t('settings.marketplace.version')}
                             </div>
-                            <p className="font-medium">
-                                v{manifest.version}
-                            </p>
+                            <p className="font-medium">v{manifest.version}</p>
                         </div>
                     )}
                     {release && (
@@ -200,9 +200,11 @@ export default function MarketplaceShow({
                         <h3 className="text-sm font-medium text-muted-foreground">
                             {t('settings.marketplace.readme')}
                         </h3>
-                        <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
+                        <div className="prose prose-sm dark:prose-invert max-w-none rounded-lg border p-6">
                             <div
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(readme) }}
+                                dangerouslySetInnerHTML={{
+                                    __html: DOMPurify.sanitize(readme),
+                                }}
                             />
                         </div>
                     </div>
@@ -214,10 +216,12 @@ export default function MarketplaceShow({
                         <h3 className="text-sm font-medium text-muted-foreground">
                             {t('settings.marketplace.release_notes')}
                         </h3>
-                        <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
+                        <div className="prose prose-sm dark:prose-invert max-w-none rounded-lg border p-6">
                             <div
                                 dangerouslySetInnerHTML={{
-                                    __html: DOMPurify.sanitize(release.body ?? ''),
+                                    __html: DOMPurify.sanitize(
+                                        release.body ?? '',
+                                    ),
                                 }}
                             />
                         </div>

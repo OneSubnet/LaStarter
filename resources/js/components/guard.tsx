@@ -7,8 +7,14 @@ interface GuardProps {
     children: ReactNode;
 }
 
-export default function Guard({ permission, fallback = null, children }: GuardProps) {
-    const permissions = usePage().props.auth?.permissions as string[] | undefined;
+export default function Guard({
+    permission,
+    fallback = null,
+    children,
+}: GuardProps) {
+    const permissions = usePage().props.auth?.permissions as
+        | string[]
+        | undefined;
 
     if (!permissions) {
         return <>{fallback}</>;

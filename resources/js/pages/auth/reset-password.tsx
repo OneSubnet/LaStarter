@@ -25,13 +25,18 @@ export default function ResetPassword({ token, email }: Props) {
         },
         validators: { onChange: zodValidator(resetPasswordSchema) },
         onSubmit: ({ value }) => {
-            router.post(update().url, { ...value, token, email }, {
-                preserveScroll: true,
-            });
+            router.post(
+                update().url,
+                { ...value, token, email },
+                {
+                    preserveScroll: true,
+                },
+            );
         },
     });
 
-    const inputClass = 'h-14 rounded-full border-none bg-muted px-5 py-4 font-medium';
+    const inputClass =
+        'h-14 rounded-full border-none bg-muted px-5 py-4 font-medium';
 
     return (
         <AuthLayout
@@ -53,14 +58,24 @@ export default function ResetPassword({ token, email }: Props) {
                             <Input
                                 type="email"
                                 value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
                                 onBlur={field.handleBlur}
                                 autoComplete="email"
                                 readOnly
-                                placeholder={t('auth.reset_password.email_label')}
+                                placeholder={t(
+                                    'auth.reset_password.email_label',
+                                )}
                                 className={`${inputClass} opacity-60`}
                             />
-                            <InputError message={field.state.meta.errors?.[0] as string | undefined} />
+                            <InputError
+                                message={
+                                    field.state.meta.errors?.[0] as
+                                        | string
+                                        | undefined
+                                }
+                            />
                         </div>
                     )}
                 </form.Field>
@@ -71,14 +86,24 @@ export default function ResetPassword({ token, email }: Props) {
                             <Input
                                 type="password"
                                 value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
                                 onBlur={field.handleBlur}
                                 autoComplete="new-password"
                                 autoFocus
-                                placeholder={t('auth.reset_password.password_placeholder')}
+                                placeholder={t(
+                                    'auth.reset_password.password_placeholder',
+                                )}
                                 className={inputClass}
                             />
-                            <InputError message={field.state.meta.errors?.[0] as string | undefined} />
+                            <InputError
+                                message={
+                                    field.state.meta.errors?.[0] as
+                                        | string
+                                        | undefined
+                                }
+                            />
                         </div>
                     )}
                 </form.Field>
@@ -89,13 +114,23 @@ export default function ResetPassword({ token, email }: Props) {
                             <Input
                                 type="password"
                                 value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
                                 onBlur={field.handleBlur}
                                 autoComplete="new-password"
-                                placeholder={t('auth.reset_password.confirm_password_placeholder')}
+                                placeholder={t(
+                                    'auth.reset_password.confirm_password_placeholder',
+                                )}
                                 className={inputClass}
                             />
-                            <InputError message={field.state.meta.errors?.[0] as string | undefined} />
+                            <InputError
+                                message={
+                                    field.state.meta.errors?.[0] as
+                                        | string
+                                        | undefined
+                                }
+                            />
                         </div>
                     )}
                 </form.Field>

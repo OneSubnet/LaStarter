@@ -15,7 +15,10 @@ import {
 } from '@/components/ui/select';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { marketplace as marketplaceUrl } from '@/routes/settings/team';
-import { install as installUrl, show as showUrl } from '@/routes/settings/team/marketplace';
+import {
+    install as installUrl,
+    show as showUrl,
+} from '@/routes/settings/team/marketplace';
 
 type Repo = {
     name: string;
@@ -69,9 +72,11 @@ export default function Marketplace({ results, query, type }: Props) {
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                            placeholder={t('settings.marketplace.search_placeholder')}
+                            placeholder={t(
+                                'settings.marketplace.search_placeholder',
+                            )}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) =>
@@ -80,15 +85,23 @@ export default function Marketplace({ results, query, type }: Props) {
                             className="pl-9"
                         />
                     </div>
-                    <Button onClick={handleSearch}>{t('settings.marketplace.search_button')}</Button>
+                    <Button onClick={handleSearch}>
+                        {t('settings.marketplace.search_button')}
+                    </Button>
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
                         <SelectTrigger className="w-[140px]">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">{t('settings.marketplace.type_all')}</SelectItem>
-                            <SelectItem value="module">{t('settings.marketplace.type_module')}</SelectItem>
-                            <SelectItem value="theme">{t('settings.marketplace.type_theme')}</SelectItem>
+                            <SelectItem value="all">
+                                {t('settings.marketplace.type_all')}
+                            </SelectItem>
+                            <SelectItem value="module">
+                                {t('settings.marketplace.type_module')}
+                            </SelectItem>
+                            <SelectItem value="theme">
+                                {t('settings.marketplace.type_theme')}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -115,11 +128,13 @@ export default function Marketplace({ results, query, type }: Props) {
                                     <div className="flex items-start justify-between">
                                         <div className="min-w-0 flex-1">
                                             <Link
-                                                href={`${showUrl({
-                                                    current_team: teamSlug,
-                                                    owner,
-                                                    repo: name,
-                                                }).url}?extension=${repo.identifier}`}
+                                                href={`${
+                                                    showUrl({
+                                                        current_team: teamSlug,
+                                                        owner,
+                                                        repo: name,
+                                                    }).url
+                                                }?extension=${repo.identifier}`}
                                                 className="font-medium hover:underline"
                                             >
                                                 {repo.name}
@@ -146,7 +161,9 @@ export default function Marketplace({ results, query, type }: Props) {
                                     <div className="mt-3 flex items-center gap-2">
                                         {repo.installed ? (
                                             <Badge variant="secondary">
-                                                {t('settings.marketplace.installed')}
+                                                {t(
+                                                    'settings.marketplace.installed',
+                                                )}
                                             </Badge>
                                         ) : (
                                             <Guard permission="extension.manage">
@@ -155,17 +172,21 @@ export default function Marketplace({ results, query, type }: Props) {
                                                     variant="outline"
                                                     onClick={() =>
                                                         router.post(
-                                                            installUrl(teamSlug).url,
+                                                            installUrl(teamSlug)
+                                                                .url,
                                                             {
                                                                 owner,
                                                                 repo: name,
-                                                                identifier: repo.identifier,
+                                                                identifier:
+                                                                    repo.identifier,
                                                             },
                                                         )
                                                     }
                                                 >
                                                     <Download className="h-3 w-3" />
-                                                    {t('settings.marketplace.install')}
+                                                    {t(
+                                                        'settings.marketplace.install',
+                                                    )}
                                                 </Button>
                                             </Guard>
                                         )}

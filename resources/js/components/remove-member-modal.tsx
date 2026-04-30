@@ -35,19 +35,24 @@ export default function RemoveMemberModal({
             return;
         }
 
-        router.visit(destroyMember({ current_team: team.slug, user: member.id }).url, {
-            method: 'delete',
-            onStart: () => setProcessing(true),
-            onFinish: () => setProcessing(false),
-            onSuccess: () => onOpenChange(false),
-        });
+        router.visit(
+            destroyMember({ current_team: team.slug, user: member.id }).url,
+            {
+                method: 'delete',
+                onStart: () => setProcessing(true),
+                onFinish: () => setProcessing(false),
+                onSuccess: () => onOpenChange(false),
+            },
+        );
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{t('components.remove_member.title')}</DialogTitle>
+                    <DialogTitle>
+                        {t('components.remove_member.title')}
+                    </DialogTitle>
                     <DialogDescription>
                         {t('components.remove_member.description')}{' '}
                         <strong>{member?.name}</strong>{' '}
@@ -57,7 +62,9 @@ export default function RemoveMemberModal({
 
                 <DialogFooter className="gap-2">
                     <DialogClose asChild>
-                        <Button variant="secondary">{t('common.cancel')}</Button>
+                        <Button variant="secondary">
+                            {t('common.cancel')}
+                        </Button>
                     </DialogClose>
 
                     <Button

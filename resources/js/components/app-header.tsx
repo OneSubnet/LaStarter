@@ -55,8 +55,7 @@ const rightNavItems: NavItem[] = [
     },
 ];
 
-const activeItemStyles =
-    'text-foreground dark:bg-muted dark:text-foreground';
+const activeItemStyles = 'text-foreground dark:bg-muted dark:text-foreground';
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const { t } = useTranslation();

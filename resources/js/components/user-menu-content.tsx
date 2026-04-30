@@ -20,7 +20,8 @@ type Props = {
 export function UserMenuContent({ user }: Props) {
     const { t } = useTranslation();
     const cleanup = useMobileNavigation();
-    const teamSlug = (usePage().props.currentTeam as { slug: string } | null)?.slug ?? '';
+    const teamSlug =
+        (usePage().props.currentTeam as { slug: string } | null)?.slug ?? '';
 
     const handleLogout = () => {
         cleanup();

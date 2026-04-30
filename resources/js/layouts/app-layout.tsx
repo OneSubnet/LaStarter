@@ -12,7 +12,10 @@ export default function AppLayout({
     children: ReactNode;
 }) {
     return (
-        <AppLayoutTemplate breadcrumbs={breadcrumbs} headerActions={headerActions}>
+        <AppLayoutTemplate
+            breadcrumbs={breadcrumbs}
+            headerActions={headerActions}
+        >
             {children}
         </AppLayoutTemplate>
     );
