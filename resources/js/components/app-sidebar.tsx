@@ -3,8 +3,8 @@ import {
     Bell,
     Calculator,
     Calendar,
-    CheckSquare,
     Check,
+    CheckSquare,
     Feather,
     FileText,
     FolderKanban,
@@ -15,6 +15,7 @@ import {
     Mail,
     MessageCircle,
     MessageSquare,
+    Megaphone,
     Package,
     Palette,
     Puzzle,
@@ -24,9 +25,9 @@ import {
     ShieldCheck,
     Store,
     Users,
-    Megaphone,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavUser } from '@/components/nav-user';
@@ -46,8 +47,10 @@ import {
     SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
@@ -93,6 +96,7 @@ type NavItem = {
     icon: LucideIcon;
     href: string;
     permission?: string;
+    badge?: number | string;
 };
 
 type NavSection = {
@@ -344,9 +348,9 @@ function ModulePanel({ module }: { module: NavModule }) {
                                             <Icon className="size-4" />
                                             <span>{item.label}</span>
                                             {badge !== null && (
-                                                <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                                                <SidebarMenuBadge>
                                                     {badge > 99 ? '99+' : badge}
-                                                </span>
+                                                </SidebarMenuBadge>
                                             )}
                                         </Link>
                                     </SidebarMenuButton>
@@ -365,7 +369,8 @@ function ModulePanel({ module }: { module: NavModule }) {
 export function AppSidebar() {
     const { t } = useTranslation();
     const page = usePage();
-    const { setOpen, isMobile } = useSidebar();
+    const { setOpen, isMobile, state } = useSidebar();
+    const isCollapsed = state === 'collapsed';
 
     const teamSlug =
         (page.props.currentTeam as { slug: string } | null)?.slug ?? '';
@@ -666,6 +671,25 @@ export function AppSidebar() {
                     <SidebarGroup>
                         <SidebarGroupContent className="px-1.5 md:px-0">
                             <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <motion.div
+                                        key={
+                                            isCollapsed
+                                                ? 'h-collapsed'
+                                                : 'h-expanded'
+                                        }
+                                        className={cn(
+                                            isCollapsed
+                                                ? 'hidden items-center justify-center sm:flex'
+                                                : 'hidden',
+                                        )}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.8 }}
+                                    >
+                                        <SidebarTrigger />
+                                    </motion.div>
+                                </SidebarMenuItem>
                                 {modules.map((module) => {
                                     const Icon = module.icon;
 
