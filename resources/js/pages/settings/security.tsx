@@ -4,6 +4,7 @@ import { ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
+import { FormAutoSaveProvider, FormAutoSaveStickyBar } from '@/components/form';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
@@ -93,128 +94,145 @@ export default function Security({
                     description={t('settings.security.password_description')}
                 />
 
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.handleSubmit();
+                <FormAutoSaveProvider
+                    form={form}
+                    onSubmit={() => {
+                        return new Promise<void>((resolve) => {
+                            router.patch(
+                                SecurityController.update.url(),
+                                form.state.values,
+                                {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        form.reset();
+                                        resolve();
+                                    },
+                                    onError: (errors) => {
+                                        if (errors.password) {
+                                            currentPasswordInput.current?.focus();
+                                        }
+
+                                        if (errors.current_password) {
+                                            currentPasswordInput.current?.focus();
+                                        }
+
+                                        resolve();
+                                    },
+                                },
+                            );
+                        });
                     }}
-                    className="space-y-6"
                 >
-                    <div className="grid gap-2">
-                        <Label htmlFor="current_password">
-                            {t('settings.security.current_password_label')}
-                        </Label>
-                        <form.Field name="current_password">
-                            {(field) => (
-                                <>
-                                    <PasswordInput
-                                        id="current_password"
-                                        ref={currentPasswordInput}
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="mt-1 block w-full"
-                                        autoComplete="current-password"
-                                        placeholder={t(
-                                            'settings.security.current_password_placeholder',
-                                        )}
-                                    />
-                                    <InputError
-                                        message={
-                                            field.state.meta.errors?.[0] as
-                                                | string
-                                                | undefined
-                                        }
-                                    />
-                                </>
-                            )}
-                        </form.Field>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">
-                            {t('settings.security.new_password_label')}
-                        </Label>
-                        <form.Field name="password">
-                            {(field) => (
-                                <>
-                                    <PasswordInput
-                                        id="password"
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="mt-1 block w-full"
-                                        autoComplete="new-password"
-                                        placeholder={t(
-                                            'settings.security.new_password_placeholder',
-                                        )}
-                                    />
-                                    <InputError
-                                        message={
-                                            field.state.meta.errors?.[0] as
-                                                | string
-                                                | undefined
-                                        }
-                                    />
-                                </>
-                            )}
-                        </form.Field>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">
-                            {t('settings.security.confirm_password_label')}
-                        </Label>
-                        <form.Field name="password_confirmation">
-                            {(field) => (
-                                <>
-                                    <PasswordInput
-                                        id="password_confirmation"
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="mt-1 block w-full"
-                                        autoComplete="new-password"
-                                        placeholder={t(
-                                            'settings.security.confirm_password_placeholder',
-                                        )}
-                                    />
-                                    <InputError
-                                        message={
-                                            field.state.meta.errors?.[0] as
-                                                | string
-                                                | undefined
-                                        }
-                                    />
-                                </>
-                            )}
-                        </form.Field>
-                    </div>
-                    <form.Subscribe
-                        selector={(state) => [
-                            state.canSubmit,
-                            state.isSubmitting,
-                        ]}
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            form.handleSubmit();
+                        }}
+                        className="space-y-6"
                     >
-                        {([canSubmit, isSubmitting]) => (
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    type="submit"
-                                    disabled={!canSubmit || isSubmitting}
-                                    data-test="update-password-button"
-                                >
-                                    {isSubmitting
-                                        ? t('settings.security.saving')
-                                        : t('settings.security.save')}
-                                </Button>
-                            </div>
-                        )}
-                    </form.Subscribe>
-                </form>
+                        <div className="grid gap-2">
+                            <Label htmlFor="current_password">
+                                {t('settings.security.current_password_label')}
+                            </Label>
+                            <form.Field name="current_password">
+                                {(field) => (
+                                    <>
+                                        <PasswordInput
+                                            id="current_password"
+                                            ref={currentPasswordInput}
+                                            value={field.state.value}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            onBlur={field.handleBlur}
+                                            className="mt-1 block w-full"
+                                            autoComplete="current-password"
+                                            placeholder={t(
+                                                'settings.security.current_password_placeholder',
+                                            )}
+                                        />
+                                        <InputError
+                                            message={
+                                                field.state.meta.errors?.[0] as
+                                                    | string
+                                                    | undefined
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </form.Field>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">
+                                {t('settings.security.new_password_label')}
+                            </Label>
+                            <form.Field name="password">
+                                {(field) => (
+                                    <>
+                                        <PasswordInput
+                                            id="password"
+                                            value={field.state.value}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            onBlur={field.handleBlur}
+                                            className="mt-1 block w-full"
+                                            autoComplete="new-password"
+                                            placeholder={t(
+                                                'settings.security.new_password_placeholder',
+                                            )}
+                                        />
+                                        <InputError
+                                            message={
+                                                field.state.meta.errors?.[0] as
+                                                    | string
+                                                    | undefined
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </form.Field>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="password_confirmation">
+                                {t('settings.security.confirm_password_label')}
+                            </Label>
+                            <form.Field name="password_confirmation">
+                                {(field) => (
+                                    <>
+                                        <PasswordInput
+                                            id="password_confirmation"
+                                            value={field.state.value}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            onBlur={field.handleBlur}
+                                            className="mt-1 block w-full"
+                                            autoComplete="new-password"
+                                            placeholder={t(
+                                                'settings.security.confirm_password_placeholder',
+                                            )}
+                                        />
+                                        <InputError
+                                            message={
+                                                field.state.meta.errors?.[0] as
+                                                    | string
+                                                    | undefined
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </form.Field>
+                        </div>
+                    </form>
+                    <FormAutoSaveStickyBar />
+                </FormAutoSaveProvider>
             </div>
 
             {canManageTwoFactor && (

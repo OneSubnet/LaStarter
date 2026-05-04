@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import AuthLayout from '@/layouts/auth-layout';
 import { zodValidator } from '@/lib/inertia-form';
 import { forgotPasswordSchema } from '@/lib/schemas';
-import { login } from '@/routes';
 import { email } from '@/routes/password';
+import { login } from '@/routes-custom';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     const { t } = useTranslation();

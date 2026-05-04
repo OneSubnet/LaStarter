@@ -52,7 +52,6 @@ import {
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
-import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
 import {
     index as notificationsIndex,
@@ -69,6 +68,7 @@ import {
     members,
     roles,
 } from '@/routes/settings/team';
+import { dashboard } from '@/routes-custom';
 
 // ── Types ──────────────────────────────────────────────
 
@@ -717,7 +717,7 @@ export function AppSidebar() {
                     </SidebarGroup>
                 </SidebarContent>
 
-                <SidebarFooter>
+                <SidebarFooter className="px-2">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton

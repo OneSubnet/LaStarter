@@ -7,6 +7,7 @@ import {
     LayoutGrid,
     MessageSquare,
     Receipt,
+    Search,
     Settings,
     ShieldCheck,
     Users,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CmdOrOption } from '@/components/nowts/keyboard-shortcut';
+import { Button } from '@/components/ui/button';
 import {
     CommandDialog,
     CommandEmpty,
@@ -23,8 +26,9 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
-import { dashboard } from '@/routes';
+import { Kbd } from '@/components/ui/kbd';
 import { extensions, general, members, roles } from '@/routes/settings/team';
+import { dashboard } from '@/routes-custom';
 
 type ExtensionNavChild = {
     title: string;
@@ -155,22 +159,22 @@ export default function CommandPalette() {
         return [
             {
                 label: t('command.new_invoice'),
-                href: `/${teamSlug}/ailes-invisibles/invoices/create`,
+                href: `/${teamSlug}/ai/invoices/create`,
                 icon: 'Receipt',
             },
             {
                 label: t('command.new_client'),
-                href: `/${teamSlug}/ailes-invisibles/clients/create`,
+                href: `/${teamSlug}/ai/clients/create`,
                 icon: 'Users',
             },
             {
                 label: t('command.new_quote'),
-                href: `/${teamSlug}/ailes-invisibles/quotes/create`,
+                href: `/${teamSlug}/ai/quotes/create`,
                 icon: 'FileText',
             },
             {
                 label: t('command.new_event'),
-                href: `/${teamSlug}/ailes-invisibles/events/create`,
+                href: `/${teamSlug}/ai/events/create`,
                 icon: 'Calendar',
             },
         ];
@@ -196,20 +200,59 @@ export default function CommandPalette() {
     };
 
     return (
-        <CommandDialog
-            open={open}
-            onOpenChange={setOpen}
-            title={t('command.title')}
-            description={t('command.description')}
-        >
-            <CommandInput placeholder={t('command.placeholder')} />
-            <CommandList>
-                <CommandEmpty>{t('command.no_results')}</CommandEmpty>
+        <>
+            {/* Floating trigger button at top center */}
+            <div className="fixed top-4 left-1/2 z-40 -translate-x-1/2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setOpen(true)}
+                    className="bg-background/95 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                >
+                    <Search className="mr-2 h-4 w-4" />
+                    {t('command.placeholder')}
+                    <Kbd className="ml-2">
+                        <CmdOrOption /> + K
+                    </Kbd>
+                </Button>
+            </div>
 
-                {actionItems.length > 0 && (
-                    <>
-                        <CommandGroup heading={t('command.actions')}>
-                            {actionItems.map((item) => (
+            <CommandDialog
+                open={open}
+                onOpenChange={setOpen}
+                title={t('command.title')}
+                description={t('command.description')}
+            >
+                <CommandInput placeholder={t('command.placeholder')} />
+                <CommandList>
+                    <CommandEmpty>{t('command.no_results')}</CommandEmpty>
+
+                    {actionItems.length > 0 && (
+                        <>
+                            <CommandGroup heading={t('command.actions')}>
+                                {actionItems.map((item) => (
+                                    <CommandItem
+                                        key={item.href}
+                                        onSelect={() => handleSelect(item.href)}
+                                    >
+                                        <IconFor
+                                            name={item.icon}
+                                            className="h-4 w-4"
+                                        />
+                                        <span className="flex items-center gap-2">
+                                            <Plus className="h-3 w-3 text-muted-foreground" />
+                                            {item.label}
+                                        </span>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                            <CommandSeparator />
+                        </>
+                    )}
+
+                    {[...grouped.entries()].map(([group, items]) => (
+                        <CommandGroup key={group} heading={group}>
+                            {items.map((item) => (
                                 <CommandItem
                                     key={item.href}
                                     onSelect={() => handleSelect(item.href)}
@@ -218,55 +261,39 @@ export default function CommandPalette() {
                                         name={item.icon}
                                         className="h-4 w-4"
                                     />
-                                    <span className="flex items-center gap-2">
-                                        <Plus className="h-3 w-3 text-muted-foreground" />
-                                        {item.label}
-                                    </span>
+                                    <span>{item.label}</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
-                        <CommandSeparator />
-                    </>
-                )}
+                    ))}
 
-                {[...grouped.entries()].map(([group, items]) => (
-                    <CommandGroup key={group} heading={group}>
-                        {items.map((item) => (
-                            <CommandItem
-                                key={item.href}
-                                onSelect={() => handleSelect(item.href)}
-                            >
-                                <IconFor name={item.icon} className="h-4 w-4" />
-                                <span>{item.label}</span>
-                            </CommandItem>
-                        ))}
-                    </CommandGroup>
-                ))}
-
-                {teamSlug && (
-                    <>
-                        <CommandSeparator />
-                        <CommandGroup heading={t('common.settings')}>
-                            <CommandItem
-                                onSelect={() =>
-                                    handleSelect(general(teamSlug).url)
-                                }
-                            >
-                                <Settings className="h-4 w-4" />
-                                <span>{t('common.general')}</span>
-                            </CommandItem>
-                            <CommandItem
-                                onSelect={() =>
-                                    handleSelect(extensions(teamSlug).url)
-                                }
-                            >
-                                <LayoutGrid className="h-4 w-4" />
-                                <span>{t('common.extensions_and_themes')}</span>
-                            </CommandItem>
-                        </CommandGroup>
-                    </>
-                )}
-            </CommandList>
-        </CommandDialog>
+                    {teamSlug && (
+                        <>
+                            <CommandSeparator />
+                            <CommandGroup heading={t('common.settings')}>
+                                <CommandItem
+                                    onSelect={() =>
+                                        handleSelect(general(teamSlug).url)
+                                    }
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    <span>{t('common.general')}</span>
+                                </CommandItem>
+                                <CommandItem
+                                    onSelect={() =>
+                                        handleSelect(extensions(teamSlug).url)
+                                    }
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                    <span>
+                                        {t('common.extensions_and_themes')}
+                                    </span>
+                                </CommandItem>
+                            </CommandGroup>
+                        </>
+                    )}
+                </CommandList>
+            </CommandDialog>
+        </>
     );
 }

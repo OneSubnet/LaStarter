@@ -2,7 +2,17 @@ import { router } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import {
+    getCustomEventDetail,
+    isObject,
+    isObjectWithKeys,
+    isString,
+} from '@/lib/type-guards';
 import type { FlashToast } from '@/types/ui';
+
+type FlashDetail = { flash?: { toast?: FlashToast } };
+type ErrorDetail = { errors?: Record<string, string | string[]> };
+type ExceptionDetail = { exception?: { status?: number; statusCode?: number } };
 
 export function useFlashToast(): void {
     const { t } = useTranslation();
@@ -11,8 +21,8 @@ export function useFlashToast(): void {
         const cleanups = [
             // Flash toast messages from backend (Inertia::flash)
             router.on('flash', (event) => {
-                const flash = (event as CustomEvent).detail?.flash;
-                const data = flash?.toast as FlashToast | undefined;
+                const detail = getCustomEventDetail<FlashDetail>(event);
+                const data = detail?.flash?.toast;
 
                 if (data) {
                     toast[data.type](data.message);
@@ -21,12 +31,12 @@ export function useFlashToast(): void {
 
             // Validation errors (422) — show first error
             router.on('error', (event) => {
-                const errors = (event as CustomEvent).detail?.errors;
+                const detail = getCustomEventDetail<ErrorDetail>(event);
 
-                if (errors && typeof errors === 'object') {
-                    const firstError = Object.values(errors).flat()[0];
+                if (detail?.errors && isObject(detail.errors)) {
+                    const firstError = Object.values(detail.errors).flat()[0];
 
-                    if (typeof firstError === 'string') {
+                    if (isString(firstError)) {
                         toast.error(firstError);
                     }
                 }
@@ -34,19 +44,27 @@ export function useFlashToast(): void {
 
             // HTTP exceptions (403, 404, 500, etc.)
             router.on('httpException', (event) => {
-                const exception = (event as CustomEvent).detail?.exception;
-                const status = exception?.status ?? exception?.statusCode;
+                const detail = getCustomEventDetail<ExceptionDetail>(event);
 
-                if (status === 403) {
-                    toast.error(t('errors.permission_denied'));
-                } else if (status === 404) {
-                    toast.error(t('errors.not_found'));
-                } else if (status === 419) {
-                    toast.error(t('errors.session_expired'));
-                } else if (status && status >= 500) {
-                    toast.error(t('errors.server_error_generic'));
-                } else {
-                    toast.error(t('errors.generic'));
+                if (
+                    isObjectWithKeys<{
+                        exception: { status?: number; statusCode?: number };
+                    }>(detail, ['exception'])
+                ) {
+                    const status =
+                        detail.exception.status ?? detail.exception.statusCode;
+
+                    if (status === 403) {
+                        toast.error(t('errors.permission_denied'));
+                    } else if (status === 404) {
+                        toast.error(t('errors.not_found'));
+                    } else if (status === 419) {
+                        toast.error(t('errors.session_expired'));
+                    } else if (status && status >= 500) {
+                        toast.error(t('errors.server_error_generic'));
+                    } else {
+                        toast.error(t('errors.generic'));
+                    }
                 }
             }),
 

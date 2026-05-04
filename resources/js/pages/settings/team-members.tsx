@@ -389,15 +389,7 @@ export default function TeamMembers({
                 enableHiding: false,
             },
         ],
-        [
-            availableRoles,
-            updateMemberRole,
-            getInitials,
-            permissions,
-            can,
-            t,
-            statusConfig,
-        ],
+        [availableRoles, updateMemberRole, getInitials, can, t, statusConfig],
     );
 
     const table = useReactTable({

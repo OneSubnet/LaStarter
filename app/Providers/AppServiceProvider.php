@@ -19,12 +19,27 @@ use App\Core\Extensions\Marketplace\MarketplaceClient;
 use App\Core\Settings\SettingManager;
 use App\Core\Themes\ComponentResolver;
 use App\Models\Extension;
+use App\Models\Role as TeamRole;
 use App\Models\Team;
 use App\Models\User;
 use App\Policies\ExtensionPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\TeamPolicy;
 use App\Policies\UserPolicy;
+use App\Repositories\Contracts\ExtensionRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\ExtensionRepository;
+use App\Repositories\RoleRepository;
+use App\Repositories\TeamRepository;
+use App\Repositories\UserRepository;
+use App\Services\Contracts\ExtensionServiceInterface;
+use App\Services\Contracts\RoleServiceInterface;
+use App\Services\Contracts\SettingServiceInterface;
+use App\Services\Contracts\TeamServiceInterface;
+use App\Services\ExtensionService;
+use App\Services\RoleService;
+use App\Services\SettingService;
+use App\Services\TeamService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -76,6 +91,22 @@ class AppServiceProvider extends ServiceProvider
 
         // Register AppContext as scoped singleton (resolves once per request)
         $this->app->scoped(AppContext::class);
+
+        // Register Repositories and Services (POO Architecture)
+        $this->app->bind(TeamRepository::class, fn () => new TeamRepository(new Team));
+        $this->app->bind(UserRepository::class, fn () => new UserRepository(new User));
+        $this->app->bind(TeamServiceInterface::class, TeamService::class);
+
+        // Extension layer
+        $this->app->bind(ExtensionRepositoryInterface::class, fn () => new ExtensionRepository(new Extension));
+        $this->app->bind(ExtensionServiceInterface::class, ExtensionService::class);
+
+        // Role layer
+        $this->app->bind(RoleRepositoryInterface::class, fn () => new RoleRepository(new TeamRole));
+        $this->app->bind(RoleServiceInterface::class, RoleService::class);
+
+        // Settings layer
+        $this->app->bind(SettingServiceInterface::class, SettingService::class);
 
         // Register CLI commands
         $this->commands([

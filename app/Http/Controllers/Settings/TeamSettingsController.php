@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\SaveTeamRequest;
 use App\Models\Team;
+use App\Rules\ValidImageFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +67,7 @@ class TeamSettingsController extends Controller
         Gate::authorize('update', $team);
 
         $validated = $request->validate([
-            'icon' => ['required', 'file', 'mimetypes:image/jpeg,image/png,image/webp,image/svg+xml', 'max:5120'],
+            'icon' => ['required', 'file', 'max:5120', new ValidImageFile],
         ]);
 
         $file = $validated['icon'];

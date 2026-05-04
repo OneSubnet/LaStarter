@@ -9,8 +9,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { logout } from '@/routes';
 import { index as notificationsIndex } from '@/routes/notifications';
+import { edit as editProfile } from '@/routes/profile';
+import { logout } from '@/routes-custom';
 import type { User as UserType } from '@/types';
 
 type Props = {
@@ -40,7 +41,7 @@ export function UserMenuContent({ user }: Props) {
                 <DropdownMenuItem asChild>
                     <Link
                         className="block w-full cursor-pointer"
-                        href={`/${teamSlug}/settings/profile`}
+                        href={editProfile().url}
                         prefetch
                         onClick={cleanup}
                     >

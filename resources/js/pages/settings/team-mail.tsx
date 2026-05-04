@@ -3,6 +3,7 @@ import { useForm } from '@tanstack/react-form';
 import { Mail } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FormAutoSaveProvider, FormAutoSaveStickyBar } from '@/components/form';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -96,65 +97,52 @@ export default function TeamMail({ mail }: Props) {
                     description={t('settings.team.mail.server_description')}
                 />
 
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.handleSubmit();
+                <FormAutoSaveProvider
+                    form={form}
+                    onSubmit={() => {
+                        setServerErrors({});
+
+                        return new Promise<void>((resolve) => {
+                            inertiaSubmit({
+                                url: updateUrl(teamSlug).url,
+                                method: 'patch',
+                                onSuccess: () => {
+                                    setServerErrors({});
+                                    resolve();
+                                },
+                                onError: (errors) => {
+                                    setServerErrors(errors);
+                                    resolve();
+                                },
+                            })(form.state.values);
+                        });
                     }}
-                    className="space-y-6"
                 >
-                    <div className="grid gap-2">
-                        <Label htmlFor="host">
-                            {t('settings.team.mail.host_label')}
-                        </Label>
-                        <form.Field name="host">
-                            {(field) => (
-                                <>
-                                    <Input
-                                        id="host"
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        placeholder={t(
-                                            'settings.team.mail.host_placeholder',
-                                        )}
-                                    />
-                                    <InputError
-                                        message={
-                                            (field.state.meta.errors?.[0] as
-                                                | string
-                                                | undefined) ??
-                                            serverErrors.host
-                                        }
-                                    />
-                                </>
-                            )}
-                        </form.Field>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            form.handleSubmit();
+                        }}
+                        className="space-y-6"
+                    >
                         <div className="grid gap-2">
-                            <Label htmlFor="port">
-                                {t('settings.team.mail.port_label')}
+                            <Label htmlFor="host">
+                                {t('settings.team.mail.host_label')}
                             </Label>
-                            <form.Field name="port">
+                            <form.Field name="host">
                                 {(field) => (
                                     <>
                                         <Input
-                                            id="port"
-                                            type="number"
+                                            id="host"
                                             value={field.state.value}
                                             onChange={(e) =>
                                                 field.handleChange(
-                                                    parseInt(e.target.value) ||
-                                                        0,
+                                                    e.target.value,
                                                 )
                                             }
                                             onBlur={field.handleBlur}
                                             placeholder={t(
-                                                'settings.team.mail.port_placeholder',
+                                                'settings.team.mail.host_placeholder',
                                             )}
                                         />
                                         <InputError
@@ -163,7 +151,7 @@ export default function TeamMail({ mail }: Props) {
                                                     .errors?.[0] as
                                                     | string
                                                     | undefined) ??
-                                                serverErrors.port
+                                                serverErrors.host
                                             }
                                         />
                                     </>
@@ -171,212 +159,236 @@ export default function TeamMail({ mail }: Props) {
                             </form.Field>
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="encryption">
-                                {t('settings.team.mail.encryption_label')}
-                            </Label>
-                            <form.Field name="encryption">
-                                {(field) => (
-                                    <>
-                                        <Select
-                                            value={field.state.value}
-                                            onValueChange={(val) =>
-                                                field.handleChange(
-                                                    val as
-                                                        | 'tls'
-                                                        | 'ssl'
-                                                        | 'none',
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="tls">
-                                                    {t(
-                                                        'settings.team.mail.encryption_tls',
-                                                    )}
-                                                </SelectItem>
-                                                <SelectItem value="ssl">
-                                                    {t(
-                                                        'settings.team.mail.encryption_ssl',
-                                                    )}
-                                                </SelectItem>
-                                                <SelectItem value="none">
-                                                    {t(
-                                                        'settings.team.mail.encryption_none',
-                                                    )}
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={serverErrors.encryption}
-                                        />
-                                    </>
-                                )}
-                            </form.Field>
-                        </div>
-                    </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="port">
+                                    {t('settings.team.mail.port_label')}
+                                </Label>
+                                <form.Field name="port">
+                                    {(field) => (
+                                        <>
+                                            <Input
+                                                id="port"
+                                                type="number"
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        parseInt(
+                                                            e.target.value,
+                                                        ) || 0,
+                                                    )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                placeholder={t(
+                                                    'settings.team.mail.port_placeholder',
+                                                )}
+                                            />
+                                            <InputError
+                                                message={
+                                                    (field.state.meta
+                                                        .errors?.[0] as
+                                                        | string
+                                                        | undefined) ??
+                                                    serverErrors.port
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </form.Field>
+                            </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="username">
-                                {t('settings.team.mail.username_label')}
-                            </Label>
-                            <form.Field name="username">
-                                {(field) => (
-                                    <>
-                                        <Input
-                                            id="username"
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            onBlur={field.handleBlur}
-                                            placeholder={t(
-                                                'settings.team.mail.username_placeholder',
-                                            )}
-                                            autoComplete="off"
-                                        />
-                                        <InputError
-                                            message={serverErrors.username}
-                                        />
-                                    </>
-                                )}
-                            </form.Field>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">
-                                {t('settings.team.mail.password_label')}
-                            </Label>
-                            <form.Field name="password">
-                                {(field) => (
-                                    <>
-                                        <Input
-                                            id="password"
-                                            type="password"
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            onBlur={field.handleBlur}
-                                            placeholder={t(
-                                                'settings.team.mail.password_placeholder',
-                                            )}
-                                            autoComplete="new-password"
-                                        />
-                                        <InputError
-                                            message={serverErrors.password}
-                                        />
-                                    </>
-                                )}
-                            </form.Field>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="from_address">
-                                {t('settings.team.mail.from_address_label')}
-                            </Label>
-                            <form.Field name="from_address">
-                                {(field) => (
-                                    <>
-                                        <Input
-                                            id="from_address"
-                                            type="email"
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            onBlur={field.handleBlur}
-                                            placeholder={t(
-                                                'settings.team.mail.from_address_placeholder',
-                                            )}
-                                        />
-                                        <InputError
-                                            message={
-                                                (field.state.meta
-                                                    .errors?.[0] as
-                                                    | string
-                                                    | undefined) ??
-                                                serverErrors.from_address
-                                            }
-                                        />
-                                    </>
-                                )}
-                            </form.Field>
+                            <div className="grid gap-2">
+                                <Label htmlFor="encryption">
+                                    {t('settings.team.mail.encryption_label')}
+                                </Label>
+                                <form.Field name="encryption">
+                                    {(field) => (
+                                        <>
+                                            <Select
+                                                value={field.state.value}
+                                                onValueChange={(val) =>
+                                                    field.handleChange(
+                                                        val as
+                                                            | 'tls'
+                                                            | 'ssl'
+                                                            | 'none',
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="tls">
+                                                        {t(
+                                                            'settings.team.mail.encryption_tls',
+                                                        )}
+                                                    </SelectItem>
+                                                    <SelectItem value="ssl">
+                                                        {t(
+                                                            'settings.team.mail.encryption_ssl',
+                                                        )}
+                                                    </SelectItem>
+                                                    <SelectItem value="none">
+                                                        {t(
+                                                            'settings.team.mail.encryption_none',
+                                                        )}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    serverErrors.encryption
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </form.Field>
+                            </div>
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="from_name">
-                                {t('settings.team.mail.from_name_label')}
-                            </Label>
-                            <form.Field name="from_name">
-                                {(field) => (
-                                    <>
-                                        <Input
-                                            id="from_name"
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            onBlur={field.handleBlur}
-                                            placeholder={t(
-                                                'settings.team.mail.from_name_placeholder',
-                                            )}
-                                        />
-                                        <InputError
-                                            message={serverErrors.from_name}
-                                        />
-                                    </>
-                                )}
-                            </form.Field>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="username">
+                                    {t('settings.team.mail.username_label')}
+                                </Label>
+                                <form.Field name="username">
+                                    {(field) => (
+                                        <>
+                                            <Input
+                                                id="username"
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                placeholder={t(
+                                                    'settings.team.mail.username_placeholder',
+                                                )}
+                                                autoComplete="off"
+                                            />
+                                            <InputError
+                                                message={serverErrors.username}
+                                            />
+                                        </>
+                                    )}
+                                </form.Field>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="password">
+                                    {t('settings.team.mail.password_label')}
+                                </Label>
+                                <form.Field name="password">
+                                    {(field) => (
+                                        <>
+                                            <Input
+                                                id="password"
+                                                type="password"
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                placeholder={t(
+                                                    'settings.team.mail.password_placeholder',
+                                                )}
+                                                autoComplete="new-password"
+                                            />
+                                            <InputError
+                                                message={serverErrors.password}
+                                            />
+                                        </>
+                                    )}
+                                </form.Field>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                        <form.Subscribe
-                            selector={(state) => [
-                                state.canSubmit,
-                                state.isSubmitting,
-                            ]}
-                        >
-                            {([canSubmit, isSubmitting]) => (
-                                <Button
-                                    type="submit"
-                                    disabled={!canSubmit || isSubmitting}
-                                >
-                                    {isSubmitting
-                                        ? t('settings.team.mail.saving')
-                                        : t('settings.team.mail.save')}
-                                </Button>
-                            )}
-                        </form.Subscribe>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="from_address">
+                                    {t('settings.team.mail.from_address_label')}
+                                </Label>
+                                <form.Field name="from_address">
+                                    {(field) => (
+                                        <>
+                                            <Input
+                                                id="from_address"
+                                                type="email"
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                placeholder={t(
+                                                    'settings.team.mail.from_address_placeholder',
+                                                )}
+                                            />
+                                            <InputError
+                                                message={
+                                                    (field.state.meta
+                                                        .errors?.[0] as
+                                                        | string
+                                                        | undefined) ??
+                                                    serverErrors.from_address
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </form.Field>
+                            </div>
 
-                        <Button
-                            type="button"
-                            variant="outline"
-                            disabled={sendingTest}
-                            onClick={handleTestEmail}
-                        >
-                            <Mail className="h-4 w-4" />
-                            {sendingTest
-                                ? t('settings.team.mail.test_sending')
-                                : t('settings.team.mail.test_button')}
-                        </Button>
-                    </div>
-                </form>
+                            <div className="grid gap-2">
+                                <Label htmlFor="from_name">
+                                    {t('settings.team.mail.from_name_label')}
+                                </Label>
+                                <form.Field name="from_name">
+                                    {(field) => (
+                                        <>
+                                            <Input
+                                                id="from_name"
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                placeholder={t(
+                                                    'settings.team.mail.from_name_placeholder',
+                                                )}
+                                            />
+                                            <InputError
+                                                message={serverErrors.from_name}
+                                            />
+                                        </>
+                                    )}
+                                </form.Field>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={sendingTest}
+                                onClick={handleTestEmail}
+                            >
+                                <Mail className="h-4 w-4" />
+                                {sendingTest
+                                    ? t('settings.team.mail.test_sending')
+                                    : t('settings.team.mail.test_button')}
+                            </Button>
+                        </div>
+                    </form>
+                    <FormAutoSaveStickyBar />
+                </FormAutoSaveProvider>
             </div>
         </TeamSettingsLayout>
     );

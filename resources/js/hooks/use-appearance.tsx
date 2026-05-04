@@ -1,13 +1,9 @@
 import { useSyncExternalStore } from 'react';
-
-export type ResolvedAppearance = 'light' | 'dark';
-export type Appearance = ResolvedAppearance | 'system';
-
-export type UseAppearanceReturn = {
-    readonly appearance: Appearance;
-    readonly resolvedAppearance: ResolvedAppearance;
-    readonly updateAppearance: (mode: Appearance) => void;
-};
+import type {
+    Appearance,
+    ResolvedAppearance,
+    UseAppearanceReturn,
+} from '@/types/appearance';
 
 const listeners = new Set<() => void>();
 let currentAppearance: Appearance = 'system';

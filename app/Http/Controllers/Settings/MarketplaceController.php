@@ -7,6 +7,7 @@ use App\Core\Extensions\Installer\ZipInstaller;
 use App\Core\Extensions\Marketplace\MarketplaceClient;
 use App\Http\Controllers\Controller;
 use App\Models\Extension;
+use App\Rules\ValidZipFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -122,7 +123,7 @@ class MarketplaceController extends Controller
         Gate::authorize('manage', Extension::class);
 
         $validated = $request->validate([
-            'file' => 'required|file|mimes:zip|max:51200',
+            'file' => ['required', 'file', 'max:51200', new ValidZipFile],
             'identifier' => 'required|string',
         ]);
 

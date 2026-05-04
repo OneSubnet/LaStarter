@@ -1,7 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes-custom';
 
 export default function Dashboard() {
     const { t } = useTranslation();

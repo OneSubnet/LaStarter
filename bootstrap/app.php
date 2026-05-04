@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\ConfigureTeamMailer;
-use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetAppLocale;
 use App\Http\Middleware\SetPermissionsTeamId;
@@ -25,7 +24,6 @@ $app = Application::configure(basePath: dirname(__DIR__))
             SetPermissionsTeamId::class,
             ConfigureTeamMailer::class,
             SetAppLocale::class,
-            HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             SetTeamUrlDefaults::class,

@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { dashboard, login, register } from '@/routes';
+import { dashboard, login, register } from '@/routes-custom';
 
 export default function Welcome({
     canRegister = true,

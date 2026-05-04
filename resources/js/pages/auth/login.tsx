@@ -9,9 +9,9 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { zodValidator } from '@/lib/inertia-form';
 import { loginSchema } from '@/lib/schemas';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import { register } from '@/routes-custom';
 
 type Props = {
     status?: string;

@@ -59,7 +59,7 @@ class ExtensionManifest
             type: $data['type'] ?? throw new \InvalidArgumentException('Extension manifest missing "type"'),
             version: $data['version'] ?? null,
             description: $data['description'] ?? null,
-            providerClass: $data['provider'] ?? null,
+            providerClass: $data['provider'] ?? $data['provider_class'] ?? null,
             namespace: $data['namespace'] ?? null,
             permissions: $data['permissions'] ?? [],
             navigation: $data['navigation'] ?? [],

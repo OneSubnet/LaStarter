@@ -11,6 +11,7 @@ use App\Http\Controllers\Settings\TeamMailController;
 use App\Http\Controllers\Settings\TeamMembersController;
 use App\Http\Controllers\Settings\TeamRolesController;
 use App\Http\Controllers\Settings\TeamSettingsController;
+use App\Http\Controllers\Settings\ThemeController;
 use App\Http\Controllers\Teams\TeamController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureTeamMembership;

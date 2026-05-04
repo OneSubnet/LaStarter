@@ -4,6 +4,7 @@ import { Camera, Plus, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DeleteTeamModal from '@/components/delete-team-modal';
+import { FormAutoSaveProvider, FormAutoSaveStickyBar } from '@/components/form';
 import Guard from '@/components/guard';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -188,73 +189,75 @@ export default function TeamGeneral({
                                 </div>
                             </div>
 
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    form.handleSubmit();
-                                }}
-                                className="space-y-6"
-                            >
-                                <div className="grid gap-2">
-                                    <Label htmlFor="name">
-                                        {t('settings.team.general.name_label')}
-                                    </Label>
-                                    <form.Field name="name">
-                                        {(field) => (
-                                            <>
-                                                <Input
-                                                    id="name"
-                                                    data-test="team-name-input"
-                                                    value={field.state.value}
-                                                    onChange={(e) =>
-                                                        field.handleChange(
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    onBlur={field.handleBlur}
-                                                    disabled={false}
-                                                />
-                                                <InputError
-                                                    message={
-                                                        (field.state.meta
-                                                            .errors?.[0] as
-                                                            | string
-                                                            | undefined) ??
-                                                        serverErrors.name
-                                                    }
-                                                />
-                                            </>
-                                        )}
-                                    </form.Field>
-                                </div>
+                            <FormAutoSaveProvider
+                                form={form}
+                                onSubmit={() => {
+                                    setServerErrors({});
 
-                                <form.Subscribe
-                                    selector={(state) => [
-                                        state.canSubmit,
-                                        state.isSubmitting,
-                                    ]}
+                                    return new Promise<void>((resolve) => {
+                                        inertiaSubmit({
+                                            url: updateUrl(team.slug).url,
+                                            method: 'patch',
+                                            onSuccess: () => {
+                                                setServerErrors({});
+                                                resolve();
+                                            },
+                                            onError: (errors) => {
+                                                setServerErrors(errors);
+                                                resolve();
+                                            },
+                                        })({ name: form.state.values.name });
+                                    });
+                                }}
+                            >
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        form.handleSubmit();
+                                    }}
+                                    className="space-y-6"
                                 >
-                                    {([canSubmit, isSubmitting]) => (
-                                        <div className="flex items-center gap-4">
-                                            <Button
-                                                type="submit"
-                                                data-test="team-save-button"
-                                                disabled={
-                                                    !canSubmit || isSubmitting
-                                                }
-                                            >
-                                                {isSubmitting
-                                                    ? t(
-                                                          'settings.team.general.saving',
-                                                      )
-                                                    : t(
-                                                          'settings.team.general.save',
-                                                      )}
-                                            </Button>
-                                        </div>
-                                    )}
-                                </form.Subscribe>
-                            </form>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="name">
+                                            {t(
+                                                'settings.team.general.name_label',
+                                            )}
+                                        </Label>
+                                        <form.Field name="name">
+                                            {(field) => (
+                                                <>
+                                                    <Input
+                                                        id="name"
+                                                        data-test="team-name-input"
+                                                        value={
+                                                            field.state.value
+                                                        }
+                                                        onChange={(e) =>
+                                                            field.handleChange(
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        onBlur={
+                                                            field.handleBlur
+                                                        }
+                                                        disabled={false}
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            (field.state.meta
+                                                                .errors?.[0] as
+                                                                | string
+                                                                | undefined) ??
+                                                            serverErrors.name
+                                                        }
+                                                    />
+                                                </>
+                                            )}
+                                        </form.Field>
+                                    </div>
+                                </form>
+                                <FormAutoSaveStickyBar />
+                            </FormAutoSaveProvider>
                         </>
                     ) : (
                         <>

@@ -9,8 +9,8 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { zodValidator } from '@/lib/inertia-form';
 import { registerSchema } from '@/lib/schemas';
-import { login } from '@/routes';
 import { store } from '@/routes/register';
+import { login } from '@/routes-custom';
 
 export default function Register() {
     const { t } = useTranslation();

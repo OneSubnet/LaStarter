@@ -6,6 +6,7 @@ use App\Models\Membership;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Scoped singleton providing lazy-loaded access to the current request context.
@@ -97,14 +98,21 @@ class AppContext
         }
 
         $user = $this->user();
+        $team = $this->team();
 
-        if (! $user) {
+        if (! $user || ! $team) {
             return $this->permissions = [];
         }
 
-        return $this->permissions = $user->getAllPermissions()
-            ->pluck('name')
-            ->toArray();
+        // In teams mode, set the team context explicitly to get scoped permissions
+        $registrar = app(PermissionRegistrar::class);
+        $previousId = $registrar->getPermissionsTeamId();
+
+        $registrar->setPermissionsTeamId($team->id);
+        $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+        $registrar->setPermissionsTeamId($previousId);
+
+        return $this->permissions = $permissions;
     }
 
     public function reset(): void

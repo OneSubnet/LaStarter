@@ -3,17 +3,21 @@
 namespace App\Actions\Teams;
 
 use App\Models\Team;
-use Illuminate\Support\Facades\DB;
+use App\Services\Contracts\TeamServiceInterface;
 
+/**
+ * Update Team Action
+ *
+ * Simple orchestrator that delegates to the TeamService.
+ */
 class UpdateTeam
 {
+    public function __construct(
+        protected TeamServiceInterface $teamService
+    ) {}
+
     public function handle(Team $team, string $name): Team
     {
-        return DB::transaction(function () use ($team, $name) {
-            $team = Team::whereKey($team->id)->lockForUpdate()->firstOrFail();
-            $team->update(['name' => $name]);
-
-            return $team;
-        });
+        return $this->teamService->updateTeam($team, $name);
     }
 }

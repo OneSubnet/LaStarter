@@ -3,7 +3,10 @@ import type { ResolvedComponent } from '@inertiajs/react';
 import i18n from 'i18next';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { AppProvider } from '@/contexts';
 import { initializeTheme } from '@/hooks/use-appearance';
+import type { User } from '@/types/auth';
+import type { Team } from '@/types/teams';
 
 import '@/lib/i18n';
 
@@ -110,16 +113,49 @@ async function resolvePage(name: string): Promise<ResolvedComponent> {
     return module.default ?? module;
 }
 
+// Extract initial page data from the #app element (SSR-safe)
+function getInitialPageData() {
+    if (typeof document === 'undefined') {
+        return { user: null, currentTeam: null, teams: [] };
+    }
+
+    const bootstrap = document.getElementById('app')?.dataset.page;
+
+    if (!bootstrap) {
+        return { user: null, currentTeam: null, teams: [] };
+    }
+
+    try {
+        const page = JSON.parse(bootstrap);
+
+        return {
+            user: (page.props?.auth?.user as User) || null,
+            currentTeam: (page.props?.currentTeam as Team | null) || null,
+            teams: (page.props?.teams as Team[]) || [],
+        };
+    } catch {
+        return { user: null, currentTeam: null, teams: [] };
+    }
+}
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => resolvePage(name),
     strictMode: true,
     withApp(app) {
+        const initialData = getInitialPageData();
+
         return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
+            <AppProvider
+                initialUser={initialData.user}
+                initialCurrentTeam={initialData.currentTeam}
+                initialTeams={initialData.teams}
+            >
+                <TooltipProvider delayDuration={0}>
+                    {app}
+                    <Toaster />
+                </TooltipProvider>
+            </AppProvider>
         );
     },
     progress: {

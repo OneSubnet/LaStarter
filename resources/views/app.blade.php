@@ -1,53 +1,13 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(array_filter(['dark' => ($appearance ?? 'system') == 'dark', $activeTheme ? "theme-{$activeTheme}" : null]))>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
-            (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
-
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
-                }
-            })();
-        </script>
-
-        {{-- Inline style to set the HTML background color based on our theme in app.css --}}
+        {{-- Prevent FOUC with minimal inline style --}}
         <style>
-            html {
-                background-color: oklch(1.0000 0 0);
-            }
-
-            html.dark {
-                background-color: oklch(0.1797 0.0043 308.1928);
-            }
-        </style>
-
-        <script>
-            (function() {
-                try {
-                    var page = JSON.parse(document.getElementById('app').dataset.page);
-                    if (page.props && page.props.theme) {
-                        document.documentElement.classList.add('theme-' + page.props.theme);
-                    }
-                } catch(e) {}
-            })();
-        </script>
-        <style>
-            html {
-                background-color: oklch(1.0000 0 0);
-            }
-
-            html.dark {
-                background-color: oklch(0.1797 0.0043 308.1928);
-            }
+            html { background-color: oklch(1.0000 0 0); }
+            html.dark { background-color: oklch(0.1797 0.0043 308.1928); }
         </style>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
