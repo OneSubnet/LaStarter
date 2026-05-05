@@ -2,7 +2,6 @@
 
 namespace App\Core\Modules;
 
-use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
 class ModuleRouteRegistrar
@@ -12,7 +11,8 @@ class ModuleRouteRegistrar
      */
     public function register(string $routesPath): void
     {
-        Route::middleware(['auth', 'verified', EnsureTeamMembership::class])
+        // Use middleware alias instead of class reference to avoid autoloading issues
+        Route::middleware(['auth', 'verified', 'team.membership'])
             ->prefix('{current_team}')
             ->group($routesPath);
     }

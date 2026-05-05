@@ -123,7 +123,7 @@ type Props = {
 export default function Extensions({ extensions }: Props) {
     const { t } = useTranslation();
     const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+    const teamSlug = (currentTeam as { slug: string } | null)?.slug;
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [rowSelection, setRowSelection] = useState({});
@@ -343,14 +343,10 @@ export default function Extensions({ extensions }: Props) {
                                                                 className="size-8"
                                                                 onClick={() =>
                                                                     postAction(
-                                                                        disableUrl(
-                                                                            {
-                                                                                current_team:
-                                                                                    teamSlug,
-                                                                                extension:
-                                                                                    ext.id,
-                                                                            },
-                                                                        ).url,
+                                                                        disableUrl({
+                                                                            current_team: teamSlug ?? '',
+                                                                            extension: ext.identifier,
+                                                                        }).url,
                                                                     )
                                                                 }
                                                             >
@@ -381,14 +377,10 @@ export default function Extensions({ extensions }: Props) {
                                                                 className="size-8"
                                                                 onClick={() =>
                                                                     postAction(
-                                                                        enableUrl(
-                                                                            {
-                                                                                current_team:
-                                                                                    teamSlug,
-                                                                                extension:
-                                                                                    ext.id,
-                                                                            },
-                                                                        ).url,
+                                                                        enableUrl({
+                                                                                current_team: teamSlug ?? '',
+                                                                                extension: ext.identifier,
+                                                                            }).url,
                                                                     )
                                                                 }
                                                             >
@@ -446,9 +438,8 @@ export default function Extensions({ extensions }: Props) {
                                                 onClick={() =>
                                                     postAction(
                                                         installUrl({
-                                                            current_team:
-                                                                teamSlug,
-                                                            extension: ext.id,
+                                                            current_team: teamSlug ?? '',
+                                                            extension: ext.identifier,
                                                         }).url,
                                                     )
                                                 }
@@ -467,10 +458,8 @@ export default function Extensions({ extensions }: Props) {
                                                     onClick={() =>
                                                         postAction(
                                                             uninstallUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    ext.id,
+                                                                current_team: teamSlug ?? '',
+                                                                extension: ext.identifier,
                                                             }).url,
                                                         )
                                                     }
@@ -522,7 +511,7 @@ export default function Extensions({ extensions }: Props) {
             breadcrumbs={[
                 {
                     title: t('settings.extensions.title'),
-                    href: extensionsUrl(teamSlug).url,
+                    href: extensionsUrl(teamSlug ?? '').url,
                 },
             ]}
         >
@@ -560,11 +549,8 @@ export default function Extensions({ extensions }: Props) {
                                                     ) {
                                                         postAction(
                                                             enableUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    row.original
-                                                                        .id,
+                                                                current_team: teamSlug ?? '',
+                                                                extension: row.original.identifier,
                                                             }).url,
                                                         );
                                                     }
@@ -591,11 +577,8 @@ export default function Extensions({ extensions }: Props) {
                                                     ) {
                                                         postAction(
                                                             disableUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    row.original
-                                                                        .id,
+                                                                current_team: teamSlug ?? '',
+                                                                extension: row.original.identifier,
                                                             }).url,
                                                         );
                                                     }
@@ -624,11 +607,8 @@ export default function Extensions({ extensions }: Props) {
                                                     ) {
                                                         postAction(
                                                             uninstallUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    row.original
-                                                                        .id,
+                                                                current_team: teamSlug ?? '',
+                                                                extension: row.original.identifier,
                                                             }).url,
                                                         );
                                                     }

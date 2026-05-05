@@ -101,6 +101,14 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
+     * Save an existing model instance.
+     */
+    public function save(Model $model): bool
+    {
+        return $model->save();
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function findBy(string $attribute, mixed $value, array $relations = []): ?Model
@@ -162,5 +170,54 @@ abstract class AbstractRepository implements RepositoryInterface
     protected function setModel(Model $model): void
     {
         $this->model = $model;
+    }
+
+    /**
+     * Check if a slug exists for the model.
+     */
+    public function slugExists(string $slug, ?int $excludeId = null): bool
+    {
+        return $this->query()
+            ->where('slug', $slug)
+            ->when($excludeId, fn (Builder $q) => $q->where('id', '!=', $excludeId))
+            ->exists();
+    }
+
+    /**
+     * Get first model by column value or create it.
+     *
+     * @param  array<string, mixed>  $where
+     * @param  array<string, mixed>  $values
+     */
+    public function firstOrCreate(array $where, array $values = []): Model
+    {
+        return $this->query()->firstOrCreate($where, $values);
+    }
+
+    /**
+     * Update or create a model.
+     *
+     * @param  array<string, mixed>  $where
+     * @param  array<string, mixed>  $values
+     */
+    public function updateOrCreate(array $where, array $values = []): Model
+    {
+        return $this->query()->updateOrCreate($where, $values);
+    }
+
+    /**
+     * Get count of models matching the query.
+     */
+    public function count(?Builder $query = null): int
+    {
+        return ($query ?? $this->query())->count();
+    }
+
+    /**
+     * Check if any models exist.
+     */
+    public function exists(?Builder $query = null): bool
+    {
+        return ($query ?? $this->query())->exists();
     }
 }

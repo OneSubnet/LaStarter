@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domains\Team\Data\TeamRequestData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Teams\SaveTeamRequest;
 use App\Models\Team;
 use App\Rules\ValidImageFile;
 use Illuminate\Http\RedirectResponse;
@@ -39,15 +39,17 @@ class TeamSettingsController extends Controller
     /**
      * Update the team name.
      */
-    public function update(SaveTeamRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
         $team = $request->user()->currentTeam;
 
         Gate::authorize('update', $team);
 
-        DB::transaction(function () use ($request, $team) {
+        $data = TeamRequestData::validateAndCreate($request->all());
+
+        DB::transaction(function () use ($data, $team) {
             $locked = Team::whereKey($team->id)->lockForUpdate()->firstOrFail();
-            $locked->update(['name' => $request->validated('name')]);
+            $locked->update(['name' => $data->name]);
         });
 
         $team->refresh();

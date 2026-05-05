@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use Modules\AilesInvisibles\Domain\CqrsServiceProvider;
 use Spatie\Permission\Models\Permission;
 
 trait WithAilesInvisibles
@@ -43,5 +44,42 @@ trait WithAilesInvisibles
         ]);
 
         $this->seedAIPermissions();
+
+        // Load module classes manually for tests
+        $this->loadModuleClasses();
+
+        // Register the module CQRS service provider
+        $this->app->register(CqrsServiceProvider::class);
+    }
+
+    protected function loadModuleClasses(): void
+    {
+        $basePath = base_path('extensions/modules/ailes-invisibles/src');
+
+        // Recursively load all PHP files in the Domain directory
+        $this->requireFilesInDirectory($basePath.'/Domain');
+
+        // Load models
+        foreach (glob($basePath.'/Models/*.php') as $file) {
+            require_once $file;
+        }
+    }
+
+    protected function requireFilesInDirectory(string $directory): void
+    {
+        if (! is_dir($directory)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                require_once $file->getPathname();
+            }
+        }
     }
 }

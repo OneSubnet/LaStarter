@@ -91,4 +91,35 @@ interface RepositoryInterface
      * @return T
      */
     public function transaction(\Closure $callback): mixed;
+
+    /**
+     * Check if a slug exists for the model.
+     */
+    public function slugExists(string $slug, ?int $excludeId = null): bool;
+
+    /**
+     * Get first model by column value or create it.
+     *
+     * @param  array<string, mixed>  $where
+     * @param  array<string, mixed>  $values
+     */
+    public function firstOrCreate(array $where, array $values = []): Model;
+
+    /**
+     * Update or create a model.
+     *
+     * @param  array<string, mixed>  $where
+     * @param  array<string, mixed>  $values
+     */
+    public function updateOrCreate(array $where, array $values = []): Model;
+
+    /**
+     * Get count of models.
+     */
+    public function count(?Builder $query = null): int;
+
+    /**
+     * Check if any models exist.
+     */
+    public function exists(?Builder $query = null): bool;
 }

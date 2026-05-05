@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Console\Commands;
+
 use App\Core\Extensions\ExtensionManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;

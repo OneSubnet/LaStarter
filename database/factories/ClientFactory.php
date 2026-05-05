@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\AilesInvisibles\Models\Client;
 
@@ -13,30 +14,28 @@ class ClientFactory extends Factory
     {
         return [
             'team_id' => 1,
-            'type' => 'individual',
-            'first_name' => fake()->firstName(),
-            'last_name' => fake()->lastName(),
+            'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
-            'company_name' => null,
-            'vat_number' => null,
-            'vat_country' => 'FR',
-            'address_line1' => fake()->streetAddress(),
-            'address_line2' => null,
+            'company' => fake()->company(),
+            'address' => fake()->streetAddress(),
             'city' => fake()->city(),
             'postal_code' => fake()->postcode(),
-            'country' => 'FR',
-            'notes' => null,
-            'status' => 'active',
+            'country' => fake()->countryCode(),
+            'notes' => fake()->sentence(),
+            'is_active' => true,
         ];
     }
 
-    public function pro(): static
+    /**
+     * Indicate the client belongs to a specific team.
+     */
+    public function forTeam(Team|int $team): static
     {
-        return $this->state(fn () => [
-            'type' => 'pro',
-            'company_name' => fake()->company(),
-            'vat_number' => 'FR'.fake()->numerify('###########'),
+        $teamId = is_int($team) ? $team : $team->id;
+
+        return $this->state(fn (array $attributes) => [
+            'team_id' => $teamId,
         ]);
     }
 }

@@ -47,7 +47,16 @@ class NavigationBuilder
                         if (isset($child['route'])) {
                             try {
                                 $href = route($child['route'], ['current_team' => $teamSlug], false);
-                            } catch (\Exception) {
+                                \Log::debug('NavigationBuilder route resolved', [
+                                    'route' => $child['route'],
+                                    'teamSlug' => $teamSlug,
+                                    'href' => $href,
+                                ]);
+                            } catch (\Exception $e) {
+                                \Log::error('NavigationBuilder route failed', [
+                                    'route' => $child['route'],
+                                    'error' => $e->getMessage(),
+                                ]);
                                 $href = '#';
                             }
                         } elseif (isset($child['url'])) {

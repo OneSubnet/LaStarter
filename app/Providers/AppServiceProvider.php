@@ -16,16 +16,19 @@ use App\Core\Extensions\ExtensionManager;
 use App\Core\Extensions\ExtensionScanner;
 use App\Core\Extensions\Installer\ZipInstaller;
 use App\Core\Extensions\Marketplace\MarketplaceClient;
+use App\Core\Modules\ModuleRouteRegistrar;
 use App\Core\Settings\SettingManager;
 use App\Core\Themes\ComponentResolver;
+use App\Domains\Team\Policies\TeamPolicy;
+use App\Domains\User\Policies\UserPolicy;
+use App\Http\Middleware\CheckTeamPermission;
+use App\Http\Middleware\EnsureTeamMembership;
 use App\Models\Extension;
 use App\Models\Role as TeamRole;
 use App\Models\Team;
 use App\Models\User;
 use App\Policies\ExtensionPolicy;
 use App\Policies\RolePolicy;
-use App\Policies\TeamPolicy;
-use App\Policies\UserPolicy;
 use App\Repositories\Contracts\ExtensionRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\ExtensionRepository;
@@ -44,9 +47,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Spatie\Permission\Models\Role;
 
 class AppServiceProvider extends ServiceProvider
@@ -65,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
         // Register ExtensionManager as singleton
         $this->app->singleton(ExtensionManager::class);
         $this->app->singleton(ExtensionScanner::class);
+        $this->app->bind(ModuleRouteRegistrar::class);
 
         // Register SettingManager as singleton
         $this->app->singleton(SettingManager::class);
@@ -126,6 +134,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register Spatie Permission middleware aliases
+        Route::aliasMiddleware('permission', PermissionMiddleware::class);
+        Route::aliasMiddleware('role', RoleMiddleware::class);
+        Route::aliasMiddleware('role_or_permission', RoleOrPermissionMiddleware::class);
+
+        // Register team middleware alias
+        Route::aliasMiddleware('team.membership', EnsureTeamMembership::class);
+        Route::aliasMiddleware('team.permission', CheckTeamPermission::class);
+
         $this->configureDefaults();
 
         Gate::policy(Role::class, RolePolicy::class);

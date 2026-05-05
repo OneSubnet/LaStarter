@@ -145,7 +145,7 @@ export default function ExtensionsShow({ extension }: Props) {
                                     onClick={() =>
                                         postAction(
                                             installUrl({
-                                                current_team: teamSlug,
+                                                current_team: teamSlug ?? '',
                                                 extension: extension.id,
                                             }).url,
                                         )
@@ -164,10 +164,8 @@ export default function ExtensionsShow({ extension }: Props) {
                                                 onClick={() =>
                                                     postAction(
                                                         disableUrl({
-                                                            current_team:
-                                                                teamSlug,
-                                                            extension:
-                                                                extension.id,
+                                                            current_team: teamSlug ?? '',
+                                                            extension: extension.id,
                                                         }).url,
                                                     )
                                                 }
@@ -181,10 +179,8 @@ export default function ExtensionsShow({ extension }: Props) {
                                                 onClick={() =>
                                                     postAction(
                                                         enableUrl({
-                                                            current_team:
-                                                                teamSlug,
-                                                            extension:
-                                                                extension.id,
+                                                            current_team: teamSlug ?? '',
+                                                            extension: extension.id,
                                                         }).url,
                                                     )
                                                 }
@@ -200,7 +196,7 @@ export default function ExtensionsShow({ extension }: Props) {
                                             onClick={() =>
                                                 postAction(
                                                     uninstallUrl({
-                                                        current_team: teamSlug,
+                                                        current_team: teamSlug ?? '',
                                                         extension: extension.id,
                                                     }).url,
                                                 )

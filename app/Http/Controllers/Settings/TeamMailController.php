@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Core\Settings\SettingManager;
+use App\Domains\Settings\Data\UpdateTeamMailData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Settings\UpdateTeamMailRequest;
 use App\Mail\TestMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,16 +36,21 @@ class TeamMailController extends Controller
         ]);
     }
 
-    public function update(UpdateTeamMailRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validated();
+        Gate::authorize('update', $request->user()->currentTeam);
 
-        foreach ($validated as $key => $value) {
+        $data = UpdateTeamMailData::validateAndCreate($request->all());
+        $array = $data->toArray();
+
+        foreach ($array as $key => $value) {
             if ($key === 'password' && ($value === '••••••••' || $value === '')) {
                 continue;
             }
 
-            $this->settings->set("mail_{$key}", $value);
+            // Convert camelCase to snake_case for settings
+            $settingKey = 'mail_'.str_replace('fromAddress', 'from_address', str_replace('fromName', 'from_name', $key));
+            $this->settings->set($settingKey, $value);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Mail settings saved.')]);

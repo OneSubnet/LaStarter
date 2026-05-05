@@ -344,7 +344,7 @@ function ModulePanel({ module }: { module: NavModule }) {
                                         isActive={isCurrentUrl(item.href)}
                                         className="px-2"
                                     >
-                                        <Link href={item.href} prefetch>
+                                        <Link href={item.href}>
                                             <Icon className="size-4" />
                                             <span>{item.label}</span>
                                             {badge !== null && (

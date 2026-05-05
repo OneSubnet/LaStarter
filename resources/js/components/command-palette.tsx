@@ -7,7 +7,6 @@ import {
     LayoutGrid,
     MessageSquare,
     Receipt,
-    Search,
     Settings,
     ShieldCheck,
     Users,
@@ -15,8 +14,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CmdOrOption } from '@/components/nowts/keyboard-shortcut';
-import { Button } from '@/components/ui/button';
 import {
     CommandDialog,
     CommandEmpty,
@@ -26,7 +23,6 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
-import { Kbd } from '@/components/ui/kbd';
 import { extensions, general, members, roles } from '@/routes/settings/team';
 import { dashboard } from '@/routes-custom';
 
@@ -201,22 +197,6 @@ export default function CommandPalette() {
 
     return (
         <>
-            {/* Floating trigger button at top center */}
-            <div className="fixed top-4 left-1/2 z-40 -translate-x-1/2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setOpen(true)}
-                    className="bg-background/95 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/60"
-                >
-                    <Search className="mr-2 h-4 w-4" />
-                    {t('command.placeholder')}
-                    <Kbd className="ml-2">
-                        <CmdOrOption /> + K
-                    </Kbd>
-                </Button>
-            </div>
-
             <CommandDialog
                 open={open}
                 onOpenChange={setOpen}

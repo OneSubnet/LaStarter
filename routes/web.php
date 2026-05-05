@@ -1,5 +1,7 @@
 <?php
 
+use App\Core\Context\AppContext;
+use App\Core\Navigation\NavigationBuilder;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
@@ -63,6 +65,18 @@ Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+        // Debug endpoint
+        Route::get('debug/navigation', function (Request $request) {
+            $ctx = app(AppContext::class);
+            $nav = app(NavigationBuilder::class)->build('app', $ctx->team()->id, $ctx->user());
+
+            return response()->json([
+                'navigation' => $nav,
+                'current_team' => $ctx->team()->slug,
+            ]);
+        })->name('debug.navigation');
+
         Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
         Route::post('onboarding', [OnboardingController::class, 'update'])->name('onboarding.update');
 

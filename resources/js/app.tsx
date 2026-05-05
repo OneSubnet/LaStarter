@@ -81,7 +81,9 @@ function registerPages(
     overwrite: boolean,
 ) {
     for (const path in globs) {
-        const match = path.match(pattern);
+        // Normalize path separators to forward slashes for regex matching
+        const normalizedPath = path.replace(/\\/g, '/');
+        const match = normalizedPath.match(pattern);
 
         if (match && (overwrite || !pageMap.has(match[1]))) {
             pageMap.set(match[1], globs[path] as PageLoader);

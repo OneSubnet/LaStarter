@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Settings;
 
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Themes\ComponentResolver;
+use App\Domains\Settings\Data\UpdateTeamThemeData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Settings\UpdateTeamThemeRequest;
 use App\Models\TeamSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,11 +42,11 @@ class ThemeController extends Controller
         ]);
     }
 
-    public function update(UpdateTeamThemeRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validated();
+        $data = UpdateTeamThemeData::validateAndCreate($request->all());
 
-        $this->resolver->setActiveTheme($request->user()->currentTeam->id, $validated['theme']);
+        $this->resolver->setActiveTheme($request->user()->currentTeam->id, $data->theme);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Theme updated.')]);
 

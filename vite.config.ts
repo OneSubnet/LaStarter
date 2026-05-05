@@ -37,4 +37,11 @@ export default defineConfig({
             'zod',
         ],
     },
+    // Don't ignore gitignored files for module pages
+    server: {
+        fs: {
+            strict: false,
+            allow: ['..'],
+        },
+    },
 });

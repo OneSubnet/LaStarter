@@ -1,19 +1,22 @@
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, MoreHorizontal, Settings } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { LayoutGrid, MoreHorizontal, Search, Settings } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import CommandPalette from '@/components/command-palette';
-
+import { CmdOrOption } from '@/components/nowts/keyboard-shortcut';
+import { Button } from '@/components/ui/button';
+import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator } from '@/components/ui/command';
 import {
     Drawer,
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
 } from '@/components/ui/drawer';
+import { Kbd } from '@/components/ui/kbd';
+
 import { Separator } from '@/components/ui/separator';
 import {
     SidebarProvider,
@@ -57,6 +60,7 @@ export default function AppSidebarLayout({
     const page = usePage();
     const isOpen = page.props.sidebarOpen;
     const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+    const [commandOpen, setCommandOpen] = useState(false);
 
     const currentTeam = page.props.currentTeam as
         | { name: string; slug: string }
@@ -71,6 +75,19 @@ export default function AppSidebarLayout({
         (page.props.footerLinks as
             | { title: string; href: string }[]
             | undefined) ?? [];
+
+    // Command palette keyboard shortcut
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setCommandOpen((o) => !o);
+            }
+        };
+        document.addEventListener('keydown', down);
+
+        return () => document.removeEventListener('keydown', down);
+    }, []);
 
     // Flatten extension nav items for mobile (include children from grouped items)
     const flatExtNav = extensionNav.flatMap((ext) => {
@@ -132,6 +149,18 @@ export default function AppSidebarLayout({
                             <Breadcrumbs breadcrumbs={breadcrumbs} />
                         </div>
                         <div className="ml-auto flex items-center gap-1.5">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCommandOpen(true)}
+                                className="h-8"
+                            >
+                                <Search className="mr-2 h-4 w-4" />
+                                <span className="hidden lg:inline">{t('command.placeholder')}</span>
+                                <Kbd className="ml-auto hidden lg:inline-flex">
+                                    <CmdOrOption /> + K
+                                </Kbd>
+                            </Button>
                             {headerActions}
                         </div>
                     </header>
@@ -266,7 +295,43 @@ export default function AppSidebarLayout({
                     </button>
                 </div>
             </nav>
-            <CommandPalette />
+
+            {/* Command Palette Dialog */}
+            <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+                <CommandInput placeholder={t('command.placeholder')} />
+                <CommandList>
+                    <CommandEmpty>{t('command.no_results')}</CommandEmpty>
+                    <CommandGroup heading={t('command.navigation')}>
+                        <CommandItem onSelect={() => {
+ setCommandOpen(false); router.visit(`/${teamSlug}`); 
+}}>
+                            <LayoutGrid className="h-4 w-4" />
+                            <span>{t('common.dashboard')}</span>
+                        </CommandItem>
+                        {flatExtNav.slice(0, 5).map((item) => {
+                            const Icon = item.icon;
+
+                            return (
+                                <CommandItem key={item.href} onSelect={() => {
+ setCommandOpen(false); router.visit(item.href); 
+}}>
+                                    <Icon className="h-4 w-4" />
+                                    <span>{item.label}</span>
+                                </CommandItem>
+                            );
+                        })}
+                    </CommandGroup>
+                    <CommandSeparator />
+                    <CommandGroup heading={t('common.settings')}>
+                        <CommandItem onSelect={() => {
+ setCommandOpen(false); router.visit(`/${teamSlug}/settings/general`); 
+}}>
+                            <Settings className="h-4 w-4" />
+                            <span>{t('common.general')}</span>
+                        </CommandItem>
+                    </CommandGroup>
+                </CommandList>
+            </CommandDialog>
         </SidebarProvider>
     );
 }

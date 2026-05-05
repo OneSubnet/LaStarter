@@ -6,10 +6,10 @@ use App\Actions\Members\MapTeamMembers;
 use App\Actions\Teams\CreateTeam;
 use App\Actions\Teams\DeleteTeam;
 use App\Actions\Teams\UpdateTeam;
+use App\Domains\Team\Data\TeamRequestData;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\DeleteTeamRequest;
-use App\Http\Requests\Teams\SaveTeamRequest;
 use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,9 +27,10 @@ class TeamController extends Controller
         ]);
     }
 
-    public function store(SaveTeamRequest $request, CreateTeam $createTeam): RedirectResponse
+    public function store(Request $request, CreateTeam $createTeam): RedirectResponse
     {
-        $team = $createTeam->handle($request->user(), $request->validated('name'));
+        $data = TeamRequestData::validateAndCreate($request->all());
+        $team = $createTeam->handle($request->user(), $data->name);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team created.')]);
 
@@ -67,11 +68,12 @@ class TeamController extends Controller
         ]);
     }
 
-    public function update(SaveTeamRequest $request, Team $team, UpdateTeam $updateTeam): RedirectResponse
+    public function update(Request $request, Team $team, UpdateTeam $updateTeam): RedirectResponse
     {
         Gate::authorize('update', $team);
 
-        $team = $updateTeam->handle($team, $request->validated('name'));
+        $data = TeamRequestData::validateAndCreate($request->all());
+        $team = $updateTeam->handle($team, $data->name);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Team updated.')]);
 

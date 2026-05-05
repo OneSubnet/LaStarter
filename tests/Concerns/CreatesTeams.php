@@ -5,6 +5,7 @@ namespace Tests\Concerns;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -23,6 +24,7 @@ trait CreatesTeams
     {
         $team = Team::create([
             'name' => $name,
+            'slug' => Str::slug($name),
             'user_id' => $user->id,
         ]);
 
