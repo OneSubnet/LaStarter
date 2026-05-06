@@ -2,15 +2,16 @@
 
 namespace App\Core\Extensions;
 
-use App\Core\Hooks\Hook;
-use App\Enums\TeamRole;
+use App\Core\Extensions\Events\ExtensionDisabled;
+use App\Core\Extensions\Events\ExtensionEnabled;
+use App\Core\Extensions\Events\ExtensionInstalled;
+use App\Core\Extensions\Events\ExtensionUninstalled;
 use App\Models\Extension;
 use App\Models\TeamExtension;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 final class ExtensionManager
 {
@@ -65,7 +66,6 @@ final class ExtensionManager
             $this->syncExtension($manifest);
         }
 
-        // Remove DB records for extensions no longer on disk
         Extension::whereNotIn('identifier', $manifests->keys()->all())->delete();
     }
 
@@ -110,9 +110,6 @@ final class ExtensionManager
     // Lifecycle
     // ──────────────────────────────────────────────
 
-    /**
-     * Install: run migrations, set state to Disabled.
-     */
     public function install(string $identifier): void
     {
         $manifest = $this->manifest($identifier);
@@ -128,12 +125,9 @@ final class ExtensionManager
 
         $extension->update(['state' => ExtensionState::Disabled->value]);
 
-        Hook::dispatch(Hook::EXTENSION_INSTALLED, $identifier);
+        Event::dispatch(new ExtensionInstalled($extension, $manifest ?? $this->manifestOrFail($identifier)));
     }
 
-    /**
-     * Enable an extension for a specific team.
-     */
     public function enable(string $identifier, int $teamId): void
     {
         $missing = $this->dependencyResolver->missingDependencies($identifier);
@@ -143,6 +137,7 @@ final class ExtensionManager
         }
 
         $extension = $this->findOrThrow($identifier);
+        $manifest = $this->manifest($identifier);
 
         if ($extension->state === null) {
             $this->install($identifier);
@@ -153,14 +148,9 @@ final class ExtensionManager
             ['is_active' => true],
         );
 
-        $this->syncTeamPermissions($identifier, $teamId);
-
-        Hook::dispatch(Hook::EXTENSION_ENABLED, $identifier);
+        Event::dispatch(new ExtensionEnabled($extension, $manifest ?? $this->manifestOrFail($identifier), $teamId));
     }
 
-    /**
-     * Disable an extension for a specific team.
-     */
     public function disable(string $identifier, int $teamId): void
     {
         $dependents = $this->dependencyResolver->dependents($identifier);
@@ -175,12 +165,9 @@ final class ExtensionManager
             ->where('team_id', $teamId)
             ->update(['is_active' => false]);
 
-        Hook::dispatch(Hook::EXTENSION_DISABLED, $identifier);
+        Event::dispatch(new ExtensionDisabled($extension, $teamId));
     }
 
-    /**
-     * Uninstall: disable all teams, rollback migrations, delete DB record.
-     */
     public function uninstall(string $identifier): void
     {
         $manifest = $this->manifest($identifier);
@@ -194,7 +181,7 @@ final class ExtensionManager
 
         $extension->delete();
 
-        Hook::dispatch(Hook::EXTENSION_UNINSTALLED, $identifier);
+        Event::dispatch(new ExtensionUninstalled($identifier));
     }
 
     // ──────────────────────────────────────────────
@@ -211,7 +198,7 @@ final class ExtensionManager
     }
 
     /**
-     * @return list<string> Identifiers of enabled extensions for a team
+     * @return list<string>
      */
     public function enabledIdentifiers(int $teamId): array
     {
@@ -223,7 +210,7 @@ final class ExtensionManager
     }
 
     /**
-     * @return list<class-string> Provider classes for all globally installed extensions
+     * @return list<class-string>
      */
     public function activeProviders(): array
     {
@@ -246,8 +233,6 @@ final class ExtensionManager
     }
 
     /**
-     * Return provider classes sorted by dependency order (dependencies first).
-     *
      * @return list<class-string>
      */
     public function orderedProviders(): array
@@ -308,7 +293,7 @@ final class ExtensionManager
     }
 
     // ──────────────────────────────────────────────
-    // Migration helpers
+    // Internal
     // ──────────────────────────────────────────────
 
     private function runMigrations(ExtensionManifest $manifest, string $direction): void
@@ -335,35 +320,6 @@ final class ExtensionManager
         }
     }
 
-    // ──────────────────────────────────────────────
-    // Permission sync
-    // ──────────────────────────────────────────────
-
-    private function syncTeamPermissions(string $identifier, int $teamId): void
-    {
-        $manifest = $this->manifest($identifier);
-
-        if ($manifest === null || $manifest->permissions === []) {
-            return;
-        }
-
-        $permissions = Permission::whereIn('name', $manifest->permissions)
-            ->where('guard_name', 'web')
-            ->get();
-
-        $ownerRole = Role::where('name', TeamRole::Owner->value)
-            ->where('team_id', $teamId)
-            ->first();
-
-        $ownerRole?->givePermissionTo($permissions);
-
-        $adminRole = Role::where('name', TeamRole::Admin->value)
-            ->where('team_id', $teamId)
-            ->first();
-
-        $adminRole?->givePermissionTo($permissions);
-    }
-
     private function findOrThrow(string $identifier): Extension
     {
         $extension = Extension::where('identifier', $identifier)->first();
@@ -373,5 +329,16 @@ final class ExtensionManager
         }
 
         return $extension;
+    }
+
+    private function manifestOrFail(string $identifier): ExtensionManifest
+    {
+        $manifest = $this->manifest($identifier);
+
+        if ($manifest === null) {
+            throw new \RuntimeException("Manifest not found for extension: {$identifier}");
+        }
+
+        return $manifest;
     }
 }

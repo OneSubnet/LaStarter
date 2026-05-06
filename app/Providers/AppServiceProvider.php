@@ -13,9 +13,11 @@ use App\Core\Extensions\Console\ExtensionsScanCommand;
 use App\Core\Extensions\Console\ExtensionsSyncCommand;
 use App\Core\Extensions\Console\ExtensionsUninstallCommand;
 use App\Core\Extensions\Console\ExtensionsUpdateCommand;
+use App\Core\Extensions\Events\ExtensionEnabled;
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Extensions\ExtensionScanner;
 use App\Core\Extensions\Installer\ZipInstaller;
+use App\Core\Extensions\Listeners\SyncTeamPermissionsListener;
 use App\Core\Extensions\Marketplace\MarketplaceClient;
 use App\Core\Extensions\Updater\UpdateService;
 use App\Core\Modules\MetricsAggregator;
@@ -33,6 +35,7 @@ use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -106,6 +109,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Team::class, TeamPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+
+        // Domain event listeners (Grafikart.fr pattern: Event → Listener)
+        Event::listen(ExtensionEnabled::class, SyncTeamPermissionsListener::class);
 
         require_once app_path('Core/Support/helpers.php');
 
