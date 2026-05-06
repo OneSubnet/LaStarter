@@ -3,10 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Core\Context\AppContext;
-use App\Core\Extensions\ExtensionManager;
+use App\Core\Navigation\NavigationBuilder;
 use App\Core\Widgets\WidgetRegistry;
 use App\Models\AuditLog;
 use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
@@ -55,95 +56,17 @@ class HandleInertiaRequests extends Middleware
         $user = $ctx->user();
         $team = $ctx->team();
 
-        if (! $user || ! $team) {
+        if (! $user instanceof User || ! $team) {
             return [];
         }
 
         try {
-            $manager = app(ExtensionManager::class);
-            $enabledIds = $manager->enabledIdentifiers($team->id);
-            $navItems = [];
-
-            foreach ($enabledIds as $identifier) {
-                $manifest = $manager->manifest($identifier);
-
-                if ($manifest === null) {
-                    continue;
-                }
-
-                $rawNav = $manifest->navigation['app'] ?? [];
-
-                foreach ($rawNav as $item) {
-                    $navItems[] = $this->resolveNavItem($item, $team, $user);
-                }
-            }
-
-            return array_filter($navItems);
+            return app(NavigationBuilder::class)->build($team, $user);
         } catch (\Throwable $e) {
             logger()->error('Failed to build navigation: '.$e->getMessage());
 
             return [];
         }
-    }
-
-    protected function resolveNavItem(array $item, $team, $user): ?array
-    {
-        $permission = $item['permission'] ?? null;
-
-        if ($permission && $user && ! $user->hasPermissionTo($permission)) {
-            return null;
-        }
-
-        $resolved = [
-            'title' => $item['title'] ?? '',
-            'icon' => $item['icon'] ?? null,
-            'order' => $item['order'] ?? 0,
-        ];
-
-        if (isset($item['route'])) {
-            try {
-                $resolved['href'] = route($item['route'], ['current_team' => $team->slug], false);
-            } catch (\Throwable) {
-                $resolved['href'] = $item['href'] ?? '#';
-            }
-        } elseif (isset($item['href'])) {
-            $resolved['href'] = $item['href'];
-        }
-
-        if (isset($item['children']) && is_array($item['children'])) {
-            $children = [];
-
-            foreach ($item['children'] as $child) {
-                $childPermission = $child['permission'] ?? null;
-
-                if ($childPermission && $user && ! $user->hasPermissionTo($childPermission)) {
-                    continue;
-                }
-
-                $childItem = [
-                    'title' => $child['title'] ?? '',
-                    'icon' => $child['icon'] ?? null,
-                    'order' => $child['order'] ?? 0,
-                    'group' => $child['group'] ?? null,
-                ];
-
-                if (isset($child['route'])) {
-                    try {
-                        $childItem['href'] = route($child['route'], ['current_team' => $team->slug], false);
-                    } catch (\Throwable) {
-                        $childItem['href'] = $child['href'] ?? '#';
-                    }
-                } elseif (isset($child['href'])) {
-                    $childItem['href'] = $child['href'];
-                }
-
-                $children[] = $childItem;
-            }
-
-            $resolved['children'] = $children;
-        }
-
-        return $resolved;
     }
 
     protected function resolveTeamMembers(AppContext $ctx): array
@@ -235,31 +158,7 @@ class HandleInertiaRequests extends Middleware
 
     protected function resolveUnreadMessageCount(AppContext $ctx): int
     {
-        $user = $ctx->user();
-        $team = $ctx->team();
-
-        if (! $user || ! $team) {
-            return 0;
-        }
-
-        $class = 'Modules\\AilesInvisibles\\Models\\Conversation';
-
-        if (! class_exists($class)) {
-            return 0;
-        }
-
-        try {
-            return $class::notArchived()
-                ->whereHas('participants', fn ($q) => $q->where('participant_type', get_class($user))->where('participant_id', $user->id))
-                ->withCount(['messages as unread_count' => fn ($q) => $q
-                    ->where(fn ($q2) => $q2->where('sender_type', '!=', get_class($user))->orWhere(fn ($q3) => $q3->where('sender_type', get_class($user))->where('sender_id', '!=', $user->id)))
-                    ->whereDoesntHave('readReceipts', fn ($q2) => $q2->where('reader_type', get_class($user))->where('reader_id', $user->id)),
-                ])
-                ->get()
-                ->sum('unread_count');
-        } catch (\Throwable) {
-            return 0;
-        }
+        return 0;
     }
 
     protected function resolveRecentNotifications(AppContext $ctx): array
@@ -271,7 +170,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         return Notification::forUser($user->id)
-            ->orderBy('created_at', 'desc')
+            ->latest('created_at')
             ->limit(5)
             ->get()
             ->map(fn (Notification $n) => [
@@ -280,7 +179,7 @@ class HandleInertiaRequests extends Middleware
                 'body' => $n->body,
                 'data' => $n->data,
                 'read_at' => $n->read_at?->toISOString(),
-                'created_at' => $n->created_at->toISOString(),
+                'created_at' => $n->created_at?->toISOString(),
             ])
             ->all();
     }

@@ -27,14 +27,6 @@ final class DependencyResolver
         foreach ($graph as $id => $deps) {
             foreach ($deps as $dep) {
                 if (isset($inDegree[$dep])) {
-                    $inDegree[$dep] = $inDegree[$dep]; // ensure key exists
-                }
-            }
-        }
-
-        foreach ($graph as $id => $deps) {
-            foreach ($deps as $dep) {
-                if (isset($inDegree[$dep])) {
                     $inDegree[$dep]++;
                 }
             }

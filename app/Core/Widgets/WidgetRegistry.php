@@ -3,6 +3,7 @@
 namespace App\Core\Widgets;
 
 use App\Core\Extensions\ExtensionManager;
+use App\Models\User;
 
 final class WidgetRegistry
 {
@@ -25,9 +26,9 @@ final class WidgetRegistry
     /**
      * Return widgets available to a user on a given team.
      *
-     * @return list<WidgetDefinition>
+     * @return list<array{identifier: string, label: string, type: string, size: array{w: int, h: int}, permission: ?string}>
      */
-    public function forTeam(int $teamId, $user): array
+    public function forTeam(int $teamId, User $user): array
     {
         $enabled = app(ExtensionManager::class)->enabledIdentifiers($teamId);
 
@@ -36,7 +37,7 @@ final class WidgetRegistry
                 return false;
             }
 
-            if ($w->permission && $user && ! $user->hasPermissionTo($w->permission)) {
+            if ($w->permission && ! $user->hasPermissionTo($w->permission)) {
                 return false;
             }
 

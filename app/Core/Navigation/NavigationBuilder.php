@@ -4,7 +4,9 @@ namespace App\Core\Navigation;
 
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Hooks\Hook;
-use Illuminate\Support\Collection;
+use App\Models\Team;
+use App\Models\User;
+use Illuminate\Support\Facades\Route;
 
 final class NavigationBuilder
 {
@@ -15,95 +17,93 @@ final class NavigationBuilder
     /**
      * Build sidebar navigation for a team.
      *
-     * @return list<array{group: string, items: list<array{label: string, href: string, icon: ?string, permission: ?string}>>}
+     * @return list<array{title: string, icon: ?string, order: int, href: string, permission?: ?string, children?: list<array{title: string, icon: ?string, order: int, group: ?string, href: string}>}>
      */
-    public function build(string $sidebar, int $teamId, $user): array
+    public function build(Team $team, User $user): array
     {
-        $groups = new Collection;
+        $navItems = [];
 
-        // Core navigation
-        $coreItems = $this->coreItems($user);
-
-        if ($coreItems->isNotEmpty()) {
-            $groups->push(['group' => 'Platform', 'items' => $coreItems->all()]);
-        }
-
-        // Extension navigation
-        $enabledIds = $this->extensions->enabledIdentifiers($teamId);
-
-        foreach ($enabledIds as $identifier) {
+        foreach ($this->extensions->enabledIdentifiers($team->id) as $identifier) {
             $manifest = $this->extensions->manifest($identifier);
 
             if ($manifest === null) {
                 continue;
             }
 
-            $items = $this->extensionItems($manifest, $user);
+            $rawNav = $manifest->navigation['app'] ?? [];
 
-            if ($items->isNotEmpty()) {
-                $groups->push(['group' => $manifest->name, 'items' => $items->all()]);
+            foreach ($rawNav as $item) {
+                $resolved = $this->resolveItem($item, $team, $user);
+
+                if ($resolved !== null) {
+                    $navItems[] = $resolved;
+                }
             }
         }
 
-        // Settings at the bottom
-        $settingsItems = $this->settingsItems($user);
+        Hook::dispatch(Hook::SIDEBAR_BUILD, $navItems);
 
-        if ($settingsItems->isNotEmpty()) {
-            $groups->push(['group' => 'Settings', 'items' => $settingsItems->all()]);
+        return $navItems;
+    }
+
+    /**
+     * Resolve a single navigation item, handling route resolution and permissions.
+     */
+    private function resolveItem(array $item, Team $team, User $user): ?array
+    {
+        $permission = $item['permission'] ?? null;
+
+        if ($permission && ! $user->hasPermissionTo($permission)) {
+            return null;
         }
 
-        Hook::dispatch(Hook::SIDEBAR_BUILD, $groups);
+        $resolved = [
+            'title' => $item['title'] ?? '',
+            'icon' => $item['icon'] ?? null,
+            'order' => $item['order'] ?? 0,
+        ];
 
-        return $groups->all();
-    }
+        $resolved['href'] = $this->resolveHref($item, $team);
 
-    private function coreItems($user): Collection
-    {
-        $items = new Collection;
+        if (isset($item['children']) && is_array($item['children'])) {
+            $children = [];
 
-        $items->push([
-            'label' => 'Dashboard',
-            'href' => '/dashboard',
-            'icon' => 'LayoutDashboard',
-            'permission' => null,
-        ]);
+            foreach ($item['children'] as $child) {
+                $childPerm = $child['permission'] ?? null;
 
-        return $items;
-    }
+                if ($childPerm && ! $user->hasPermissionTo($childPerm)) {
+                    continue;
+                }
 
-    private function extensionItems($manifest, $user): Collection
-    {
-        $items = new Collection;
-
-        foreach ($manifest->navigation as $navItem) {
-            $permission = $navItem['permission'] ?? null;
-
-            if ($permission && $user && ! $user->hasPermissionTo($permission)) {
-                continue;
+                $children[] = [
+                    'title' => $child['title'] ?? '',
+                    'icon' => $child['icon'] ?? null,
+                    'order' => $child['order'] ?? 0,
+                    'group' => $child['group'] ?? null,
+                    'href' => $this->resolveHref($child, $team),
+                ];
             }
 
-            $items->push([
-                'label' => $navItem['label'] ?? '',
-                'href' => $navItem['href'] ?? '#',
-                'icon' => $navItem['icon'] ?? null,
-                'permission' => $permission,
-            ]);
+            $resolved['children'] = $children;
         }
 
-        return $items;
+        return $resolved;
     }
 
-    private function settingsItems($user): Collection
+    /**
+     * Resolve the href for a navigation item.
+     * Supports both `route` (Laravel route name) and `href` (direct URL).
+     */
+    private function resolveHref(array $item, Team $team): string
     {
-        $items = new Collection;
+        if (isset($item['route'])) {
+            try {
+                return route($item['route'], ['current_team' => $team->slug], false);
+            } catch (\Throwable) {
+                return $item['href'] ?? '#';
+            }
+        }
 
-        $items->push([
-            'label' => 'Settings',
-            'href' => '/settings/general',
-            'icon' => 'Settings',
-            'permission' => 'team.update',
-        ]);
-
-        return $items;
+        return $item['href'] ?? '#';
     }
 }
