@@ -6,7 +6,7 @@ use App\Enums\TeamRole;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 
-class RolePolicy
+final class RolePolicy
 {
     public function viewAny(User $user): bool
     {

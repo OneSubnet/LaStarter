@@ -1,5 +1,5 @@
-import { createInertiaApp,  router } from '@inertiajs/react';
-import type {ResolvedComponent} from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
+import type { ResolvedComponent } from '@inertiajs/react';
 import i18n from 'i18next';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -30,19 +30,19 @@ const extensionLocales = import.meta.glob(
 
 function applyTheme(theme: string | null | undefined) {
     if (typeof document === 'undefined') {
-	return;
+        return;
     }
 
     const html = document.documentElement;
 
     html.classList.forEach((cls) => {
         if (cls.startsWith('theme-')) {
-	html.classList.remove(cls);
-}
+            html.classList.remove(cls);
+        }
     });
 
     if (!theme) {
-	return;
+        return;
     }
 
     html.classList.add(`theme-${theme}`);
@@ -50,10 +50,14 @@ function applyTheme(theme: string | null | undefined) {
 
 async function loadExtensionLocales(locale: string) {
     for (const path in extensionLocales) {
-        const match = path.match(/extensions[/\\]modules[/\\]([^/\\]+)[/\\]resources[/\\]locales[/\\]([a-z]{2}(?:-[A-Z]{2})?)\.json$/);
+        const match = path.match(
+            /extensions[/\\]modules[/\\]([^/\\]+)[/\\]resources[/\\]locales[/\\]([a-z]{2}(?:-[A-Z]{2})?)\.json$/,
+        );
 
         if (match && match[2] === locale) {
-            const mod = (await extensionLocales[path]()) as { default: Record<string, string> };
+            const mod = (await extensionLocales[path]()) as {
+                default: Record<string, string>;
+            };
             const ns = match[1];
             const translations = mod.default ?? mod;
 
@@ -83,8 +87,16 @@ function registerPages(
 }
 
 registerPages(corePages, /^\.\/pages\/(.+)\.tsx$/, false);
-registerPages(modulePages, /extensions\/modules\/[^/]+\/resources\/js\/pages\/(.+)\.tsx$/, true);
-registerPages(themeOverrides, /extensions\/themes\/[^/]+\/resources\/js\/overrides\/(.+)\.tsx$/, true);
+registerPages(
+    modulePages,
+    /extensions\/modules\/[^/]+\/resources\/js\/pages\/(.+)\.tsx$/,
+    true,
+);
+registerPages(
+    themeOverrides,
+    /extensions\/themes\/[^/]+\/resources\/js\/overrides\/(.+)\.tsx$/,
+    true,
+);
 
 async function resolvePage(name: string): Promise<ResolvedComponent> {
     const loader = pageMap.get(name);
@@ -123,7 +135,9 @@ if (typeof document !== 'undefined') {
 // Set default URL parameters from Inertia shared props so route helpers
 // auto-fill current_team when not explicitly provided.
 router.on('navigate', (event) => {
-    const team = event.detail.page.props.currentTeam as { slug?: string } | null;
+    const team = event.detail.page.props.currentTeam as {
+        slug?: string;
+    } | null;
 
     if (team?.slug) {
         setUrlDefaults({ current_team: team.slug, team: team.slug });

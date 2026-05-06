@@ -1,0 +1,60 @@
+import type { Auth } from '@/types/auth';
+import type { Team } from '@/types/teams';
+import type { FlashToast } from '@/types/ui';
+
+export type NotificationItem = {
+    id: string;
+    title: string | null;
+    body: string | null;
+    data: Record<string, unknown> | null;
+    read_at: string | null;
+    created_at: string | null;
+};
+
+export type AuditLogItem = {
+    id: number;
+    user: string | null;
+    action: string;
+    module: string | null;
+    properties: Record<string, unknown> | null;
+    created_at: string | null;
+};
+
+export type TeamMemberItem = {
+    id: number;
+    name: string;
+    email: string;
+    avatar: string | null;
+    role_label: string;
+    is_online: boolean;
+};
+
+export type FooterLink = {
+    title: string;
+    href: string;
+};
+
+export type SharedData = {
+    name: string;
+    auth: Auth;
+    sidebarOpen: boolean;
+    currentTeam: Team | null;
+    teams: Team[];
+    navigation: Record<string, unknown>[];
+    teamMembers: TeamMemberItem[];
+    auditLogs: AuditLogItem[];
+    theme: string | null;
+    locale: string;
+    fallbackLocale: string;
+    availableLocales: string[];
+    footerLinks: FooterLink[];
+    unreadNotifications: number;
+    recentNotifications: NotificationItem[];
+    unreadMessageCount: number;
+    availableWidgets: Record<string, unknown>[];
+    coreVersion: string;
+    flash?: {
+        toast?: FlashToast;
+    };
+    errors: Record<string, string>;
+};

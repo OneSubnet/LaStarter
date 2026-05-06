@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class TeamSettingsController extends Controller
+final class TeamSettingsController extends Controller
 {
     /**
      * Show the team general settings page.

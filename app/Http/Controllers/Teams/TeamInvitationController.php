@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
-class TeamInvitationController extends Controller
+final class TeamInvitationController extends Controller
 {
     use PasswordValidationRules;
 

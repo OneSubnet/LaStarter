@@ -12,7 +12,10 @@ export default function AuthSimpleLayout({
     return (
         <div className="flex min-h-svh items-center justify-center bg-background py-4">
             <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-6">
-                <Link href={home()} className="flex h-14 w-14 items-center justify-center">
+                <Link
+                    href={home()}
+                    className="flex h-14 w-14 items-center justify-center"
+                >
                     <AppLogoIcon className="h-14 w-12 fill-current text-[var(--foreground)] dark:text-white" />
                 </Link>
 
@@ -29,7 +32,7 @@ export default function AuthSimpleLayout({
                 {children}
             </div>
 
-            <div className="fixed bottom-4 right-4">
+            <div className="fixed right-4 bottom-4">
                 <LanguageSelector />
             </div>
         </div>

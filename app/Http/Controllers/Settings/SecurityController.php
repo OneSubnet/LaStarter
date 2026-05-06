@@ -12,7 +12,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Features;
 
-class SecurityController extends Controller implements HasMiddleware
+final class SecurityController extends Controller implements HasMiddleware
 {
     /**
      * Get the middleware that should be assigned to the controller.

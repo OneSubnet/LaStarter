@@ -26,6 +26,12 @@ use App\Core\Modules\ModuleApiRegistry;
 use App\Core\Modules\ModuleRouteRegistrar;
 use App\Core\Navigation\NavigationBuilder;
 use App\Core\Settings\SettingManager;
+use App\Core\System\BackupManager;
+use App\Core\System\CompatibilityChecker;
+use App\Core\System\Console\CoreUpdateCommand;
+use App\Core\System\Console\CoreVersionCommand;
+use App\Core\System\CoreUpdater;
+use App\Core\System\ReleaseClient;
 use App\Core\Widgets\WidgetRegistry;
 use App\Http\Middleware\EnsureTeamMembership;
 use App\Models\Team;
@@ -85,6 +91,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(WidgetRegistry::class);
         $this->app->singleton(ModuleRouteRegistrar::class);
 
+        // System update
+        $this->app->singleton(ReleaseClient::class, function () {
+            return new ReleaseClient(
+                config('lastarter.update_repo', 'OneSubnet/LaStarter'),
+                config('lastarter.github_token'),
+            );
+        });
+        $this->app->singleton(CompatibilityChecker::class);
+        $this->app->singleton(BackupManager::class, function () {
+            return new BackupManager(storage_path('backups'));
+        });
+        $this->app->singleton(CoreUpdater::class);
+
         Route::aliasMiddleware('team.membership', EnsureTeamMembership::class);
 
         $this->commands([
@@ -97,6 +116,8 @@ class AppServiceProvider extends ServiceProvider
             ExtensionsListCommand::class,
             ExtensionsCheckUpdatesCommand::class,
             ExtensionsUpdateCommand::class,
+            CoreUpdateCommand::class,
+            CoreVersionCommand::class,
         ]);
     }
 

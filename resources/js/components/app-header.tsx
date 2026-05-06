@@ -36,7 +36,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import type { BreadcrumbItem, NavItem } from '@/types';
+import type { BreadcrumbItem, NavItem, SharedData } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -55,12 +55,11 @@ const rightNavItems: NavItem[] = [
     },
 ];
 
-const activeItemStyles =
-    'text-foreground dark:bg-muted dark:text-foreground';
+const activeItemStyles = 'text-foreground dark:bg-muted dark:text-foreground';
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const { t } = useTranslation();
-    const page = usePage();
+    const page = usePage<SharedData>();
     const { auth, currentTeam } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();

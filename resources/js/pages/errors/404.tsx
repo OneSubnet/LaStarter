@@ -9,7 +9,9 @@ export default function NotFound() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
             <div className="text-center">
                 <FileQuestion className="mx-auto h-20 w-20 text-gray-400" />
-                <h1 className="mt-6 text-6xl font-bold text-gray-900 dark:text-gray-100">404</h1>
+                <h1 className="mt-6 text-6xl font-bold text-gray-900 dark:text-gray-100">
+                    404
+                </h1>
                 <p className="mt-4 text-xl text-gray-600 dark:text-gray-400">
                     {t('errors.page_not_found')}
                 </p>

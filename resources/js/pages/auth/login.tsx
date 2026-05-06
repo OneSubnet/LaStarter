@@ -92,7 +92,9 @@ export default function Login({
                                 onBlur={field.handleBlur}
                                 tabIndex={2}
                                 autoComplete="current-password"
-                                placeholder={t('auth.login.password_placeholder')}
+                                placeholder={t(
+                                    'auth.login.password_placeholder',
+                                )}
                                 className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"
                             />
                             <InputError
@@ -137,7 +139,11 @@ export default function Login({
             {canRegister && (
                 <p className="mb-8 w-full text-center text-sm tracking-tight text-foreground/40">
                     {t('auth.login.no_account')}{' '}
-                    <TextLink href={register()} tabIndex={5} className="underline">
+                    <TextLink
+                        href={register()}
+                        tabIndex={5}
+                        className="underline"
+                    >
                         {t('auth.login.sign_up')}
                     </TextLink>
                 </p>

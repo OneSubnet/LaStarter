@@ -10,7 +10,9 @@ export const securitySchema = z
     .object({
         current_password: z.string().min(1, 'Current password is required'),
         password: z.string().min(8, 'Password must be at least 8 characters'),
-        password_confirmation: z.string().min(1, 'Please confirm your password'),
+        password_confirmation: z
+            .string()
+            .min(1, 'Please confirm your password'),
     })
     .refine((data) => data.password === data.password_confirmation, {
         message: 'Passwords do not match',
@@ -27,7 +29,11 @@ export const mailSettingsSchema = z.object({
     username: z.string().max(255).optional().default(''),
     password: z.string().max(255).optional().default(''),
     encryption: z.enum(['tls', 'ssl', 'none']),
-    from_address: z.string().email('Invalid email').optional().or(z.literal('')),
+    from_address: z
+        .string()
+        .email('Invalid email')
+        .optional()
+        .or(z.literal('')),
     from_name: z.string().max(255).optional().default(''),
 });
 
@@ -42,7 +48,9 @@ export const registerSchema = z
         name: z.string().min(1, 'Name is required').max(255),
         email: z.string().email('Invalid email address').max(255),
         password: z.string().min(8, 'Password must be at least 8 characters'),
-        password_confirmation: z.string().min(1, 'Please confirm your password'),
+        password_confirmation: z
+            .string()
+            .min(1, 'Please confirm your password'),
     })
     .refine((data) => data.password === data.password_confirmation, {
         message: 'Passwords do not match',
@@ -57,7 +65,9 @@ export const resetPasswordSchema = z
     .object({
         email: z.string().email('Invalid email address'),
         password: z.string().min(8, 'Password must be at least 8 characters'),
-        password_confirmation: z.string().min(1, 'Please confirm your password'),
+        password_confirmation: z
+            .string()
+            .min(1, 'Please confirm your password'),
     })
     .refine((data) => data.password === data.password_confirmation, {
         message: 'Passwords do not match',

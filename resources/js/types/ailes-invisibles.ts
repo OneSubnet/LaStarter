@@ -356,8 +356,8 @@ export { formatCurrency } from '@/lib/format';
 
 export const formatFileSize = (bytes: number): string => {
     if (bytes === 0) {
-return '0 B';
-}
+        return '0 B';
+    }
 
     const mb = bytes / 1024 / 1024;
 
@@ -428,8 +428,16 @@ export type MessageDetail = {
     file_name: string | null;
     file_size: number | null;
     is_mine: boolean;
-    encrypted_keys: { participant_type: string; participant_id: number; encrypted_key: string }[];
-    read_receipts: { reader_type: string; reader_id: number; read_at: string }[];
+    encrypted_keys: {
+        participant_type: string;
+        participant_id: number;
+        encrypted_key: string;
+    }[];
+    read_receipts: {
+        reader_type: string;
+        reader_id: number;
+        read_at: string;
+    }[];
     created_at: string;
 };
 

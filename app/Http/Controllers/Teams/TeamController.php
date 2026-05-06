@@ -18,7 +18,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
-class TeamController extends Controller
+final class TeamController extends Controller
 {
     public function index(Request $request): Response
     {

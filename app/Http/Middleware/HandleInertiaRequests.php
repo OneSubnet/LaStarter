@@ -5,11 +5,12 @@ namespace App\Http\Middleware;
 use App\Core\Context\AppContext;
 use App\Core\Context\SharedPropsResolver;
 use App\Core\Navigation\NavigationBuilder;
+use App\Core\System\CoreVersion;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
-class HandleInertiaRequests extends Middleware
+final class HandleInertiaRequests extends Middleware
 {
     protected $rootView = 'app';
 
@@ -47,6 +48,7 @@ class HandleInertiaRequests extends Middleware
             'recentNotifications' => fn () => $user ? $resolver->recentNotifications($user) : [],
             'unreadMessageCount' => fn () => 0,
             'availableWidgets' => fn () => ($user && $team) ? $resolver->availableWidgets($team, $user) : [],
+            'coreVersion' => fn () => CoreVersion::current()->current,
         ];
     }
 

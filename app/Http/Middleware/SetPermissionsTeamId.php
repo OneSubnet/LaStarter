@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
-class SetPermissionsTeamId
+final class SetPermissionsTeamId
 {
     /**
      * Set the Spatie permissions team ID for the current request context.

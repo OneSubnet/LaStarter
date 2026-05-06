@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { switchMethod } from '@/routes/settings/teams';
+import type { SharedData } from '@/types';
 
 function getInitials(name: string): string {
     return name
@@ -31,15 +32,11 @@ function getInitials(name: string): string {
 
 export function TeamSwitcher() {
     const { t } = useTranslation();
-    const page = usePage();
+    const page = usePage<SharedData>();
     const isMobile = useIsMobile();
     const { state } = useSidebar();
-    const currentTeam = page.props.currentTeam as
-        | { id: number; name: string; slug: string; iconUrl?: string }
-        | undefined;
-    const teams =
-        (page.props.teams as { id: number; name: string; slug: string; iconUrl?: string }[]) ??
-        [];
+    const currentTeam = page.props.currentTeam;
+    const teams = page.props.teams;
 
     const switchTeam = (team: {
         id: number;
@@ -47,9 +44,15 @@ export function TeamSwitcher() {
         slug: string;
         iconUrl?: string;
     }) => {
-        router.visit(switchMethod({ current_team: currentTeam?.slug ?? '', team: team.slug }).url, {
-            method: 'post',
-        });
+        router.visit(
+            switchMethod({
+                current_team: currentTeam?.slug ?? '',
+                team: team.slug,
+            }).url,
+            {
+                method: 'post',
+            },
+        );
     };
 
     return (
@@ -65,7 +68,10 @@ export function TeamSwitcher() {
                             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                                 {currentTeam?.iconUrl ? (
                                     <Avatar className="size-8 rounded-lg">
-                                        <AvatarImage src={currentTeam.iconUrl} alt={currentTeam.name} />
+                                        <AvatarImage
+                                            src={currentTeam.iconUrl}
+                                            alt={currentTeam.name}
+                                        />
                                     </Avatar>
                                 ) : (
                                     <span className="text-xs font-semibold">
@@ -77,7 +83,10 @@ export function TeamSwitcher() {
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
-                                    {currentTeam?.name ?? t('components.team_switcher.select_team')}
+                                    {currentTeam?.name ??
+                                        t(
+                                            'components.team_switcher.select_team',
+                                        )}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground">
                                     {currentTeam?.slug}
@@ -110,7 +119,10 @@ export function TeamSwitcher() {
                                 <div className="flex size-6 items-center justify-center rounded-sm border">
                                     {team.iconUrl ? (
                                         <Avatar className="size-6 rounded-sm">
-                                            <AvatarImage src={team.iconUrl} alt={team.name} />
+                                            <AvatarImage
+                                                src={team.iconUrl}
+                                                alt={team.name}
+                                            />
                                         </Avatar>
                                     ) : (
                                         <span className="text-xs">

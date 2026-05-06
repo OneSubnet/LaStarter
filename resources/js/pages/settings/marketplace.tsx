@@ -19,6 +19,7 @@ import {
     install as installUrl,
     show as showUrl,
 } from '@/routes/settings/team/marketplace';
+import type { SharedData } from '@/types';
 
 type MarketplaceExtension = {
     identifier: string;
@@ -38,16 +39,20 @@ type Props = {
 
 export default function Marketplace({ extensions }: Props) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+    const { currentTeam } = usePage<SharedData>().props;
+    const teamSlug = currentTeam?.slug ?? '';
     const [search, setSearch] = useState('');
-    const [typeFilter, setTypeFilter] = useState<'all' | 'module' | 'theme'>('all');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'module' | 'theme'>(
+        'all',
+    );
 
     const filtered = useMemo(() => {
         let result = extensions;
+
         if (typeFilter !== 'all') {
             result = result.filter((ext) => ext.type === typeFilter);
         }
+
         if (search.trim()) {
             const q = search.toLowerCase();
             result = result.filter(
@@ -57,6 +62,7 @@ export default function Marketplace({ extensions }: Props) {
                     ext.identifier.toLowerCase().includes(q),
             );
         }
+
         return result;
     }, [extensions, search, typeFilter]);
 
@@ -77,7 +83,7 @@ export default function Marketplace({ extensions }: Props) {
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder={t('settings.marketplace.search')}
                             value={search}
@@ -85,14 +91,25 @@ export default function Marketplace({ extensions }: Props) {
                             className="pl-9"
                         />
                     </div>
-                    <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'module' | 'theme')}>
+                    <Select
+                        value={typeFilter}
+                        onValueChange={(v) =>
+                            setTypeFilter(v as 'all' | 'module' | 'theme')
+                        }
+                    >
                         <SelectTrigger className="w-[140px]">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">{t('settings.marketplace.type_all')}</SelectItem>
-                            <SelectItem value="module">{t('settings.marketplace.type_module')}</SelectItem>
-                            <SelectItem value="theme">{t('settings.marketplace.type_theme')}</SelectItem>
+                            <SelectItem value="all">
+                                {t('settings.marketplace.type_all')}
+                            </SelectItem>
+                            <SelectItem value="module">
+                                {t('settings.marketplace.type_module')}
+                            </SelectItem>
+                            <SelectItem value="theme">
+                                {t('settings.marketplace.type_theme')}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -101,7 +118,9 @@ export default function Marketplace({ extensions }: Props) {
                     <div className="py-16 text-center text-muted-foreground">
                         <Package className="mx-auto mb-4 h-12 w-12 opacity-20" />
                         <p className="text-sm">
-                            {search ? t('settings.marketplace.no_results') : t('settings.marketplace.empty_message')}
+                            {search
+                                ? t('settings.marketplace.no_results')
+                                : t('settings.marketplace.empty_message')}
                         </p>
                     </div>
                 ) : (
@@ -114,13 +133,21 @@ export default function Marketplace({ extensions }: Props) {
                                 <div className="min-w-0 flex-1">
                                     {ext.owner && ext.repo ? (
                                         <Link
-                                            href={showUrl({ current_team: teamSlug, owner: ext.owner, repo: ext.repo }).url}
+                                            href={
+                                                showUrl({
+                                                    current_team: teamSlug,
+                                                    owner: ext.owner,
+                                                    repo: ext.repo,
+                                                }).url
+                                            }
                                             className="font-medium hover:underline"
                                         >
                                             {ext.name}
                                         </Link>
                                     ) : (
-                                        <span className="font-medium">{ext.name}</span>
+                                        <span className="font-medium">
+                                            {ext.name}
+                                        </span>
                                     )}
                                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                                         {ext.description}
@@ -128,14 +155,21 @@ export default function Marketplace({ extensions }: Props) {
                                 </div>
 
                                 <div className="mt-3 flex items-center gap-2">
-                                    <Badge variant="outline" className="text-xs capitalize">
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs capitalize"
+                                    >
                                         {ext.type}
                                     </Badge>
                                     {ext.version && (
-                                        <span className="text-xs text-muted-foreground">v{ext.version}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            v{ext.version}
+                                        </span>
                                     )}
                                     {ext.author && (
-                                        <span className="text-xs text-muted-foreground">by {ext.author}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            by {ext.author}
+                                        </span>
                                     )}
                                 </div>
 
@@ -146,14 +180,20 @@ export default function Marketplace({ extensions }: Props) {
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() =>
-                                                    router.post(installUrl(teamSlug).url, {
-                                                        owner: ext.owner,
-                                                        repo: ext.repo,
-                                                    })
+                                                    router.post(
+                                                        installUrl(teamSlug)
+                                                            .url,
+                                                        {
+                                                            owner: ext.owner,
+                                                            repo: ext.repo,
+                                                        },
+                                                    )
                                                 }
                                             >
                                                 <Download className="h-3 w-3" />
-                                                {t('settings.marketplace.install')}
+                                                {t(
+                                                    'settings.marketplace.install',
+                                                )}
                                             </Button>
                                         )}
                                     </Guard>
