@@ -32,7 +32,9 @@ database/database.sqlite
 pnpm-lock.yaml
 extensions/*/node_modules/
 extensions/*/.env
-extensions/modules/ailes-invisibles/
+# All modules and themes are installed separately — never push to main repo
+extensions/modules/
+extensions/themes/
 
 # Internal/planning docs
 /Cahier_des_charges.md

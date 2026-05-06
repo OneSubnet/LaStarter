@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Core\Audit\AuditLogger;
 use App\Core\Context\AppContext;
+use App\Core\Context\SharedPropsResolver;
 use App\Core\Extensions\Console\ExtensionsCheckUpdatesCommand;
 use App\Core\Extensions\Console\ExtensionsDisableCommand;
 use App\Core\Extensions\Console\ExtensionsEnableCommand;
@@ -52,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(AuditLogger::class);
         $this->app->scoped(AppContext::class);
+        $this->app->singleton(SharedPropsResolver::class);
 
         // Extension system
         $this->app->singleton(ExtensionScanner::class);

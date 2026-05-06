@@ -2,8 +2,8 @@
 
 namespace App\Core\Modules;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -12,10 +12,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\LaravelData\Data;
 
-abstract class CmsController
+abstract class CmsController extends Controller
 {
-    use ValidatesRequests;
-
     protected string $componentPath = '';
 
     /** @var class-string<Model> */

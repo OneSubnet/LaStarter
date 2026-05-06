@@ -3,9 +3,10 @@
 namespace App\Core\Navigation;
 
 use App\Core\Extensions\ExtensionManager;
-use App\Core\Hooks\Hook;
+use App\Core\Navigation\Events\SidebarBuilding;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
 final class NavigationBuilder
@@ -41,9 +42,10 @@ final class NavigationBuilder
             }
         }
 
-        Hook::dispatch(Hook::SIDEBAR_BUILD, $navItems);
+        $event = new SidebarBuilding($navItems);
+        Event::dispatch($event);
 
-        return $navItems;
+        return $event->items;
     }
 
     /**
