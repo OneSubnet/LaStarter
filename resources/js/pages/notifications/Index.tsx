@@ -8,6 +8,7 @@ import {
     read,
     readAll,
 } from '@/routes/notifications';
+import type { SharedData } from '@/types';
 
 type NotificationItem = {
     id: number;
@@ -55,8 +56,7 @@ function timeAgo(dateStr: string): string {
 
 export default function NotificationsIndex({ notifications }: Props) {
     const { t } = useTranslation();
-    const teamSlug =
-        (usePage().props.currentTeam as { slug: string } | null)?.slug ?? '';
+    const teamSlug = usePage<SharedData>().props.currentTeam?.slug ?? '';
 
     const markRead = (id: number) => {
         router.post(

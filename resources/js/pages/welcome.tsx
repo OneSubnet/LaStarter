@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { dashboard, login, register } from '@/routes';
+import type { SharedData } from '@/types';
 
 export default function Welcome({
     canRegister = true,
@@ -8,7 +9,7 @@ export default function Welcome({
     canRegister?: boolean;
 }) {
     const { t } = useTranslation();
-    const { auth, currentTeam } = usePage().props;
+    const { auth, currentTeam } = usePage<SharedData>().props;
     const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
 
     return (

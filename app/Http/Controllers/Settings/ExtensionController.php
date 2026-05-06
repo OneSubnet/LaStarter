@@ -3,191 +3,166 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Core\Extensions\ExtensionManager;
-use App\Core\Extensions\Marketplace\MarketplaceClient;
-use App\Core\Themes\ComponentResolver;
+use App\Core\Extensions\Updater\UpdateService;
 use App\Http\Controllers\Controller;
 use App\Models\Extension;
-use App\Models\TeamSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ExtensionController extends Controller
+final class ExtensionController extends Controller
 {
     public function index(Request $request): Response
     {
-        Gate::authorize('viewAny', Extension::class);
-
-        $team = $request->user()->currentTeam;
         $manager = app(ExtensionManager::class);
-
-        $extensions = $manager->all()->map(function ($extension) use ($manager, $team) {
-            $teamExt = $extension->teamExtensions()
-                ->where('team_id', $team->id)
-                ->first();
-
-            return [
-                'id' => $extension->id,
-                'name' => $extension->name,
-                'identifier' => $extension->identifier,
-                'type' => $extension->type,
-                'version' => $extension->version,
-                'description' => $extension->description,
-                'author' => $extension->author,
-                'state' => $extension->state->value,
-                'error_message' => $extension->error_message,
-                'installed_at' => $extension->installed_at?->toISOString(),
-                'is_active' => $extension->is_active,
-                'is_enabled_for_team' => $extension->is_active && $manager->isEnabled($extension->identifier, $team->id),
-                'team_state' => $teamExt?->state?->value ?? 'disabled',
-                'license' => $extension->manifest()?->license,
-                'homepage' => $extension->manifest()?->homepage,
-                'keywords' => $extension->manifest()?->keywords ?? [],
-                'lastarter_version' => $extension->manifest()?->lastarterVersion,
-                'permissions' => $extension->manifest()?->permissions ?? [],
-                'settings' => $extension->manifest()?->settings ?? [],
-            ];
-        });
-
-        $props = [
-            'extensions' => $extensions,
-        ];
-
-        // Add marketplace data when requested
-        if ($request->query('tab') === 'marketplace') {
-            try {
-                $marketplace = app(MarketplaceClient::class);
-                $query = $request->string('q')->toString();
-                $results = $marketplace->search($query);
-                $installed = Extension::pluck('identifier')->toArray();
-                $results = $results->map(function (array $repo) use ($installed) {
-                    $repo['installed'] = in_array($repo['name'], $installed) ||
-                        in_array(str_replace('lastarter-', '', $repo['name']), $installed);
-
-                    return $repo;
-                });
-                $props['marketplace_results'] = $results;
-                $props['marketplace_query'] = $query;
-            } catch (\Throwable $e) {
-                logger()->error('Extension operation failed: '.$e->getMessage());
-                $props['marketplace_results'] = [];
-                $props['marketplace_query'] = '';
-            }
-        }
-
-        return Inertia::render('settings/extensions', $props);
-    }
-
-    public function show(Request $request): Response
-    {
-        $id = $request->route('extension');
-        $ext = Extension::findOrFail($id);
-
-        Gate::authorize('viewAny', Extension::class);
-
         $team = $request->user()->currentTeam;
-        $manager = app(ExtensionManager::class);
-        $teamExt = $ext->teamExtensions()->where('team_id', $team->id)->first();
-        $manifest = $ext->manifest();
 
-        return Inertia::render('settings/extensions-show', [
-            'extension' => [
+        $extensions = Extension::query()
+            ->whereNotNull('state')
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Extension $ext) => [
                 'id' => $ext->id,
-                'name' => $ext->name,
                 'identifier' => $ext->identifier,
+                'name' => $ext->name,
                 'type' => $ext->type,
                 'version' => $ext->version,
                 'description' => $ext->description,
                 'author' => $ext->author,
-                'state' => $ext->state->value,
-                'error_message' => $ext->error_message,
-                'installed_at' => $ext->installed_at?->toISOString(),
-                'is_active' => $ext->is_active,
-                'is_enabled_for_team' => $ext->is_active && $manager->isEnabled($ext->identifier, $team->id),
-                'team_state' => $teamExt?->state?->value ?? 'disabled',
-                'license' => $manifest?->license,
-                'homepage' => $manifest?->homepage,
-                'keywords' => $manifest?->keywords ?? [],
-                'lastarter_version' => $ext->lastarter_version,
-                'settings' => $manifest?->settings ?? [],
+                'state' => $ext->state,
+                'is_enabled' => $team ? $manager->isEnabled($ext->identifier, $team->id) : false,
+            ]);
+
+        return Inertia::render('settings/extensions', [
+            'extensions' => $extensions,
+        ]);
+    }
+
+    public function show(Request $request): Response
+    {
+        $extension = $this->resolveExtension($request);
+        $manager = app(ExtensionManager::class);
+        $team = $request->user()->currentTeam;
+        $manifest = $manager->manifest($extension->identifier);
+
+        $updateAvailable = false;
+        $latestVersion = null;
+
+        try {
+            $updates = app(UpdateService::class)->checkForUpdates();
+            $updateInfo = $updates->get($extension->identifier);
+
+            if ($updateInfo) {
+                $updateAvailable = true;
+                $latestVersion = $updateInfo->latestVersion;
+            }
+        } catch (\Throwable) {
+            // Marketplace not configured
+        }
+
+        return Inertia::render('settings/extensions-show', [
+            'extension' => [
+                'id' => $extension->id,
+                'identifier' => $extension->identifier,
+                'name' => $extension->name,
+                'type' => $extension->type,
+                'version' => $extension->version,
+                'description' => $extension->description,
+                'author' => $extension->author,
+                'state' => $extension->state,
+                'permissions' => $extension->permissions ?? [],
+                'is_enabled' => $team ? $manager->isEnabled($extension->identifier, $team->id) : false,
+                'has_routes' => $manifest?->hasRoutes() ?? false,
+                'has_migrations' => $manifest?->hasMigrations() ?? false,
+                'update_available' => $updateAvailable,
+                'latest_version' => $latestVersion,
             ],
         ]);
     }
 
     public function install(Request $request): RedirectResponse
     {
-        $id = $request->route('extension');
-        $extension = Extension::findOrFail($id);
+        $identifier = $this->resolveIdentifier($request);
 
-        Gate::authorize('manage', $extension);
+        app(ExtensionManager::class)->install($identifier);
 
-        $manager = app(ExtensionManager::class);
-        $manager->install($extension->identifier);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension installed.')]);
-
-        return back();
+        return back()->with('toast', ['type' => 'success', 'message' => __('Extension installed.')]);
     }
 
     public function uninstall(Request $request): RedirectResponse
     {
-        $id = $request->route('extension');
-        $extension = Extension::findOrFail($id);
+        $identifier = $this->resolveIdentifier($request);
 
-        Gate::authorize('manage', $extension);
+        app(ExtensionManager::class)->uninstall($identifier);
 
-        $manager = app(ExtensionManager::class);
-        $manager->uninstall($extension->identifier);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension uninstalled.')]);
-
-        return back();
+        return back()->with('toast', ['type' => 'success', 'message' => __('Extension uninstalled.')]);
     }
 
     public function enable(Request $request): RedirectResponse
     {
-        $id = $request->route('extension');
-        $extension = Extension::findOrFail($id);
+        $identifier = $this->resolveIdentifier($request);
+        $team = $request->user()->currentTeam;
 
-        Gate::authorize('manage', $extension);
-
-        $teamId = $request->user()->currentTeam->id;
-        $manager = app(ExtensionManager::class);
-        $manager->enable($extension->identifier, $teamId);
-
-        if ($extension->type === 'theme') {
-            app(ComponentResolver::class)->setActiveTheme($teamId, $extension->identifier);
+        if (! $team) {
+            return back()->with('toast', ['type' => 'error', 'message' => __('No team context.')]);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension enabled.')]);
+        app(ExtensionManager::class)->enable($identifier, $team->id);
 
-        return back();
+        return back()->with('toast', ['type' => 'success', 'message' => __('Extension enabled.')]);
     }
 
     public function disable(Request $request): RedirectResponse
     {
-        $id = $request->route('extension');
-        $extension = Extension::findOrFail($id);
+        $identifier = $this->resolveIdentifier($request);
+        $team = $request->user()->currentTeam;
 
-        Gate::authorize('manage', $extension);
-
-        $teamId = $request->user()->currentTeam->id;
-        $manager = app(ExtensionManager::class);
-        $manager->disable($extension->identifier, $teamId);
-
-        if ($extension->type === 'theme') {
-            $resolver = app(ComponentResolver::class);
-            if ($resolver->activeTheme($teamId) === $extension->identifier) {
-                TeamSetting::where('team_id', $teamId)
-                    ->where('key', 'active_theme')
-                    ->delete();
-            }
+        if (! $team) {
+            return back()->with('toast', ['type' => 'error', 'message' => __('No team context.')]);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension disabled.')]);
+        app(ExtensionManager::class)->disable($identifier, $team->id);
 
-        return back();
+        return back()->with('toast', ['type' => 'success', 'message' => __('Extension disabled.')]);
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        $identifier = $this->resolveIdentifier($request);
+        $report = app(UpdateService::class)->updateWithReport($identifier);
+
+        if ($report->compatible) {
+            return back()->with('toast', ['type' => 'success', 'message' => __('Extension updated.')]);
+        }
+
+        return back()->with('toast', ['type' => 'error', 'message' => __('Update blocked: :errors', ['errors' => implode(', ', $report->errors)])]);
+    }
+
+    public function checkUpdates(): RedirectResponse
+    {
+        try {
+            $updates = app(UpdateService::class)->checkForUpdates();
+            $count = $updates->count();
+
+            if ($count > 0) {
+                return back()->with('toast', ['type' => 'info', 'message' => __(':count updates available.', ['count' => $count])]);
+            }
+
+            return back()->with('toast', ['type' => 'success', 'message' => __('All extensions are up to date.')]);
+        } catch (\Throwable $e) {
+            return back()->with('toast', ['type' => 'error', 'message' => __('Failed to check updates: :error', ['error' => $e->getMessage()])]);
+        }
+    }
+
+    private function resolveIdentifier(Request $request): string
+    {
+        return (string) $request->route('extension');
+    }
+
+    private function resolveExtension(Request $request): Extension
+    {
+        return Extension::where('identifier', $this->resolveIdentifier($request))->firstOrFail();
     }
 }

@@ -16,8 +16,8 @@ class UpdateRoleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $teamId = $this->route('team')?->id;
-        $roleId = $this->route('role')?->id;
+        $teamId = $this->route('current_team')?->id;
+        $roleId = $this->route('role');
 
         return [
             'name' => [

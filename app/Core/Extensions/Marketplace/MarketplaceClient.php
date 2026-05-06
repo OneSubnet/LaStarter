@@ -2,206 +2,174 @@
 
 namespace App\Core\Extensions\Marketplace;
 
+use App\Models\Extension;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
-class MarketplaceClient
+final readonly class MarketplaceClient
 {
+    private PendingRequest $http;
+
     public function __construct(
         private string $githubOrg,
         private string $marketplaceRepo,
-        private ?string $githubToken = null,
-    ) {}
+        ?string $githubToken = null,
+    ) {
+        $this->http = Http::baseUrl("https://api.github.com/repos/{$this->githubOrg}/{$this->marketplaceRepo}")
+            ->withHeaders([
+                'Accept' => 'application/vnd.github.v3+json',
+                'X-GitHub-Api-Version' => '2022-11-28',
+            ]);
+
+        if ($githubToken) {
+            $this->http = $this->http->withToken($githubToken);
+        }
+    }
 
     /**
-     * Fetch and parse the index.json from the marketplace monorepo.
+     * List all available extensions from the marketplace index.
      *
-     * @return Collection<array{name: string, full_name: string, description: ?string, html_url: string, stargazers_count: int, topics: string[], updated_at: string, type: string, identifier: string, path: string}>
+     * @return Collection<int, MarketplaceExtension>
      */
-    public function search(string $query = '', string $type = ''): Collection
+    public function list(): Collection
     {
-        $index = $this->fetchIndex();
+        $response = $this->http->get('/contents/index.json');
 
-        if ($index === null) {
+        if (! $response->successful()) {
             return new Collection;
         }
 
-        return collect($index)
-            ->when($type, fn ($c) => $c->where('type', $type))
-            ->when($query, fn ($c) => $c->filter(function (array $item) use ($query) {
-                $q = strtolower($query);
+        $content = $response->json();
 
-                return str_contains(strtolower($item['name'] ?? ''), $q)
-                    || str_contains(strtolower($item['description'] ?? ''), $q)
-                    || str_contains(strtolower($item['identifier'] ?? ''), $q);
-            }))
-            ->map(fn (array $item) => [
-                'name' => $item['name'] ?? $item['identifier'],
-                'full_name' => "{$this->githubOrg}/{$this->marketplaceRepo}",
-                'description' => $item['description'] ?? null,
-                'html_url' => "https://github.com/{$this->githubOrg}/{$this->marketplaceRepo}/tree/main/{$item['path']}",
-                'stargazers_count' => $item['stargazers_count'] ?? 0,
-                'topics' => $item['topics'] ?? ["lastarter-{$item['type']}"],
-                'updated_at' => $item['updated_at'] ?? now()->toISOString(),
-                'type' => $item['type'],
-                'identifier' => $item['identifier'],
-                'path' => $item['path'],
-            ])
-            ->values();
+        if (isset($content['content'])) {
+            $decoded = json_decode(base64_decode($content['content']), true);
+        } else {
+            $decoded = $response->json();
+        }
+
+        if (! is_array($decoded)) {
+            return new Collection;
+        }
+
+        return collect($decoded)
+            ->map(fn (array $item) => MarketplaceExtension::fromArray($item))
+            ->filter(fn (MarketplaceExtension $ext) => $ext->isValid());
     }
 
     /**
-     * Get details for a specific extension from the index.
+     * Get details for a specific extension from the marketplace.
      */
-    public function getDetails(string $owner, string $repo): ?array
+    public function show(string $owner, string $repo): ?MarketplaceExtension
     {
-        if ($owner !== $this->githubOrg || $repo !== $this->marketplaceRepo) {
-            return null;
-        }
-
-        $response = $this->http()
-            ->get("https://api.github.com/repos/{$owner}/{$repo}");
+        $response = Http::github()
+            ->get("https://api.github.com/repos/{$owner}/{$repo}/contents/extension.json");
 
         if (! $response->successful()) {
             return null;
         }
 
-        $data = $response->json();
+        $content = $response->json();
 
-        return [
-            'name' => $data['name'],
-            'full_name' => $data['full_name'],
-            'description' => $data['description'],
-            'html_url' => $data['html_url'],
-            'stargazers_count' => $data['stargazers_count'],
-            'topics' => $data['topics'] ?? [],
-            'license' => $data['license']['spdx_id'] ?? null,
-            'default_branch' => $data['default_branch'],
-            'updated_at' => $data['updated_at'],
-        ];
+        if (isset($content['content'])) {
+            $decoded = json_decode(base64_decode($content['content']), true);
+        } else {
+            $decoded = $response->json();
+        }
+
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        return MarketplaceExtension::fromArray([
+            ...$decoded,
+            'owner' => $owner,
+            'repo' => $repo,
+        ]);
     }
 
     /**
-     * Get the README content for an extension subdirectory.
+     * Download a release ZIP from a GitHub repository.
      */
-    public function getReadme(string $owner, string $repo, string $path = ''): ?string
+    public function downloadRelease(string $owner, string $repo, ?string $version = null): ?string
     {
-        $url = $path
-            ? "https://api.github.com/repos/{$owner}/{$repo}/contents/{$path}/README.md"
-            : "https://api.github.com/repos/{$owner}/{$repo}/readme";
+        $tag = $version ? "tags/{$version}" : 'latest';
 
-        $response = $this->http()
-            ->accept('application/vnd.github.raw')
-            ->get($url);
+        $response = Http::github()
+            ->get("https://api.github.com/repos/{$owner}/{$repo}/releases/{$tag}");
 
         if (! $response->successful()) {
             return null;
         }
 
-        return $response->body();
+        $release = $response->json();
+        $asset = collect($release['assets'] ?? [])
+            ->first(fn (array $a) => str_ends_with($a['name'], '.zip'));
+
+        if (! $asset) {
+            return null;
+        }
+
+        $zipResponse = Http::get($asset['browser_download_url']);
+
+        if (! $zipResponse->successful()) {
+            return null;
+        }
+
+        $tmpPath = tempnam(sys_get_temp_dir(), 'ext_').'.zip';
+        file_put_contents($tmpPath, $zipResponse->body());
+
+        return $tmpPath;
     }
 
     /**
-     * Get the latest release for the monorepo.
+     * Fetch the latest release version for a repository.
      */
-    public function getLatestRelease(string $owner, string $repo): ?array
+    public function latestVersion(string $owner, string $repo): ?string
     {
-        $response = $this->http()
+        $response = Http::github()
             ->get("https://api.github.com/repos/{$owner}/{$repo}/releases/latest");
 
         if (! $response->successful()) {
             return null;
         }
 
-        $data = $response->json();
-        $zipAsset = collect($data['assets'] ?? [])
-            ->first(fn (array $asset) => str_ends_with($asset['name'], '.zip'));
-
-        return [
-            'tag_name' => $data['tag_name'],
-            'name' => $data['name'],
-            'body' => $data['body'],
-            'published_at' => $data['published_at'],
-            'zip_url' => $zipAsset ? $zipAsset['browser_download_url'] : null,
-            'html_url' => $data['html_url'],
-        ];
+        return $response->json('tag_name');
     }
 
     /**
-     * Fetch the extension.json manifest from a subdirectory.
-     */
-    public function getManifest(string $owner, string $repo, string $ref = 'main', string $path = ''): ?array
-    {
-        $url = $path
-            ? "https://api.github.com/repos/{$owner}/{$repo}/contents/{$path}/extension.json"
-            : "https://api.github.com/repos/{$owner}/{$repo}/contents/extension.json";
-
-        $response = $this->http()
-            ->accept('application/vnd.github.raw')
-            ->get($url, ['ref' => $ref]);
-
-        if (! $response->successful()) {
-            return null;
-        }
-
-        return json_decode($response->body(), true);
-    }
-
-    /**
-     * Find an extension by identifier from the index.
-     */
-    public function findByIdentifier(string $identifier): ?array
-    {
-        return $this->fetchIndex()?->first(
-            fn (array $item) => ($item['identifier'] ?? '') === $identifier,
-        );
-    }
-
-    /**
-     * Fetch the index.json from the monorepo (with caching).
+     * Check for updates across all installed extensions.
      *
-     * @return Collection<array>|null
+     * @return Collection<string, UpdateInfo> Keyed by identifier
      */
-    protected function fetchIndex(): ?Collection
+    public function checkUpdates(): Collection
     {
-        $data = cache()->remember('marketplace.index', now()->addHour(), function () {
-            $response = $this->http()
-                ->accept('application/vnd.github.raw')
-                ->get("https://api.github.com/repos/{$this->githubOrg}/{$this->marketplaceRepo}/contents/index.json");
+        $extensions = Extension::whereNotNull('state')->get();
+        $updates = new Collection;
 
-            if (! $response->successful()) {
-                return null;
+        foreach ($extensions as $extension) {
+            $raw = $extension->raw ?? [];
+
+            $owner = $raw['marketplace_owner'] ?? null;
+            $repo = $raw['marketplace_repo'] ?? null;
+
+            if (! $owner || ! $repo) {
+                continue;
             }
 
-            $data = json_decode($response->body(), true);
+            $latest = $this->latestVersion($owner, $repo);
 
-            if (! is_array($data)) {
-                return null;
+            if ($latest && $latest !== $extension->version) {
+                $updates->put($extension->identifier, new UpdateInfo(
+                    identifier: $extension->identifier,
+                    currentVersion: $extension->version ?? '0.0.0',
+                    latestVersion: $latest,
+                    owner: $owner,
+                    repo: $repo,
+                ));
             }
-
-            return $data;
-        });
-
-        if ($data === null) {
-            return null;
         }
 
-        return collect($data);
-    }
-
-    private function http()
-    {
-        $headers = [
-            'Accept' => 'application/vnd.github+json',
-            'X-GitHub-Api-Version' => '2022-11-28',
-        ];
-
-        if ($this->githubToken) {
-            $headers['Authorization'] = 'Bearer '.$this->githubToken;
-        }
-
-        return Http::withHeaders($headers)
-            ->timeout(15)
-            ->when(app()->environment('local'), fn ($http) => $http->withoutVerifying());
+        return $updates;
     }
 }

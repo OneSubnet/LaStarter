@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/drawer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import type { SharedData } from '@/types';
 
 type Notification = {
     id: number;
@@ -103,14 +104,13 @@ function NotificationItem({
 
 export function NotificationBell() {
     const { t } = useTranslation();
-    const page = usePage();
-    const unreadCount = (page.props.unreadNotifications as number) ?? 0;
+    const page = usePage<SharedData>();
+    const unreadCount = page.props.unreadNotifications;
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const teamSlug =
-        (page.props.currentTeam as { slug: string } | undefined)?.slug ?? '';
+    const teamSlug = page.props.currentTeam?.slug ?? '';
 
     const fetchNotifications = async () => {
         setLoading(true);

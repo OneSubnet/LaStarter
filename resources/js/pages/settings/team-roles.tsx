@@ -745,12 +745,12 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                                             >
                                                 <ChevronsLeft className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    First page
+                                                    {t('pagination.first')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            First page
+                                            {t('pagination.first')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -770,12 +770,12 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                                             >
                                                 <ChevronLeft className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Previous page
+                                                    {t('pagination.previous')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Previous page
+                                            {t('pagination.previous')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -793,12 +793,12 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                                             >
                                                 <ChevronRight className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Next page
+                                                    {t('pagination.next')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Next page
+                                            {t('pagination.next')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -821,12 +821,12 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                                             >
                                                 <ChevronsRight className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Last page
+                                                    {t('pagination.last')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Last page
+                                            {t('pagination.last')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -1007,10 +1007,12 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                                                             {category}
                                                         </span>
                                                         <span className="text-sm text-muted-foreground">
-                                                            {perms.length}{' '}
-                                                            {perms.length !== 1
-                                                                ? 'permissions'
-                                                                : 'permission'}
+                                                            {t(
+                                                                'settings.team.roles.permissions_count',
+                                                                {
+                                                                    count: perms.length,
+                                                                },
+                                                            )}
                                                         </span>
                                                     </div>
                                                 ))}

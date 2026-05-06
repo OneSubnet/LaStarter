@@ -4,9 +4,8 @@ namespace App\Core\Hooks;
 
 use Illuminate\Support\Facades\Event;
 
-class Hook
+final class Hook
 {
-    // Standard hook names
     public const string SIDEBAR_BUILD = 'sidebar.build';
 
     public const string MODULE_BOOT = 'module.boot';
@@ -23,27 +22,13 @@ class Hook
 
     public const string THEME_CHANGED = 'theme.changed';
 
-    /**
-     * Register a listener for a hook event.
-     */
-    public static function listen(string $event, callable|string $listener): void
+    public static function listen(string $hook, callable $callback): void
     {
-        Event::listen("hooks.{$event}", $listener);
+        Event::listen("hooks.{$hook}", $callback);
     }
 
-    /**
-     * Dispatch a hook event.
-     */
-    public static function dispatch(string $event, mixed $data = []): void
+    public static function dispatch(string $hook, mixed $data = null): void
     {
-        Event::dispatch("hooks.{$event}", $data);
-    }
-
-    /**
-     * Remove all listeners for a hook event.
-     */
-    public static function forget(string $event): void
-    {
-        Event::forget("hooks.{$event}");
+        Event::dispatch("hooks.{$hook}", $data);
     }
 }

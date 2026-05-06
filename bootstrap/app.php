@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ConfigureTeamMailer;
+use App\Http\Middleware\EnsureTeamMembership;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetAppLocale;
@@ -20,6 +21,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->alias([
+            'team.permission' => EnsureTeamMembership::class,
+        ]);
 
         $middleware->web(append: [
             SetPermissionsTeamId::class,

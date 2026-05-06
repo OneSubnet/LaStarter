@@ -3,110 +3,109 @@
 namespace App\Core\Navigation;
 
 use App\Core\Extensions\ExtensionManager;
+use App\Core\Navigation\Events\SidebarBuilding;
+use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 
-class NavigationBuilder
+final class NavigationBuilder
 {
     public function __construct(
-        protected ExtensionManager $extensionManager,
+        private readonly ExtensionManager $extensions,
     ) {}
 
     /**
-     * Build navigation items for a sidebar, filtered by permissions and active extensions.
+     * Build sidebar navigation for a team.
      *
-     * @return array<int, array{title: string, href?: string, icon: ?string, order: int, children?: array<int, array{title: string, href: string, icon: ?string, order: int}>}>
+     * @return list<array{title: string, icon: ?string, order: int, href: string, permission?: ?string, children?: list<array{title: string, icon: ?string, order: int, group: ?string, href: string}>}>
      */
-    public function build(string $sidebar, int $teamId, User $user): array
+    public function build(Team $team, User $user): array
     {
-        $enabledExtensions = $this->extensionManager->enabled($teamId);
-        $teamSlug = $user->currentTeam?->slug ?? (string) $teamId;
+        $navItems = [];
 
-        $items = [];
+        foreach ($this->extensions->enabledIdentifiers($team->id) as $identifier) {
+            $manifest = $this->extensions->manifest($identifier);
 
-        foreach ($enabledExtensions as $extension) {
-            $manifest = $extension->manifest();
-
-            if (! $manifest) {
+            if ($manifest === null) {
                 continue;
             }
 
-            $navItems = $manifest->navigation[$sidebar] ?? [];
+            $rawNav = $manifest->navigation['app'] ?? [];
 
-            foreach ($navItems as $navItem) {
-                // Handle grouped navigation with children
-                if (isset($navItem['children']) && is_array($navItem['children'])) {
-                    $children = [];
-                    foreach ($navItem['children'] as $child) {
-                        // Filter by permission
-                        if (isset($child['permission']) && ! $user->hasPermissionTo($child['permission'])) {
-                            continue;
-                        }
+            foreach ($rawNav as $item) {
+                $resolved = $this->resolveItem($item, $team, $user);
 
-                        // Resolve route to relative URL
-                        $href = '#';
-                        if (isset($child['route'])) {
-                            try {
-                                $href = route($child['route'], ['current_team' => $teamSlug], false);
-                            } catch (\Exception) {
-                                $href = '#';
-                            }
-                        } elseif (isset($child['url'])) {
-                            $href = $child['url'];
-                        }
-
-                        $children[] = [
-                            'title' => $child['title'] ?? '',
-                            'href' => $href,
-                            'icon' => $child['icon'] ?? null,
-                            'order' => $child['order'] ?? 100,
-                            'group' => $child['group'] ?? null,
-                        ];
-                    }
-
-                    // Only add the group if it has visible children
-                    if (count($children) > 0) {
-                        usort($children, fn (array $a, array $b) => $a['order'] <=> $b['order']);
-
-                        $items[] = [
-                            'title' => $navItem['title'] ?? '',
-                            'icon' => $navItem['icon'] ?? null,
-                            'order' => $navItem['order'] ?? 100,
-                            'children' => $children,
-                        ];
-                    }
-
-                    continue;
+                if ($resolved !== null) {
+                    $navItems[] = $resolved;
                 }
-
-                // Filter by permission
-                if (isset($navItem['permission']) && ! $user->hasPermissionTo($navItem['permission'])) {
-                    continue;
-                }
-
-                // Resolve route to relative URL
-                $href = '#';
-                if (isset($navItem['route'])) {
-                    try {
-                        $href = route($navItem['route'], ['current_team' => $teamSlug], false);
-                    } catch (\Exception) {
-                        $href = '#';
-                    }
-                } elseif (isset($navItem['url'])) {
-                    $href = $navItem['url'];
-                }
-
-                $items[] = [
-                    'title' => $navItem['title'] ?? '',
-                    'href' => $href,
-                    'icon' => $navItem['icon'] ?? null,
-                    'order' => $navItem['order'] ?? 100,
-                ];
             }
         }
 
-        // Sort by order
-        usort($items, fn (array $a, array $b) => $a['order'] <=> $b['order']);
+        $event = new SidebarBuilding($navItems);
+        Event::dispatch($event);
 
-        return $items;
+        return $event->items;
+    }
+
+    /**
+     * Resolve a single navigation item, handling route resolution and permissions.
+     */
+    private function resolveItem(array $item, Team $team, User $user): ?array
+    {
+        $permission = $item['permission'] ?? null;
+
+        if ($permission && ! $user->hasPermissionTo($permission)) {
+            return null;
+        }
+
+        $resolved = [
+            'title' => $item['title'] ?? '',
+            'icon' => $item['icon'] ?? null,
+            'order' => $item['order'] ?? 0,
+        ];
+
+        $resolved['href'] = $this->resolveHref($item, $team);
+
+        if (isset($item['children']) && is_array($item['children'])) {
+            $children = [];
+
+            foreach ($item['children'] as $child) {
+                $childPerm = $child['permission'] ?? null;
+
+                if ($childPerm && ! $user->hasPermissionTo($childPerm)) {
+                    continue;
+                }
+
+                $children[] = [
+                    'title' => $child['title'] ?? '',
+                    'icon' => $child['icon'] ?? null,
+                    'order' => $child['order'] ?? 0,
+                    'group' => $child['group'] ?? null,
+                    'href' => $this->resolveHref($child, $team),
+                ];
+            }
+
+            $resolved['children'] = $children;
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Resolve the href for a navigation item.
+     * Supports both `route` (Laravel route name) and `href` (direct URL).
+     */
+    private function resolveHref(array $item, Team $team): string
+    {
+        if (isset($item['route'])) {
+            try {
+                return route($item['route'], ['current_team' => $team->slug], false);
+            } catch (\Throwable) {
+                return $item['href'] ?? '#';
+            }
+        }
+
+        return $item['href'] ?? '#';
     }
 }

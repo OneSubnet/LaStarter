@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/command';
 import { dashboard } from '@/routes';
 import { extensions, general, members, roles } from '@/routes/settings/team';
+import type { SharedData } from '@/types';
 
 type ExtensionNavChild = {
     title: string;
@@ -66,11 +67,10 @@ function IconFor({
 
 export default function CommandPalette() {
     const [open, setOpen] = useState(false);
-    const page = usePage();
+    const page = usePage<SharedData>();
     const { t } = useTranslation();
 
-    const teamSlug =
-        (page.props.currentTeam as { slug: string } | undefined)?.slug ?? '';
+    const teamSlug = page.props.currentTeam?.slug ?? '';
     const extensionNav =
         (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
 

@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/sidebar';
 import { formatDateTime as fmtDateTimeLib } from '@/lib/format';
 import { switchMethod } from '@/routes/settings/teams';
+import type { SharedData } from '@/types';
 
 function getInitials(name: string): string {
     return name
@@ -39,15 +40,6 @@ function getInitials(name: string): string {
         .toUpperCase()
         .slice(0, 2);
 }
-
-type TeamMember = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string | null;
-    role_label: string;
-    is_online: boolean;
-};
 
 type AuditEntry = {
     id: number;
@@ -101,20 +93,12 @@ function formatDateTime(dateStr: string | null): string {
 
 export function SidebarRight() {
     const t = i18n.t.bind(i18n);
-    const page = usePage();
+    const page = usePage<SharedData>();
 
-    const currentTeam = page.props.currentTeam as
-        | { id: number; name: string; slug: string; iconUrl?: string }
-        | undefined;
-    const teams =
-        (page.props.teams as {
-            id: number;
-            name: string;
-            slug: string;
-            iconUrl?: string;
-        }[]) ?? [];
-    const teamMembers = (page.props.teamMembers as TeamMember[]) ?? [];
-    const auditLogs = (page.props.auditLogs as AuditEntry[]) ?? [];
+    const currentTeam = page.props.currentTeam;
+    const teams = page.props.teams;
+    const teamMembers = page.props.teamMembers;
+    const auditLogs = page.props.auditLogs;
 
     const [selectedLog, setSelectedLog] = useState<AuditEntry | null>(null);
 
@@ -330,7 +314,7 @@ export function SidebarRight() {
             {/* Audit log detail dialog */}
             <Dialog
                 open={!!selectedLog}
-                onOpenChange={(open) => !open && setSelectedLog(null)}
+                onOpenChange={(open: boolean) => !open && setSelectedLog(null)}
             >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>

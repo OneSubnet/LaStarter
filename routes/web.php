@@ -7,6 +7,7 @@ use App\Http\Controllers\Settings\ExtensionController;
 use App\Http\Controllers\Settings\MarketplaceController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\SystemUpdateController;
 use App\Http\Controllers\Settings\TeamMailController;
 use App\Http\Controllers\Settings\TeamMembersController;
 use App\Http\Controllers\Settings\TeamRolesController;
@@ -43,7 +44,6 @@ Route::prefix('settings')
             $user = $request->user();
             $user->update(['locale' => $validated['locale']]);
 
-            // Also update team locale if user is in a team context
             $team = $user->currentTeam;
             if ($team) {
                 $team->update(['locale' => $validated['locale']]);
@@ -53,15 +53,13 @@ Route::prefix('settings')
         })->name('settings.locale.update');
     });
 
-// IMPORTANT: Do NOT use `php artisan route:cache` — module routes are loaded
-// dynamically by module service providers and must be resolved at runtime.
-
 // Team-scoped routes — exclude 'portal' prefix so module portal routes don't collide
 Route::prefix('{current_team}')
     ->where(['current_team' => '(?!portal)[^/]+'])
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
+
         Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
         Route::post('onboarding', [OnboardingController::class, 'update'])->name('onboarding.update');
 
@@ -110,6 +108,8 @@ Route::prefix('{current_team}')
             Route::post('extensions/{extension}/uninstall', [ExtensionController::class, 'uninstall'])->name('settings.team.extensions.uninstall');
             Route::post('extensions/{extension}/enable', [ExtensionController::class, 'enable'])->name('settings.team.extensions.enable');
             Route::post('extensions/{extension}/disable', [ExtensionController::class, 'disable'])->name('settings.team.extensions.disable');
+            Route::post('extensions/{extension}/update', [ExtensionController::class, 'update'])->name('settings.team.extensions.update');
+            Route::post('extensions/check-updates', [ExtensionController::class, 'checkUpdates'])->name('settings.team.extensions.check-updates');
 
             // Marketplace
             Route::get('marketplace', [MarketplaceController::class, 'index'])->name('settings.team.marketplace');
@@ -122,9 +122,12 @@ Route::prefix('{current_team}')
             Route::patch('mail', [TeamMailController::class, 'update'])->name('settings.team.mail.update');
             Route::post('mail/test', [TeamMailController::class, 'test'])->name('settings.team.mail.test');
 
-            // Theme
-            Route::get('theme', [ThemeController::class, 'edit'])->name('settings.team.theme.edit');
-            Route::put('theme', [ThemeController::class, 'update'])->name('settings.team.theme.update');
+            // System
+            Route::get('system', [SystemUpdateController::class, 'index'])->name('settings.team.system');
+            Route::post('system/check-core', [SystemUpdateController::class, 'checkCore'])->name('settings.team.system.check-core');
+            Route::post('system/update-core', [SystemUpdateController::class, 'updateCore'])->name('settings.team.system.update-core');
+            Route::post('system/check-extensions', [SystemUpdateController::class, 'checkExtensions'])->name('settings.team.system.check-extensions');
+            Route::post('system/update-extension', [SystemUpdateController::class, 'updateExtension'])->name('settings.team.system.update-extension');
         });
     });
 

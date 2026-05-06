@@ -3,17 +3,14 @@
 namespace App\Http\Middleware;
 
 use App\Core\Context\AppContext;
-use App\Core\Extensions\ExtensionManager;
+use App\Core\Context\SharedPropsResolver;
 use App\Core\Navigation\NavigationBuilder;
-use App\Core\Themes\ComponentResolver;
-use App\Models\AuditLog;
-use App\Models\Notification;
+use App\Core\System\CoreVersion;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
-use Modules\AilesInvisibles\Models\Conversation;
 
-class HandleInertiaRequests extends Middleware
+final class HandleInertiaRequests extends Middleware
 {
     protected $rootView = 'app';
 
@@ -26,6 +23,8 @@ class HandleInertiaRequests extends Middleware
     {
         $ctx = app(AppContext::class);
         $user = $ctx->user();
+        $team = $ctx->team();
+        $resolver = app(SharedPropsResolver::class);
 
         return [
             ...parent::share($request),
@@ -35,19 +34,21 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => fn () => $ctx->permissions(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'currentTeam' => fn () => $user ? $user->toUserTeam($ctx->team()) : null,
+            'currentTeam' => fn () => $user ? $user->toUserTeam($team) : null,
             'teams' => fn () => $user ? $user->toUserTeams(includeCurrent: true) : [],
             'navigation' => fn () => $this->buildNavigation($ctx),
-            'teamMembers' => fn () => $this->resolveTeamMembers($ctx),
-            'auditLogs' => fn () => $this->resolveAuditLogs($ctx),
-            'theme' => fn () => $this->resolveTheme($ctx),
-            'locale' => $ctx->team()?->locale ?? $user?->locale ?? app()->getLocale(),
+            'teamMembers' => fn () => $team ? $resolver->teamMembers($team) : [],
+            'auditLogs' => fn () => $team ? $resolver->auditLogs($team) : [],
+            'theme' => fn () => null,
+            'locale' => $team?->locale ?? $user?->locale ?? app()->getLocale(),
             'fallbackLocale' => config('app.fallback_locale'),
             'availableLocales' => config('app.available_locales', ['en', 'fr']),
-            'footerLinks' => fn () => $this->resolveFooterLinks($ctx),
-            'unreadNotifications' => fn () => $this->resolveUnreadNotificationCount($ctx),
-            'recentNotifications' => fn () => $this->resolveRecentNotifications($ctx),
-            'unreadMessageCount' => fn () => $this->resolveUnreadMessageCount($ctx),
+            'footerLinks' => fn () => $team ? $resolver->footerLinks($team) : [],
+            'unreadNotifications' => fn () => $user ? $resolver->unreadNotificationCount($user) : 0,
+            'recentNotifications' => fn () => $user ? $resolver->recentNotifications($user) : [],
+            'unreadMessageCount' => fn () => 0,
+            'availableWidgets' => fn () => ($user && $team) ? $resolver->availableWidgets($team, $user) : [],
+            'coreVersion' => fn () => CoreVersion::current()->current,
         ];
     }
 
@@ -56,184 +57,16 @@ class HandleInertiaRequests extends Middleware
         $user = $ctx->user();
         $team = $ctx->team();
 
-        if (! $user || ! $team) {
+        if (! $user instanceof User || ! $team) {
             return [];
         }
 
         try {
-            return app(NavigationBuilder::class)->build('app', $team->id, $user);
+            return app(NavigationBuilder::class)->build($team, $user);
         } catch (\Throwable $e) {
             logger()->error('Failed to build navigation: '.$e->getMessage());
 
             return [];
         }
-    }
-
-    protected function resolveTeamMembers(AppContext $ctx): array
-    {
-        $team = $ctx->team();
-
-        if (! $team) {
-            return [];
-        }
-
-        $activeUserIds = DB::table('sessions')
-            ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
-            ->pluck('user_id')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        return $team->members()
-            ->wherePivot('status', 'active')
-            ->get()
-            ->map(fn ($member) => [
-                'id' => $member->id,
-                'name' => $member->name,
-                'email' => $member->email,
-                'avatar' => $member->avatar,
-                'role_label' => $member->pivot->getRawOriginal('role') ?? 'Member',
-                'is_online' => in_array($member->id, $activeUserIds),
-            ])
-            ->values()
-            ->all();
-    }
-
-    protected function resolveAuditLogs(AppContext $ctx): array
-    {
-        $team = $ctx->team();
-
-        if (! $team) {
-            return [];
-        }
-
-        return AuditLog::where('team_id', $team->id)
-            ->with('user')
-            ->latest('created_at')
-            ->limit(10)
-            ->get()
-            ->map(fn (AuditLog $log) => [
-                'id' => $log->id,
-                'user' => $log->user?->name,
-                'action' => $log->action,
-                'module' => $log->module,
-                'properties' => $log->properties,
-                'created_at' => $log->created_at?->toISOString(),
-            ])
-            ->all();
-    }
-
-    protected function resolveTheme(AppContext $ctx): ?string
-    {
-        $team = $ctx->team();
-
-        if (! $team) {
-            return null;
-        }
-
-        try {
-            $identifier = app(ComponentResolver::class)->activeTheme($team->id);
-
-            if (! $identifier) {
-                return null;
-            }
-
-            $manager = app(ExtensionManager::class);
-
-            if (! $manager->isEnabled($identifier, $team->id)) {
-                return null;
-            }
-
-            return $identifier;
-        } catch (\Throwable $e) {
-            logger()->error('Failed to resolve theme: '.$e->getMessage());
-
-            return null;
-        }
-    }
-
-    protected function resolveFooterLinks(AppContext $ctx): array
-    {
-        $team = $ctx->team();
-
-        if (! $team) {
-            return [];
-        }
-
-        try {
-            $links = setting('footer_links');
-
-            if (! $links) {
-                return [];
-            }
-
-            return json_decode($links, true) ?? [];
-        } catch (\Throwable) {
-            return [];
-        }
-    }
-
-    protected function resolveUnreadNotificationCount(AppContext $ctx): int
-    {
-        $user = $ctx->user();
-
-        if (! $user) {
-            return 0;
-        }
-
-        return Notification::forUser($user->id)->unread()->count();
-    }
-
-    protected function resolveUnreadMessageCount(AppContext $ctx): int
-    {
-        $user = $ctx->user();
-        $team = $ctx->team();
-
-        if (! $user || ! $team) {
-            return 0;
-        }
-
-        if (! class_exists(Conversation::class)) {
-            return 0;
-        }
-
-        try {
-            $conversationClass = Conversation::class;
-
-            return $conversationClass::notArchived()
-                ->whereHas('participants', fn ($q) => $q->where('participant_type', get_class($user))->where('participant_id', $user->id))
-                ->withCount(['messages as unread_count' => fn ($q) => $q
-                    ->where(fn ($q2) => $q2->where('sender_type', '!=', get_class($user))->orWhere(fn ($q3) => $q3->where('sender_type', get_class($user))->where('sender_id', '!=', $user->id)))
-                    ->whereDoesntHave('readReceipts', fn ($q2) => $q2->where('reader_type', get_class($user))->where('reader_id', $user->id)),
-                ])
-                ->get()
-                ->sum('unread_count');
-        } catch (\Throwable) {
-            return 0;
-        }
-    }
-
-    protected function resolveRecentNotifications(AppContext $ctx): array
-    {
-        $user = $ctx->user();
-
-        if (! $user) {
-            return [];
-        }
-
-        return Notification::forUser($user->id)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(fn (Notification $n) => [
-                'id' => $n->id,
-                'title' => $n->title,
-                'body' => $n->body,
-                'data' => $n->data,
-                'read_at' => $n->read_at?->toISOString(),
-                'created_at' => $n->created_at->toISOString(),
-            ])
-            ->all();
     }
 }

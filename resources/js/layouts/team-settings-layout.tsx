@@ -2,7 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import Heading from '@/components/heading';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem, SharedData } from '@/types';
 
 export default function TeamSettingsLayout({
     breadcrumbs = [],
@@ -14,9 +14,8 @@ export default function TeamSettingsLayout({
     children: React.ReactNode;
 }) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
-    const teamName =
-        (currentTeam as { name?: string } | null)?.name ?? t('common.team');
+    const { currentTeam } = usePage<SharedData>().props;
+    const teamName = currentTeam?.name ?? t('common.team');
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>

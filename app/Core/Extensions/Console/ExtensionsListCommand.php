@@ -5,37 +5,31 @@ namespace App\Core\Extensions\Console;
 use App\Core\Extensions\ExtensionManager;
 use Illuminate\Console\Command;
 
-class ExtensionsListCommand extends Command
+final class ExtensionsListCommand extends Command
 {
-    protected $signature = 'extensions:list {--type= : Filter by type (module, theme)}';
+    protected $signature = 'extensions:list';
 
     protected $description = 'List all registered extensions';
 
     public function handle(ExtensionManager $manager): int
     {
-        $extensions = $manager->all();
-        $typeFilter = $this->option('type');
+        $manifests = $manager->manifests();
 
-        if ($typeFilter) {
-            $extensions = $extensions->filter(fn ($e) => $e->type === $typeFilter);
-        }
-
-        if ($extensions->isEmpty()) {
-            $this->info('No extensions found. Run extensions:scan to discover extensions.');
+        if ($manifests->isEmpty()) {
+            $this->warn('No extensions found.');
 
             return self::SUCCESS;
         }
 
-        $this->table(
-            ['Identifier', 'Name', 'Type', 'Version', 'State'],
-            $extensions->map(fn ($e) => [
-                $e->identifier,
-                $e->name,
-                $e->type,
-                $e->version,
-                $e->state,
-            ])->toArray()
-        );
+        $rows = $manifests->map(fn ($m) => [
+            $m->identifier,
+            $m->name,
+            $m->type,
+            $m->version ?? '-',
+            $m->providerClass ? 'Yes' : 'No',
+        ]);
+
+        $this->table(['Identifier', 'Name', 'Type', 'Version', 'Provider'], $rows);
 
         return self::SUCCESS;
     }

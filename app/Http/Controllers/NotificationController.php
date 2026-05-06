@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
-class NotificationController
+final class NotificationController
 {
     public function index(Request $request): InertiaResponse
     {

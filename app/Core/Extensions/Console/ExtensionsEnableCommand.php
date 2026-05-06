@@ -5,29 +5,31 @@ namespace App\Core\Extensions\Console;
 use App\Core\Extensions\ExtensionManager;
 use Illuminate\Console\Command;
 
-class ExtensionsEnableCommand extends Command
+final class ExtensionsEnableCommand extends Command
 {
-    protected $signature = 'extensions:enable {identifier : The extension identifier} {--team= : Enable for a specific team ID}';
+    protected $signature = 'extensions:enable {identifier : Extension identifier}
+                              {--team= : Team ID (required for per-team enable)}';
 
-    protected $description = 'Enable an extension globally or for a specific team';
+    protected $description = 'Enable an extension for a team';
 
     public function handle(ExtensionManager $manager): int
     {
         $identifier = $this->argument('identifier');
         $teamId = $this->option('team');
 
-        try {
-            $manager->enable($identifier, $teamId ? (int) $teamId : null);
-        } catch (\InvalidArgumentException $e) {
-            $this->error($e->getMessage());
+        if (! $teamId) {
+            $this->error('The --team option is required.');
 
             return self::FAILURE;
         }
 
-        if ($teamId) {
-            $this->info("Extension '{$identifier}' enabled for team {$teamId}.");
-        } else {
-            $this->info("Extension '{$identifier}' enabled globally.");
+        try {
+            $manager->enable($identifier, (int) $teamId);
+            $this->info("Extension [{$identifier}] enabled for team [{$teamId}].");
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
+
+            return self::FAILURE;
         }
 
         return self::SUCCESS;

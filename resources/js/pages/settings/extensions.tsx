@@ -27,6 +27,7 @@ import {
     Power,
     PowerOff,
     Puzzle,
+    RefreshCw,
     Search,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
@@ -76,44 +77,24 @@ import {
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { extensions as extensionsUrl } from '@/routes/settings/team';
 import {
-    enable as enableUrl,
+    checkUpdates as checkUpdatesUrl,
     disable as disableUrl,
+    enable as enableUrl,
     install as installUrl,
     uninstall as uninstallUrl,
 } from '@/routes/settings/team/extensions';
-type ExtensionState =
-    | 'not_installed'
-    | 'enabled'
-    | 'disabled'
-    | 'errored'
-    | 'incompatible';
+import type { SharedData } from '@/types';
 
 type Extension = {
     id: number;
-    name: string;
     identifier: string;
+    name: string;
     type: 'module' | 'theme';
-    version: string;
-    description: string;
+    version: string | null;
+    description: string | null;
     author: string | null;
-    state: ExtensionState;
-    error_message: string | null;
-    installed_at: string | null;
-    is_active: boolean;
-    is_enabled_for_team: boolean;
-    team_state: string;
-    license: string | null;
-    homepage: string | null;
-    keywords: string[];
-    lastarter_version: string | null;
-    permissions: string[];
-    settings: {
-        key: string;
-        label: string;
-        type: string;
-        default?: string;
-        options?: { label: string; value: string }[];
-    }[];
+    state: 'installed' | 'enabled' | 'disabled' | 'errored' | null;
+    is_enabled: boolean;
 };
 
 type Props = {
@@ -122,8 +103,8 @@ type Props = {
 
 export default function Extensions({ extensions }: Props) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+    const { currentTeam } = usePage<SharedData>().props;
+    const teamSlug = currentTeam?.slug;
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [rowSelection, setRowSelection] = useState({});
@@ -139,7 +120,7 @@ export default function Extensions({ extensions }: Props) {
 
     const stateConfig = useMemo<
         Record<
-            ExtensionState,
+            string,
             {
                 label: string;
                 variant: 'default' | 'secondary' | 'destructive' | 'outline';
@@ -148,23 +129,19 @@ export default function Extensions({ extensions }: Props) {
     >(
         () => ({
             enabled: {
-                label: t('settings.extensions.status_active'),
+                label: t('settings.extensions.status_enabled'),
                 variant: 'default',
             },
             disabled: {
                 label: t('settings.extensions.status_disabled'),
                 variant: 'secondary',
             },
-            not_installed: {
-                label: t('settings.extensions.status_not_installed'),
+            installed: {
+                label: t('settings.extensions.status_installed'),
                 variant: 'outline',
             },
             errored: {
                 label: t('settings.extensions.status_error'),
-                variant: 'destructive',
-            },
-            incompatible: {
-                label: t('settings.extensions.status_incompatible'),
                 variant: 'destructive',
             },
         }),
@@ -182,6 +159,18 @@ export default function Extensions({ extensions }: Props) {
     const postAction = useCallback((url: string) => {
         router.post(url, {}, { preserveScroll: true });
     }, []);
+
+    const getDisplayState = (ext: Extension): string => {
+        if (ext.is_enabled) {
+            return 'enabled';
+        }
+
+        if (ext.state === 'enabled') {
+            return 'disabled';
+        }
+
+        return ext.state ?? 'installed';
+    };
 
     const columns = useMemo<ColumnDef<Extension>[]>(
         () => [
@@ -264,7 +253,9 @@ export default function Extensions({ extensions }: Props) {
                 header: t('settings.extensions.table_version'),
                 cell: ({ row }) => (
                     <span className="text-sm text-muted-foreground tabular-nums">
-                        v{row.original.version}
+                        {row.original.version
+                            ? `v${row.original.version}`
+                            : '—'}
                     </span>
                 ),
             },
@@ -272,25 +263,12 @@ export default function Extensions({ extensions }: Props) {
                 accessorKey: 'state',
                 header: t('settings.extensions.table_status'),
                 cell: ({ row }) => {
-                    const ext = row.original;
-                    const displayState: ExtensionState = ext.is_enabled_for_team
-                        ? 'enabled'
-                        : ext.state === 'enabled'
-                          ? 'disabled'
-                          : ext.state;
-                    const config = stateConfig[displayState];
+                    const displayState = getDisplayState(row.original);
+                    const config =
+                        stateConfig[displayState] ?? stateConfig.installed;
 
                     return (
-                        <div className="space-y-1">
-                            <Badge variant={config.variant}>
-                                {config.label}
-                            </Badge>
-                            {row.original.error_message && (
-                                <p className="max-w-[250px] text-xs text-destructive">
-                                    {row.original.error_message}
-                                </p>
-                            )}
-                        </div>
+                        <Badge variant={config.variant}>{config.label}</Badge>
                     );
                 },
             },
@@ -329,49 +307,47 @@ export default function Extensions({ extensions }: Props) {
                             </TooltipProvider>
 
                             <Guard permission="extension.manage">
-                                {ext.state !== 'not_installed' &&
-                                    ext.state !== 'errored' &&
-                                    ext.state !== 'incompatible' && (
-                                        <>
-                                            {ext.is_enabled_for_team && (
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="size-8"
-                                                                onClick={() =>
-                                                                    postAction(
-                                                                        disableUrl(
-                                                                            {
-                                                                                current_team:
-                                                                                    teamSlug,
-                                                                                extension:
-                                                                                    ext.id,
-                                                                            },
-                                                                        ).url,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <PowerOff className="h-4 w-4" />
-                                                                <span className="sr-only">
-                                                                    {t(
-                                                                        'settings.extensions.disable',
-                                                                    )}
-                                                                </span>
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            {t(
-                                                                'settings.extensions.disable',
-                                                            )}
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            )}
+                                {ext.state && ext.state !== 'errored' && (
+                                    <>
+                                        {ext.is_enabled && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8"
+                                                            onClick={() =>
+                                                                postAction(
+                                                                    disableUrl({
+                                                                        current_team:
+                                                                            teamSlug ??
+                                                                            '',
+                                                                        extension:
+                                                                            ext.identifier,
+                                                                    }).url,
+                                                                )
+                                                            }
+                                                        >
+                                                            <PowerOff className="h-4 w-4" />
+                                                            <span className="sr-only">
+                                                                {t(
+                                                                    'settings.extensions.disable',
+                                                                )}
+                                                            </span>
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {t(
+                                                            'settings.extensions.disable',
+                                                        )}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
 
-                                            {!ext.is_enabled_for_team && (
+                                        {!ext.is_enabled &&
+                                            ext.state !== null && (
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -384,9 +360,10 @@ export default function Extensions({ extensions }: Props) {
                                                                         enableUrl(
                                                                             {
                                                                                 current_team:
-                                                                                    teamSlug,
+                                                                                    teamSlug ??
+                                                                                    '',
                                                                                 extension:
-                                                                                    ext.id,
+                                                                                    ext.identifier,
                                                                             },
                                                                         ).url,
                                                                     )
@@ -408,8 +385,45 @@ export default function Extensions({ extensions }: Props) {
                                                     </Tooltip>
                                                 </TooltipProvider>
                                             )}
-                                        </>
-                                    )}
+                                    </>
+                                )}
+
+                                {!ext.state && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8"
+                                                    onClick={() =>
+                                                        postAction(
+                                                            installUrl({
+                                                                current_team:
+                                                                    teamSlug ??
+                                                                    '',
+                                                                extension:
+                                                                    ext.identifier,
+                                                            }).url,
+                                                        )
+                                                    }
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                    <span className="sr-only">
+                                                        {t(
+                                                            'settings.extensions.install',
+                                                        )}
+                                                    </span>
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                {t(
+                                                    'settings.extensions.install',
+                                                )}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
 
                                 <DropdownMenu>
                                     <TooltipProvider>
@@ -441,36 +455,18 @@ export default function Extensions({ extensions }: Props) {
                                         align="end"
                                         className="w-40"
                                     >
-                                        {ext.state === 'not_installed' && (
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    postAction(
-                                                        installUrl({
-                                                            current_team:
-                                                                teamSlug,
-                                                            extension: ext.id,
-                                                        }).url,
-                                                    )
-                                                }
-                                            >
-                                                <Download className="h-4 w-4" />
-                                                {t(
-                                                    'settings.extensions.install',
-                                                )}
-                                            </DropdownMenuItem>
-                                        )}
-                                        {ext.state !== 'not_installed' &&
-                                            ext.state !== 'errored' &&
-                                            ext.state !== 'incompatible' && (
+                                        {ext.state &&
+                                            ext.state !== 'errored' && (
                                                 <DropdownMenuItem
                                                     variant="destructive"
                                                     onClick={() =>
                                                         postAction(
                                                             uninstallUrl({
                                                                 current_team:
-                                                                    teamSlug,
+                                                                    teamSlug ??
+                                                                    '',
                                                                 extension:
-                                                                    ext.id,
+                                                                    ext.identifier,
                                                             }).url,
                                                         )
                                                     }
@@ -496,12 +492,7 @@ export default function Extensions({ extensions }: Props) {
     const table = useReactTable({
         data: filteredData,
         columns,
-        state: {
-            sorting,
-            globalFilter,
-            rowSelection,
-            columnVisibility,
-        },
+        state: { sorting, globalFilter, rowSelection, columnVisibility },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
         onRowSelectionChange: setRowSelection,
@@ -522,7 +513,7 @@ export default function Extensions({ extensions }: Props) {
             breadcrumbs={[
                 {
                     title: t('settings.extensions.title'),
-                    href: extensionsUrl(teamSlug).url,
+                    href: extensionsUrl(teamSlug ?? '').url,
                 },
             ]}
         >
@@ -548,27 +539,28 @@ export default function Extensions({ extensions }: Props) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => {
-                                                const selected =
-                                                    table.getFilteredSelectedRowModel()
-                                                        .rows;
-                                                selected.forEach((row) => {
-                                                    if (
-                                                        row.original.state !==
-                                                            'not_installed' &&
-                                                        !row.original
-                                                            .is_enabled_for_team
-                                                    ) {
-                                                        postAction(
-                                                            enableUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    row.original
-                                                                        .id,
-                                                            }).url,
-                                                        );
-                                                    }
-                                                });
+                                                table
+                                                    .getFilteredSelectedRowModel()
+                                                    .rows.forEach((row) => {
+                                                        if (
+                                                            row.original
+                                                                .state &&
+                                                            !row.original
+                                                                .is_enabled
+                                                        ) {
+                                                            postAction(
+                                                                enableUrl({
+                                                                    current_team:
+                                                                        teamSlug ??
+                                                                        '',
+                                                                    extension:
+                                                                        row
+                                                                            .original
+                                                                            .identifier,
+                                                                }).url,
+                                                            );
+                                                        }
+                                                    });
                                                 setRowSelection({});
                                             }}
                                         >
@@ -579,27 +571,26 @@ export default function Extensions({ extensions }: Props) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => {
-                                                const selected =
-                                                    table.getFilteredSelectedRowModel()
-                                                        .rows;
-                                                selected.forEach((row) => {
-                                                    if (
-                                                        row.original.state !==
-                                                            'not_installed' &&
-                                                        row.original
-                                                            .is_enabled_for_team
-                                                    ) {
-                                                        postAction(
-                                                            disableUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    row.original
-                                                                        .id,
-                                                            }).url,
-                                                        );
-                                                    }
-                                                });
+                                                table
+                                                    .getFilteredSelectedRowModel()
+                                                    .rows.forEach((row) => {
+                                                        if (
+                                                            row.original
+                                                                .is_enabled
+                                                        ) {
+                                                            postAction(
+                                                                disableUrl({
+                                                                    current_team:
+                                                                        teamSlug ??
+                                                                        '',
+                                                                    extension:
+                                                                        row
+                                                                            .original
+                                                                            .identifier,
+                                                                }).url,
+                                                            );
+                                                        }
+                                                    });
                                                 setRowSelection({});
                                             }}
                                         >
@@ -610,29 +601,29 @@ export default function Extensions({ extensions }: Props) {
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => {
-                                                const selected =
-                                                    table.getFilteredSelectedRowModel()
-                                                        .rows;
-                                                selected.forEach((row) => {
-                                                    if (
-                                                        row.original.state !==
-                                                            'not_installed' &&
-                                                        row.original.state !==
-                                                            'errored' &&
-                                                        row.original.state !==
-                                                            'incompatible'
-                                                    ) {
-                                                        postAction(
-                                                            uninstallUrl({
-                                                                current_team:
-                                                                    teamSlug,
-                                                                extension:
-                                                                    row.original
-                                                                        .id,
-                                                            }).url,
-                                                        );
-                                                    }
-                                                });
+                                                table
+                                                    .getFilteredSelectedRowModel()
+                                                    .rows.forEach((row) => {
+                                                        if (
+                                                            row.original
+                                                                .state &&
+                                                            row.original
+                                                                .state !==
+                                                                'errored'
+                                                        ) {
+                                                            postAction(
+                                                                uninstallUrl({
+                                                                    current_team:
+                                                                        teamSlug ??
+                                                                        '',
+                                                                    extension:
+                                                                        row
+                                                                            .original
+                                                                            .identifier,
+                                                                }).url,
+                                                            );
+                                                        }
+                                                    });
                                                 setRowSelection({});
                                             }}
                                         >
@@ -645,6 +636,20 @@ export default function Extensions({ extensions }: Props) {
                                         />
                                     </div>
                                 )}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        postAction(
+                                            checkUpdatesUrl({
+                                                current_team: teamSlug ?? '',
+                                            }).url,
+                                        )
+                                    }
+                                >
+                                    <RefreshCw className="h-4 w-4" />
+                                    {t('settings.extensions.check_updates')}
+                                </Button>
                             </Guard>
                             <Select
                                 value={typeFilter}
@@ -720,23 +725,37 @@ export default function Extensions({ extensions }: Props) {
                                     {table
                                         .getAllColumns()
                                         .filter(
-                                            (column) =>
-                                                typeof column.accessorFn !==
+                                            (col) =>
+                                                typeof col.accessorFn !==
                                                     'undefined' &&
-                                                column.getCanHide(),
+                                                col.getCanHide(),
                                         )
-                                        .map((column) => (
+                                        .map((col) => (
                                             <DropdownMenuCheckboxItem
-                                                key={column.id}
+                                                key={col.id}
                                                 className="capitalize"
-                                                checked={column.getIsVisible()}
-                                                onCheckedChange={(value) =>
-                                                    column.toggleVisibility(
-                                                        !!value,
-                                                    )
+                                                checked={col.getIsVisible()}
+                                                onCheckedChange={(v) =>
+                                                    col.toggleVisibility(!!v)
                                                 }
                                             >
-                                                {column.id}
+                                                {col.id === 'type'
+                                                    ? t(
+                                                          'settings.extensions.table_type',
+                                                      )
+                                                    : col.id === 'author'
+                                                      ? t(
+                                                            'settings.extensions.table_author',
+                                                        )
+                                                      : col.id === 'version'
+                                                        ? t(
+                                                              'settings.extensions.table_version',
+                                                          )
+                                                        : col.id === 'state'
+                                                          ? t(
+                                                                'settings.extensions.table_status',
+                                                            )
+                                                          : col.id}
                                             </DropdownMenuCheckboxItem>
                                         ))}
                                 </DropdownMenuContent>
@@ -749,32 +768,25 @@ export default function Extensions({ extensions }: Props) {
                             <div className="rounded-lg border">
                                 <Table>
                                     <TableHeader>
-                                        {table
-                                            .getHeaderGroups()
-                                            .map((headerGroup) => (
-                                                <TableRow key={headerGroup.id}>
-                                                    {headerGroup.headers.map(
-                                                        (header) => (
-                                                            <TableHead
-                                                                key={header.id}
-                                                                colSpan={
-                                                                    header.colSpan
-                                                                }
-                                                            >
-                                                                {header.isPlaceholder
-                                                                    ? null
-                                                                    : flexRender(
-                                                                          header
-                                                                              .column
-                                                                              .columnDef
-                                                                              .header,
-                                                                          header.getContext(),
-                                                                      )}
-                                                            </TableHead>
-                                                        ),
-                                                    )}
-                                                </TableRow>
-                                            ))}
+                                        {table.getHeaderGroups().map((hg) => (
+                                            <TableRow key={hg.id}>
+                                                {hg.headers.map((header) => (
+                                                    <TableHead
+                                                        key={header.id}
+                                                        colSpan={header.colSpan}
+                                                    >
+                                                        {header.isPlaceholder
+                                                            ? null
+                                                            : flexRender(
+                                                                  header.column
+                                                                      .columnDef
+                                                                      .header,
+                                                                  header.getContext(),
+                                                              )}
+                                                    </TableHead>
+                                                ))}
+                                            </TableRow>
+                                        ))}
                                     </TableHeader>
                                     <TableBody>
                                         {table.getRowModel().rows.length > 0 ? (
@@ -836,39 +848,32 @@ export default function Extensions({ extensions }: Props) {
                                 <div className="flex w-full items-center gap-8 lg:w-fit">
                                     <div className="hidden items-center gap-2 lg:flex">
                                         <Label
-                                            htmlFor="rows-per-page"
+                                            htmlFor="ext-rows"
                                             className="text-sm font-medium"
                                         >
                                             {t('common.rows_per_page')}
                                         </Label>
                                         <Select
                                             value={`${table.getState().pagination.pageSize}`}
-                                            onValueChange={(value) => {
-                                                table.setPageSize(
-                                                    Number(value),
-                                                );
-                                            }}
+                                            onValueChange={(v) =>
+                                                table.setPageSize(Number(v))
+                                            }
                                         >
                                             <SelectTrigger
                                                 size="sm"
                                                 className="w-20"
-                                                id="rows-per-page"
+                                                id="ext-rows"
                                             >
-                                                <SelectValue
-                                                    placeholder={
-                                                        table.getState()
-                                                            .pagination.pageSize
-                                                    }
-                                                />
+                                                <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent side="top">
                                                 {[10, 20, 30, 40, 50].map(
-                                                    (pageSize) => (
+                                                    (ps) => (
                                                         <SelectItem
-                                                            key={pageSize}
-                                                            value={`${pageSize}`}
+                                                            key={ps}
+                                                            value={`${ps}`}
                                                         >
-                                                            {pageSize}
+                                                            {ps}
                                                         </SelectItem>
                                                     ),
                                                 )}
@@ -876,10 +881,12 @@ export default function Extensions({ extensions }: Props) {
                                         </Select>
                                     </div>
                                     <div className="flex w-fit items-center justify-center text-sm font-medium">
-                                        Page{' '}
-                                        {table.getState().pagination.pageIndex +
-                                            1}{' '}
-                                        of {table.getPageCount()}
+                                        {t('pagination.page_of', {
+                                            page:
+                                                table.getState().pagination
+                                                    .pageIndex + 1,
+                                            total: table.getPageCount(),
+                                        })}
                                     </div>
                                     <div className="ml-auto flex items-center gap-2 lg:ml-0">
                                         <TooltipProvider>
@@ -900,12 +907,14 @@ export default function Extensions({ extensions }: Props) {
                                                     >
                                                         <ChevronsLeft className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            First page
+                                                            {t(
+                                                                'pagination.first',
+                                                            )}
                                                         </span>
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    First page
+                                                    {t('pagination.first')}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
@@ -925,12 +934,14 @@ export default function Extensions({ extensions }: Props) {
                                                     >
                                                         <ChevronLeft className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            Previous page
+                                                            {t(
+                                                                'pagination.previous',
+                                                            )}
                                                         </span>
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    Previous page
+                                                    {t('pagination.previous')}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
@@ -950,12 +961,14 @@ export default function Extensions({ extensions }: Props) {
                                                     >
                                                         <ChevronRight className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            Next page
+                                                            {t(
+                                                                'pagination.next',
+                                                            )}
                                                         </span>
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    Next page
+                                                    {t('pagination.next')}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
@@ -978,12 +991,14 @@ export default function Extensions({ extensions }: Props) {
                                                     >
                                                         <ChevronsRight className="h-4 w-4" />
                                                         <span className="sr-only">
-                                                            Last page
+                                                            {t(
+                                                                'pagination.last',
+                                                            )}
                                                         </span>
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    Last page
+                                                    {t('pagination.last')}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
@@ -1006,75 +1021,10 @@ export default function Extensions({ extensions }: Props) {
                     {detailExtension &&
                         (() => {
                             const ext = detailExtension;
-                            const isModule = ext.type === 'module';
-
-                            const descriptions: Record<
-                                string,
-                                { about: string; features: string[] }
-                            > = {
-                                projects: {
-                                    about: t(
-                                        'settings.extensions.features.projects.about',
-                                    ),
-                                    features: [
-                                        t(
-                                            'settings.extensions.features.projects.items.0',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.projects.items.1',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.projects.items.2',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.projects.items.3',
-                                        ),
-                                    ],
-                                },
-                                tasks: {
-                                    about: t(
-                                        'settings.extensions.features.tasks.about',
-                                    ),
-                                    features: [
-                                        t(
-                                            'settings.extensions.features.tasks.items.0',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.tasks.items.1',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.tasks.items.2',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.tasks.items.3',
-                                        ),
-                                    ],
-                                },
-                                default: {
-                                    about: t(
-                                        'settings.extensions.features.default.about',
-                                    ),
-                                    features: [
-                                        t(
-                                            'settings.extensions.features.default.items.0',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.default.items.1',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.default.items.2',
-                                        ),
-                                        t(
-                                            'settings.extensions.features.default.items.3',
-                                        ),
-                                    ],
-                                },
-                            };
-
-                            const meta = descriptions[ext.identifier] ?? {
-                                about: ext.description,
-                                features: [],
-                            };
+                            const displayState = getDisplayState(ext);
+                            const config =
+                                stateConfig[displayState] ??
+                                stateConfig.installed;
 
                             return (
                                 <>
@@ -1086,47 +1036,6 @@ export default function Extensions({ extensions }: Props) {
                                     </SheetHeader>
 
                                     <div className="flex flex-col gap-6 px-4 pb-6">
-                                        {/* About */}
-                                        <div>
-                                            <h4 className="text-sm font-semibold">
-                                                {isModule
-                                                    ? t(
-                                                          'settings.extensions.about_module',
-                                                      )
-                                                    : t(
-                                                          'settings.extensions.about_theme',
-                                                      )}
-                                            </h4>
-                                            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                                                {meta.about}
-                                            </p>
-                                        </div>
-
-                                        {/* Features */}
-                                        {meta.features.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-semibold">
-                                                    {t(
-                                                        'settings.extensions.what_you_can_do',
-                                                    )}
-                                                </h4>
-                                                <ul className="mt-2 space-y-1.5">
-                                                    {meta.features.map((f) => (
-                                                        <li
-                                                            key={f}
-                                                            className="flex items-start gap-2 text-sm text-muted-foreground"
-                                                        >
-                                                            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
-                                                            {f}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        <Separator />
-
-                                        {/* Info grid */}
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="rounded-lg border p-3">
                                                 <p className="text-xs text-muted-foreground">
@@ -1144,11 +1053,26 @@ export default function Extensions({ extensions }: Props) {
                                             <div className="rounded-lg border p-3">
                                                 <p className="text-xs text-muted-foreground">
                                                     {t(
+                                                        'settings.extensions.table_status',
+                                                    )}
+                                                </p>
+                                                <Badge
+                                                    variant={config.variant}
+                                                    className="mt-1"
+                                                >
+                                                    {config.label}
+                                                </Badge>
+                                            </div>
+                                            <div className="rounded-lg border p-3">
+                                                <p className="text-xs text-muted-foreground">
+                                                    {t(
                                                         'settings.extensions.version',
                                                     )}
                                                 </p>
                                                 <p className="mt-1 text-sm font-medium">
-                                                    v{ext.version}
+                                                    {ext.version
+                                                        ? `v${ext.version}`
+                                                        : '—'}
                                                 </p>
                                             </div>
                                             {ext.author && (
@@ -1163,209 +1087,10 @@ export default function Extensions({ extensions }: Props) {
                                                     </p>
                                                 </div>
                                             )}
-                                            {ext.license && (
-                                                <div className="rounded-lg border p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.license',
-                                                        )}
-                                                    </p>
-                                                    <p className="mt-1 text-sm font-medium">
-                                                        {ext.license}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {ext.installed_at && (
-                                                <div className="rounded-lg border p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.installed',
-                                                        )}
-                                                    </p>
-                                                    <p className="mt-1 text-sm font-medium">
-                                                        {new Date(
-                                                            ext.installed_at,
-                                                        ).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {ext.lastarter_version && (
-                                                <div className="rounded-lg border p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.requires',
-                                                        )}
-                                                    </p>
-                                                    <p className="mt-1 text-sm font-medium">
-                                                        {t(
-                                                            'settings.extensions.requires_version',
-                                                            {
-                                                                version:
-                                                                    ext.lastarter_version,
-                                                            },
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {ext.homepage && (
-                                                <div className="col-span-2 rounded-lg border p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.homepage',
-                                                        )}
-                                                    </p>
-                                                    <a
-                                                        href={ext.homepage}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="mt-1 block text-sm font-medium text-primary underline-offset-4 hover:underline"
-                                                    >
-                                                        {ext.homepage}
-                                                    </a>
-                                                </div>
-                                            )}
                                         </div>
 
-                                        {/* Keywords */}
-                                        {ext.keywords.length > 0 && (
-                                            <div>
-                                                <h4 className="text-sm font-semibold">
-                                                    {t(
-                                                        'settings.extensions.keywords',
-                                                    )}
-                                                </h4>
-                                                <div className="mt-1.5 flex flex-wrap gap-1">
-                                                    {ext.keywords.map((kw) => (
-                                                        <Badge
-                                                            key={kw}
-                                                            variant="secondary"
-                                                            className="text-xs"
-                                                        >
-                                                            {kw}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Permissions */}
-                                        {isModule &&
-                                            ext.permissions.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-sm font-semibold">
-                                                        {t(
-                                                            'settings.extensions.permissions_title',
-                                                        )}{' '}
-                                                        (
-                                                        {ext.permissions.length}
-                                                        )
-                                                    </h4>
-                                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.permissions_description',
-                                                        )}
-                                                    </p>
-                                                    <div className="mt-2 flex flex-wrap gap-1">
-                                                        {ext.permissions.map(
-                                                            (perm) => (
-                                                                <code
-                                                                    key={perm}
-                                                                    className="rounded bg-muted px-1.5 py-0.5 text-xs"
-                                                                >
-                                                                    {perm}
-                                                                </code>
-                                                            ),
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                        {/* Settings */}
-                                        {isModule &&
-                                            ext.settings.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-sm font-semibold">
-                                                        {t(
-                                                            'settings.extensions.settings_title',
-                                                        )}
-                                                    </h4>
-                                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.settings_description',
-                                                        )}
-                                                    </p>
-                                                    <div className="mt-2 space-y-2">
-                                                        {ext.settings.map(
-                                                            (s) => (
-                                                                <div
-                                                                    key={s.key}
-                                                                    className="rounded-lg border p-3"
-                                                                >
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm font-medium">
-                                                                            {
-                                                                                s.label
-                                                                            }
-                                                                        </span>
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className="text-xs"
-                                                                        >
-                                                                            {
-                                                                                s.type
-                                                                            }
-                                                                        </Badge>
-                                                                    </div>
-                                                                    {s.options && (
-                                                                        <div className="mt-1.5 flex flex-wrap gap-1">
-                                                                            {s.options.map(
-                                                                                (
-                                                                                    opt,
-                                                                                ) => (
-                                                                                    <code
-                                                                                        key={
-                                                                                            opt.value
-                                                                                        }
-                                                                                        className={`rounded px-1.5 py-0.5 text-xs ${
-                                                                                            opt.value ===
-                                                                                            s.default
-                                                                                                ? 'bg-primary/10 text-primary'
-                                                                                                : 'bg-muted'
-                                                                                        }`}
-                                                                                    >
-                                                                                        {
-                                                                                            opt.label
-                                                                                        }
-                                                                                        {opt.value ===
-                                                                                            s.default &&
-                                                                                            ` ${t('common.default')}`}
-                                                                                    </code>
-                                                                                ),
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                    {!s.options &&
-                                                                        s.default && (
-                                                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                                                {t(
-                                                                                    'settings.extensions.settings_default',
-                                                                                )}{' '}
-                                                                                <code className="rounded bg-muted px-1">
-                                                                                    {
-                                                                                        s.default
-                                                                                    }
-                                                                                </code>
-                                                                            </p>
-                                                                        )}
-                                                                </div>
-                                                            ),
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                        {/* Technical info */}
                                         <Separator />
+
                                         <div>
                                             <p className="text-xs text-muted-foreground">
                                                 {t(
@@ -1377,19 +1102,113 @@ export default function Extensions({ extensions }: Props) {
                                             </code>
                                         </div>
 
-                                        {/* Error */}
-                                        {ext.error_message && (
-                                            <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-3">
-                                                <p className="text-xs font-medium text-destructive">
-                                                    {t(
-                                                        'settings.extensions.error_message',
+                                        <div className="flex gap-2">
+                                            <Guard permission="extension.manage">
+                                                {!ext.state && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            postAction(
+                                                                installUrl({
+                                                                    current_team:
+                                                                        teamSlug ??
+                                                                        '',
+                                                                    extension:
+                                                                        ext.identifier,
+                                                                }).url,
+                                                            );
+                                                            setDetailExtension(
+                                                                null,
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                        {t(
+                                                            'settings.extensions.install',
+                                                        )}
+                                                    </Button>
+                                                )}
+                                                {ext.state &&
+                                                    !ext.is_enabled &&
+                                                    ext.state !== 'errored' && (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                postAction(
+                                                                    enableUrl({
+                                                                        current_team:
+                                                                            teamSlug ??
+                                                                            '',
+                                                                        extension:
+                                                                            ext.identifier,
+                                                                    }).url,
+                                                                );
+                                                                setDetailExtension(
+                                                                    null,
+                                                                );
+                                                            }}
+                                                        >
+                                                            <Power className="h-4 w-4" />
+                                                            {t(
+                                                                'settings.extensions.enable',
+                                                            )}
+                                                        </Button>
                                                     )}
-                                                </p>
-                                                <p className="mt-1 text-sm text-destructive/80">
-                                                    {ext.error_message}
-                                                </p>
-                                            </div>
-                                        )}
+                                                {ext.is_enabled && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            postAction(
+                                                                disableUrl({
+                                                                    current_team:
+                                                                        teamSlug ??
+                                                                        '',
+                                                                    extension:
+                                                                        ext.identifier,
+                                                                }).url,
+                                                            );
+                                                            setDetailExtension(
+                                                                null,
+                                                            );
+                                                        }}
+                                                    >
+                                                        <PowerOff className="h-4 w-4" />
+                                                        {t(
+                                                            'settings.extensions.disable',
+                                                        )}
+                                                    </Button>
+                                                )}
+                                                {ext.state &&
+                                                    ext.state !== 'errored' && (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                postAction(
+                                                                    uninstallUrl(
+                                                                        {
+                                                                            current_team:
+                                                                                teamSlug ??
+                                                                                '',
+                                                                            extension:
+                                                                                ext.identifier,
+                                                                        },
+                                                                    ).url,
+                                                                );
+                                                                setDetailExtension(
+                                                                    null,
+                                                                );
+                                                            }}
+                                                        >
+                                                            <PackageX className="h-4 w-4" />
+                                                            {t(
+                                                                'settings.extensions.uninstall',
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                            </Guard>
+                                        </div>
                                     </div>
                                 </>
                             );

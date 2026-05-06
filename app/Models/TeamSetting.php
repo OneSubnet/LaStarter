@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
-use App\Concerns\HasTeam;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamSetting extends Model
 {
-    use HasTeam;
+    public $timestamps = false;
 
-    protected $table = 'team_settings';
+    protected $fillable = ['team_id', 'key', 'value'];
 
-    protected $fillable = [
-        'team_id',
-        'key',
-        'value',
-    ];
+    /**
+     * @return BelongsTo<Team, $this>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 }

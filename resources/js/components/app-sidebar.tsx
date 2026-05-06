@@ -23,6 +23,7 @@ import {
     Shield,
     ShieldCheck,
     Store,
+    Server,
     Users,
     Megaphone,
 } from 'lucide-react';
@@ -64,11 +65,12 @@ import { edit as editSecurity } from '@/routes/security';
 import {
     extensions,
     general,
-    marketplace,
     mail,
+    marketplace,
     members,
     roles,
 } from '@/routes/settings/team';
+import type { SharedData } from '@/types';
 
 // ── Types ──────────────────────────────────────────────
 
@@ -137,15 +139,6 @@ const iconMap: Record<string, LucideIcon> = {
 
 // ── Helpers ────────────────────────────────────────────
 
-type SidebarNotification = {
-    id: number;
-    title: string;
-    body: string | null;
-    data: Record<string, unknown> | null;
-    read_at: string | null;
-    created_at: string;
-};
-
 function timeAgo(dateStr: string): string {
     const seconds = Math.floor(
         (Date.now() - new Date(dateStr).getTime()) / 1000,
@@ -174,13 +167,12 @@ function timeAgo(dateStr: string): string {
 
 function NotificationBell({ teamSlug }: { teamSlug: string }) {
     const { t } = useTranslation();
-    const page = usePage();
-    const unreadCount = (page.props.unreadNotifications as number) ?? 0;
-    const notifications =
-        (page.props.recentNotifications as SidebarNotification[]) ?? [];
+    const page = usePage<SharedData>();
+    const unreadCount = page.props.unreadNotifications;
+    const notifications = page.props.recentNotifications;
     const [open, setOpen] = useState(false);
 
-    const markRead = (id: number) => {
+    const markRead = (id: string) => {
         router.post(
             readNotification.url({ current_team: teamSlug, id }),
             {},
@@ -266,7 +258,7 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                                         {n.title}
                                     </p>
                                     <span className="shrink-0 text-[10px] text-muted-foreground">
-                                        {timeAgo(n.created_at)}
+                                        {timeAgo(n.created_at ?? '')}
                                     </span>
                                 </div>
                                 {n.body && (
@@ -307,8 +299,8 @@ function urlMatches(currentUrl: string, patterns: string[]): boolean {
 
 function ModulePanel({ module }: { module: NavModule }) {
     const { isCurrentUrl } = useCurrentUrl();
-    const page = usePage();
-    const unreadMessageCount = (page.props.unreadMessageCount as number) ?? 0;
+    const page = usePage<SharedData>();
+    const unreadMessageCount = page.props.unreadMessageCount;
 
     return (
         <div className="space-y-4 px-4 py-3 text-sm">
@@ -364,12 +356,11 @@ function ModulePanel({ module }: { module: NavModule }) {
 
 export function AppSidebar() {
     const { t } = useTranslation();
-    const page = usePage();
+    const page = usePage<SharedData>();
     const { setOpen, isMobile } = useSidebar();
 
-    const teamSlug =
-        (page.props.currentTeam as { slug: string } | null)?.slug ?? '';
-    const permissions = (page.props.auth?.permissions as string[]) ?? [];
+    const teamSlug = page.props.currentTeam?.slug ?? '';
+    const permissions = page.props.auth?.permissions ?? [];
     const can = (perm: string | undefined) =>
         !perm || permissions.includes(perm);
 
@@ -567,6 +558,12 @@ export function AppSidebar() {
                 href: mail(teamSlug).url,
                 permission: 'team.update',
             },
+            {
+                label: t('common.system'),
+                icon: Server,
+                href: `/${teamSlug}/settings/system`,
+                permission: 'system.update',
+            },
         ].filter((item) => can(item.permission));
 
         const accountItems: NavItem[] = [
@@ -596,6 +593,7 @@ export function AppSidebar() {
                 members(teamSlug).url,
                 roles(teamSlug).url,
                 mail(teamSlug).url,
+                `/${teamSlug}/settings/system`,
                 editProfile().url,
                 editSecurity().url,
                 editAppearance().url,
@@ -736,6 +734,9 @@ export function AppSidebar() {
                         </SidebarMenuItem>
                     </SidebarMenu>
                     <NavUser />
+                    <div className="flex items-center justify-center py-1.5 text-[10px] text-muted-foreground/60">
+                        v{usePage<SharedData>().props.coreVersion}
+                    </div>
                 </SidebarFooter>
             </Sidebar>
         </Sidebar>

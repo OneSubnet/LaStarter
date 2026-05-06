@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-class AcceptTeamInvitation
+final class AcceptTeamInvitation
 {
     public function handle(User $user, TeamInvitation $invitation): void
     {

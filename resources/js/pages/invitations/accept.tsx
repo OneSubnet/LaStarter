@@ -7,8 +7,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-
-type FooterLink = { title: string; href: string };
+import type { SharedData } from '@/types';
 
 type Props = {
     invitation: {
@@ -33,8 +32,7 @@ const inviteRegisterSchema = z.object({
 
 export default function Accept({ invitation, team, inviter }: Props) {
     const { t } = useTranslation();
-    const footerLinks =
-        (usePage().props.footerLinks as FooterLink[] | undefined) ?? [];
+    const footerLinks = usePage<SharedData>().props.footerLinks ?? [];
 
     const form = useForm({
         defaultValues: {

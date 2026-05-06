@@ -44,12 +44,10 @@ jobs:
       - name: Run Migrations
         run: php artisan migrate --force
 
-      - name: Scan and Enable Extensions
+      - name: Scan and Sync Extensions
         run: |
           php artisan extensions:scan
           php artisan extensions:sync
-          php artisan extensions:enable projects
-          php artisan extensions:enable default
 
       - name: Generate Wayfinder Routes
         run: php artisan wayfinder:generate

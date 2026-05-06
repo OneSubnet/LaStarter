@@ -20,7 +20,7 @@ import {
     SidebarInset,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem, SharedData } from '@/types';
 
 type ExtensionNavItem = {
     title: string;
@@ -54,23 +54,18 @@ export default function AppSidebarLayout({
     breadcrumbs?: BreadcrumbItem[];
     headerActions?: ReactNode;
 }) {
-    const page = usePage();
+    const page = usePage<SharedData>();
     const isOpen = page.props.sidebarOpen;
     const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
-    const currentTeam = page.props.currentTeam as
-        | { name: string; slug: string }
-        | undefined;
+    const currentTeam = page.props.currentTeam;
     const extensionNav =
         (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
     const teamSlug = currentTeam?.slug ?? '';
     const currentPath = page.url;
     const { t } = useTranslation();
 
-    const footerLinks =
-        (page.props.footerLinks as
-            | { title: string; href: string }[]
-            | undefined) ?? [];
+    const footerLinks = page.props.footerLinks;
 
     // Flatten extension nav items for mobile (include children from grouped items)
     const flatExtNav = extensionNav.flatMap((ext) => {

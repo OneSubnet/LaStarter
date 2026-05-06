@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { switchMethod } from '@/routes/settings/teams';
+import type { SharedData } from '@/types';
 
 function getInitials(name: string): string {
     return name
@@ -31,19 +32,11 @@ function getInitials(name: string): string {
 
 export function TeamSwitcher() {
     const { t } = useTranslation();
-    const page = usePage();
+    const page = usePage<SharedData>();
     const isMobile = useIsMobile();
     const { state } = useSidebar();
-    const currentTeam = page.props.currentTeam as
-        | { id: number; name: string; slug: string; iconUrl?: string }
-        | undefined;
-    const teams =
-        (page.props.teams as {
-            id: number;
-            name: string;
-            slug: string;
-            iconUrl?: string;
-        }[]) ?? [];
+    const currentTeam = page.props.currentTeam;
+    const teams = page.props.teams;
 
     const switchTeam = (team: {
         id: number;

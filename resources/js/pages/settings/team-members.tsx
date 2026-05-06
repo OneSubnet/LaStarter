@@ -635,8 +635,12 @@ export default function TeamMembers({
                                 </Select>
                             </div>
                             <div className="flex w-fit items-center justify-center text-sm font-medium">
-                                Page {table.getState().pagination.pageIndex + 1}{' '}
-                                of {table.getPageCount()}
+                                {t('pagination.page_of', {
+                                    page:
+                                        table.getState().pagination.pageIndex +
+                                        1,
+                                    total: table.getPageCount(),
+                                })}
                             </div>
                             <div className="ml-auto flex items-center gap-2 lg:ml-0">
                                 <TooltipProvider>
@@ -655,12 +659,12 @@ export default function TeamMembers({
                                             >
                                                 <ChevronsLeft className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    First page
+                                                    {t('pagination.first')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            First page
+                                            {t('pagination.first')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -680,12 +684,12 @@ export default function TeamMembers({
                                             >
                                                 <ChevronLeft className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Previous page
+                                                    {t('pagination.previous')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Previous page
+                                            {t('pagination.previous')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -703,12 +707,12 @@ export default function TeamMembers({
                                             >
                                                 <ChevronRight className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Next page
+                                                    {t('pagination.next')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Next page
+                                            {t('pagination.next')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -731,12 +735,12 @@ export default function TeamMembers({
                                             >
                                                 <ChevronsRight className="h-4 w-4" />
                                                 <span className="sr-only">
-                                                    Last page
+                                                    {t('pagination.last')}
                                                 </span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Last page
+                                            {t('pagination.last')}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

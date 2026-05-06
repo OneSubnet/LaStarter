@@ -16,10 +16,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { store } from '@/routes/settings/teams';
+import type { SharedData } from '@/types';
 
 export default function CreateTeamModal({ children }: PropsWithChildren) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
+    const { currentTeam } = usePage<SharedData>().props;
     const teamSlug = currentTeam?.slug ?? '';
     const [open, setOpen] = useState(false);
 

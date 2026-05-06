@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class TeamMailController extends Controller
+final class TeamMailController extends Controller
 {
     public function __construct(
         private SettingManager $settings,

@@ -413,7 +413,7 @@
                 "permissions_summary_title": "Résumé des permissions",
                 "permissions_summary_message": "Ce rôle possède toutes les permissions et ne peut pas être modifié.",
                 "permissions_title": "Permissions",
-                "permissions_count": "Permissions",
+                "permissions_count": "{{count}} permissions",
                 "members_title": "Membres",
                 "badge_system": "Système",
                 "badge_custom": "Personnalisé"
@@ -506,10 +506,18 @@
             "type_module": "module",
             "type_theme": "thème",
             "status_active": "Actif",
+            "status_enabled": "Activé",
             "status_disabled": "Désactivé",
+            "status_installed": "Installé",
             "status_not_installed": "Non installé",
             "status_error": "Erreur",
             "status_incompatible": "Incompatible",
+            "status_label": "Statut",
+            "check_updates": "Vérifier les mises à jour",
+            "update": "Mettre à jour",
+            "update_available": "Mise à jour disponible : v{{version}}",
+            "has_routes": "A des routes",
+            "has_migrations": "A des migrations",
             "error_message": "Erreur",
             "error_description": "{{message}}",
             "requires_version": "LaStarter {{version}}",
@@ -547,6 +555,8 @@
             "installed": "Installé",
             "install": "Installer",
             "installing": "Installation...",
+            "search": "Rechercher des extensions...",
+            "view_on_github": "Voir sur GitHub",
             "github": "GitHub",
             "version": "Version",
             "latest_release": "Dernière version",
@@ -554,6 +564,25 @@
             "requires": "Requiert",
             "readme": "README",
             "release_notes": "Notes de la dernière version"
+        },
+        "system": {
+            "title": "Système",
+            "core_platform": "Plateforme",
+            "version": "Version",
+            "up_to_date": "À jour",
+            "update_available": "Mise à jour disponible : v{{version}}",
+            "check_updates": "Vérifier les mises à jour",
+            "update_core": "Mettre à jour la plateforme",
+            "updating": "Mise à jour en cours...",
+            "update_success": "Plateforme mise à jour en v{{version}}",
+            "update_failed": "Échec de la mise à jour",
+            "extensions_updates": "Mises à jour d'extensions",
+            "updates_count": "{{count}} mise(s) à jour disponible(s)",
+            "no_updates": "Aucune mise à jour disponible",
+            "update": "Mettre à jour",
+            "changelog": "Journal des modifications",
+            "compatibility_warnings": "Alertes de compatibilité",
+            "incompatible_extensions": "Certaines extensions peuvent être incompatibles avec la nouvelle version. Vérifiez la compatibilité avant de mettre à jour."
         },
         "teams": {
             "title": "Équipes",
@@ -1373,5 +1402,17 @@
         "hours_ago": "Il y a {{count}} h",
         "days_ago": "Il y a {{count}} j",
         "view_all": "Voir toutes les notifications"
+    },
+    "form": {
+        "unsaved_changes": "Des modifications ont été effectuées. Enregistrez maintenant !",
+        "saved": "Modifications enregistrées avec succès",
+        "saving_failed": "Échec de l'enregistrement des modifications"
+    },
+    "pagination": {
+        "first": "Première page",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "last": "Dernière page",
+        "page_of": "Page {{page}} sur {{total}}"
     }
 }
