@@ -1,5 +1,5 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { CmdOrOption } from '@/components/nowts/keyboard-shortcut';

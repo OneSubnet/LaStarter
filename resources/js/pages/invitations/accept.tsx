@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import type { SharedData } from '@/types';
 
-type FooterLink = { title: string; href: string };
-
 type Props = {
     invitation: {
         code: string;

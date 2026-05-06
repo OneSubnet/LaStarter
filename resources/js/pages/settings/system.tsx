@@ -21,7 +21,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import type { SharedData } from '@/types';
 

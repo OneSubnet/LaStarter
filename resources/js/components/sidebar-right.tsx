@@ -41,15 +41,6 @@ function getInitials(name: string): string {
         .slice(0, 2);
 }
 
-type TeamMember = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string | null;
-    role_label: string;
-    is_online: boolean;
-};
-
 type AuditEntry = {
     id: number;
     user: string | null;
