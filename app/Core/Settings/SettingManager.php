@@ -2,83 +2,70 @@
 
 namespace App\Core\Settings;
 
+use App\Core\Context\AppContext;
 use App\Models\TeamSetting;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
-class SettingManager
+final class SettingManager
 {
-    /**
-     * Get a setting value for the current team.
-     */
+    private function teamId(): ?int
+    {
+        try {
+            $team = app(AppContext::class)->team();
+
+            return $team?->id;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function cacheKey(int $teamId, string $key): string
+    {
+        return "settings.{$teamId}.{$key}";
+    }
+
     public function get(string $key, mixed $default = null): mixed
     {
         $teamId = $this->teamId();
 
-        if (! $teamId) {
+        if ($teamId === null) {
             return $default;
         }
 
-        $setting = TeamSetting::where('team_id', $teamId)
-            ->where('key', $key)
-            ->first();
-
-        return $setting?->value ?? $default;
+        return Cache::remember(
+            $this->cacheKey($teamId, $key),
+            now()->addHour(),
+            fn () => TeamSetting::where('team_id', $teamId)
+                ->where('key', $key)
+                ->value('value') ?? $default,
+        );
     }
 
-    /**
-     * Set a setting value for the current team.
-     */
     public function set(string $key, mixed $value): void
     {
         $teamId = $this->teamId();
 
-        if (! $teamId) {
+        if ($teamId === null) {
             return;
         }
 
         TeamSetting::updateOrCreate(
             ['team_id' => $teamId, 'key' => $key],
-            ['value' => is_array($value) ? json_encode($value) : $value],
+            ['value' => $value],
         );
+
+        Cache::forget($this->cacheKey($teamId, $key));
     }
 
-    /**
-     * Remove a setting for the current team.
-     */
     public function forget(string $key): void
     {
         $teamId = $this->teamId();
 
-        if (! $teamId) {
+        if ($teamId === null) {
             return;
         }
 
-        TeamSetting::where('team_id', $teamId)
-            ->where('key', $key)
-            ->delete();
-    }
-
-    /**
-     * Get all settings for the current team as key-value pairs.
-     */
-    public function all(): array
-    {
-        $teamId = $this->teamId();
-
-        if (! $teamId) {
-            return [];
-        }
-
-        return TeamSetting::where('team_id', $teamId)
-            ->pluck('value', 'key')
-            ->toArray();
-    }
-
-    /**
-     * Get the current team ID.
-     */
-    protected function teamId(): ?int
-    {
-        return Auth::user()?->current_team_id;
+        TeamSetting::where('team_id', $teamId)->where('key', $key)->delete();
+        Cache::forget($this->cacheKey($teamId, $key));
     }
 }

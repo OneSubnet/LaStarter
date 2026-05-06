@@ -295,7 +295,7 @@ export function SidebarRight() {
             </SidebarContent>
 
             {/* Audit log detail dialog */}
-            <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+            <Dialog open={!!selectedLog} onOpenChange={(open: boolean) => !open && setSelectedLog(null)}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">

@@ -8,7 +8,9 @@
     "namespace": "Modules\\Projects",
     "author": "OneSubnet",
     "license": "MIT",
-    "lastarterVersion": "^1.0",
+    "minimum_core_version": "^1.0",
+    "dependencies": [],
+    "provides": ["project-management"],
     "permissions": [
         "project.view",
         "project.create",
@@ -34,5 +36,18 @@
             "options": ["private", "public"],
             "default": "private"
         }
+    ],
+    "widgets": [
+        {
+            "identifier": "projects-summary",
+            "label": "Projects Summary",
+            "type": "stat",
+            "size": { "w": 3, "h": 2 },
+            "permission": "project.view"
+        }
+    ],
+    "metrics": [
+        { "key": "total_projects", "label": "Total Projects", "type": "number" },
+        { "key": "active_projects", "label": "Active Projects", "type": "number" }
     ]
 }

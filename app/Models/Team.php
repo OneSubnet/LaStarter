@@ -84,8 +84,6 @@ class Team extends Model
     }
 
     /**
-     * Get the team extension activations.
-     *
      * @return HasMany<TeamExtension, $this>
      */
     public function teamExtensions(): HasMany
@@ -94,24 +92,11 @@ class Team extends Model
     }
 
     /**
-     * Get the extension settings for this team.
-     *
      * @return HasMany<TeamSetting, $this>
      */
     public function extensionSettings(): HasMany
     {
         return $this->hasMany(TeamSetting::class);
-    }
-
-    /**
-     * Check if an extension is active for this team.
-     */
-    public function hasExtensionActive(string $identifier): bool
-    {
-        return $this->teamExtensions()
-            ->where('is_active', true)
-            ->whereHas('extension', fn ($q) => $q->where('identifier', $identifier))
-            ->exists();
     }
 
     /**

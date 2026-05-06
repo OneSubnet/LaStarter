@@ -1,7 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import DOMPurify from 'dompurify';
-import { Download, ExternalLink, Star } from 'lucide-react';
-import { useState } from 'react';
+import { Download, ExternalLink, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Guard from '@/components/guard';
 import { Badge } from '@/components/ui/badge';
@@ -10,219 +8,115 @@ import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { marketplace as marketplaceUrl } from '@/routes/settings/team';
 import { install as installUrl } from '@/routes/settings/team/marketplace';
 
-type Props = {
-    details: {
-        name: string;
-        full_name: string;
-        description: string | null;
-        html_url: string;
-        stargazers_count: number;
-        topics: string[];
-        license: string | null;
-        default_branch: string;
-        updated_at: string;
-    };
-    readme: string | null;
-    release: {
-        tag_name: string;
-        name: string;
-        body: string | null;
-        published_at: string;
-        zip_url: string | null;
-        html_url: string;
-    } | null;
-    manifest: {
-        name?: string;
-        identifier?: string;
-        description?: string;
-        version?: string;
-        author?: string;
-        type?: string;
-        license?: string;
-        keywords?: string[];
-        lastarterVersion?: string;
-    } | null;
-    installed: boolean;
+type MarketplaceDetail = {
+    identifier: string;
+    name: string;
+    description: string;
+    type: 'module' | 'theme';
+    version: string | null;
+    author: string | null;
+    owner: string;
+    repo: string;
+    github_url: string | null;
+    permissions: string[];
 };
 
-export default function MarketplaceShow({
-    details,
-    readme,
-    release,
-    manifest,
-    installed,
-}: Props) {
+type Props = {
+    extension: MarketplaceDetail;
+};
+
+export default function MarketplaceShow({ extension }: Props) {
     const { t } = useTranslation();
     const { currentTeam } = usePage().props;
     const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
-    const [installing, setInstalling] = useState(false);
-
-    const [owner, repo] = details.full_name.split('/');
-
-    const handleInstall = () => {
-        setInstalling(true);
-        router.post(
-            installUrl(teamSlug).url,
-            { owner, repo },
-            {
-                preserveScroll: true,
-                onFinish: () => setInstalling(false),
-            },
-        );
-    };
 
     return (
         <TeamSettingsLayout
             activeTab="Extensions"
             wide
             breadcrumbs={[
-                {
-                    title: t('settings.marketplace.title'),
-                    href: marketplaceUrl(teamSlug).url,
-                },
-                { title: details.name, href: '#' },
+                { title: t('settings.marketplace.title'), href: marketplaceUrl(teamSlug).url },
+                { title: extension.name, href: '#' },
             ]}
         >
-            <Head title={`Marketplace - ${details.name}`} />
+            <Head title={`${extension.name} - ${t('settings.marketplace.title')}`} />
 
             <div className="space-y-6">
                 <div className="flex items-start justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-2xl font-bold tracking-tight">
-                                {manifest?.name || details.name}
-                            </h2>
-                            {manifest?.type && (
-                                <Badge variant="outline" className="capitalize">
-                                    {manifest.type}
-                                </Badge>
-                            )}
-                            {details.license && (
-                                <Badge variant="secondary">
-                                    {details.license}
-                                </Badge>
-                            )}
+                            <h2 className="text-2xl font-bold tracking-tight">{extension.name}</h2>
+                            <Badge variant="outline" className="capitalize">{extension.type}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            {manifest?.description || details.description}
-                        </p>
-                        {manifest?.author && (
-                            <p className="text-sm text-muted-foreground">
-                                {t('common.by')} {manifest.author}
-                            </p>
-                        )}
+                        <p className="text-sm text-muted-foreground">{extension.description}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {installed ? (
-                            <Badge variant="default">{t('settings.marketplace.installed')}</Badge>
-                        ) : (
-                            <Guard permission="extension.manage">
-                                <Button
-                                    onClick={handleInstall}
-                                    disabled={installing || !release?.zip_url}
-                                >
-                                    <Download className="h-4 w-4" />
-                                    {installing
-                                        ? t('settings.marketplace.installing')
-                                        : t('settings.marketplace.install')}
-                                </Button>
-                            </Guard>
-                        )}
-                        <a
-                            href={details.html_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <Button variant="outline" size="sm">
-                                <ExternalLink className="h-4 w-4" />
-                                {t('settings.marketplace.github')}
+                        <Guard permission="extension.manage">
+                            <Button
+                                onClick={() =>
+                                    router.post(installUrl(teamSlug).url, {
+                                        owner: extension.owner,
+                                        repo: extension.repo,
+                                    })
+                                }
+                            >
+                                <Download className="h-4 w-4" />
+                                {t('settings.marketplace.install')}
                             </Button>
-                        </a>
+                        </Guard>
+                        {extension.github_url && (
+                            <Button variant="outline" asChild>
+                                <a href={extension.github_url} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="h-4 w-4" />
+                                    {t('settings.marketplace.view_on_github')}
+                                </a>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                {/* Metadata */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {manifest?.version && (
-                        <div className="rounded-lg border p-3">
-                            <div className="text-xs text-muted-foreground">
-                                {t('settings.marketplace.version')}
+                <div className="grid gap-4 sm:grid-cols-2">
+                    {extension.version && (
+                        <div className="rounded-lg border p-4">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Tag className="h-4 w-4" />
+                                {t('settings.extensions.version')}
                             </div>
-                            <p className="font-medium">
-                                v{manifest.version}
-                            </p>
+                            <p className="mt-1 font-medium">v{extension.version}</p>
                         </div>
                     )}
-                    {release && (
-                        <div className="rounded-lg border p-3">
-                            <div className="text-xs text-muted-foreground">
-                                {t('settings.marketplace.latest_release')}
+                    {extension.author && (
+                        <div className="rounded-lg border p-4">
+                            <div className="text-sm text-muted-foreground">
+                                {t('settings.extensions.author')}
                             </div>
-                            <p className="font-medium">{release.tag_name}</p>
-                        </div>
-                    )}
-                    <div className="rounded-lg border p-3">
-                        <div className="text-xs text-muted-foreground">
-                            {t('settings.marketplace.stars')}
-                        </div>
-                        <p className="flex items-center gap-1 font-medium">
-                            <Star className="h-4 w-4 text-yellow-500" />
-                            {details.stargazers_count}
-                        </p>
-                    </div>
-                    {manifest?.lastarterVersion && (
-                        <div className="rounded-lg border p-3">
-                            <div className="text-xs text-muted-foreground">
-                                {t('settings.marketplace.requires')}
-                            </div>
-                            <p className="font-medium">
-                                LaStarter {manifest.lastarterVersion}
-                            </p>
+                            <p className="mt-1 font-medium">{extension.author}</p>
                         </div>
                     )}
                 </div>
 
-                {/* Keywords */}
-                {manifest?.keywords && manifest.keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                        {manifest.keywords.map((keyword) => (
-                            <Badge key={keyword} variant="secondary">
-                                {keyword}
-                            </Badge>
-                        ))}
-                    </div>
-                )}
-
-                {/* README */}
-                {readme && (
+                {extension.permissions.length > 0 && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
-                            {t('settings.marketplace.readme')}
+                            {t('settings.extensions.permissions_title')} ({extension.permissions.length})
                         </h3>
-                        <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
-                            <div
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(readme) }}
-                            />
+                        <div className="flex flex-wrap gap-1">
+                            {extension.permissions.map((perm) => (
+                                <code key={perm} className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                                    {perm}
+                                </code>
+                            ))}
                         </div>
                     </div>
                 )}
 
-                {/* Release notes */}
-                {release?.body && (
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                            {t('settings.marketplace.release_notes')}
-                        </h3>
-                        <div className="prose prose-sm max-w-none rounded-lg border p-6 dark:prose-invert">
-                            <div
-                                dangerouslySetInnerHTML={{
-                                    __html: DOMPurify.sanitize(release.body ?? ''),
-                                }}
-                            />
-                        </div>
-                    </div>
-                )}
+                <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                        {t('settings.extensions.identifier')}
+                    </h3>
+                    <code className="rounded bg-muted px-2 py-1 text-sm">{extension.identifier}</code>
+                </div>
             </div>
         </TeamSettingsLayout>
     );

@@ -56,8 +56,8 @@ import { edit as editSecurity } from '@/routes/security';
 import {
     extensions,
     general,
-    marketplace,
     mail,
+    marketplace,
     members,
     roles,
 } from '@/routes/settings/team';

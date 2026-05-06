@@ -6,34 +6,40 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('extensions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->string('identifier')->unique();
-            $table->enum('type', ['module', 'theme']);
-            $table->string('version', 50)->nullable();
+            $table->string('name');
+            $table->enum('type', ['module', 'theme', 'language'])->default('module');
+            $table->string('version')->nullable();
             $table->text('description')->nullable();
-            $table->string('path');
+            $table->string('author')->nullable();
             $table->string('provider_class')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->json('manifest_json')->nullable();
+            $table->string('namespace')->nullable();
+            $table->json('permissions')->nullable();
+            $table->json('navigation')->nullable();
+            $table->json('settings')->nullable();
+            $table->string('path')->nullable();
+            $table->string('state')->nullable();
             $table->timestamps();
+
+            $table->index('type');
+            $table->index('state');
         });
 
         Schema::create('team_extensions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->foreignId('extension_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->boolean('is_active')->default(false);
-            $table->json('settings')->nullable();
+            $table->unique(['extension_id', 'team_id']);
             $table->timestamps();
 
-            $table->unique(['team_id', 'extension_id']);
+            $table->index('team_id');
+            $table->index('extension_id');
+            $table->index(['team_id', 'is_active']);
         });
 
         Schema::create('team_settings', function (Blueprint $table) {
@@ -41,15 +47,12 @@ return new class extends Migration
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->string('key');
             $table->text('value')->nullable();
-            $table->timestamps();
-
             $table->unique(['team_id', 'key']);
+
+            $table->index(['team_id', 'key']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('team_settings');

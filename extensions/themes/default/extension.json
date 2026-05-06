@@ -6,5 +6,9 @@
     "description": "The default LaStarter theme with clean, modern styling.",
     "author": "OneSubnet",
     "license": "MIT",
-    "lastarterVersion": "^1.0"
+    "minimum_core_version": "^1.0",
+    "dependencies": [],
+    "provides": [],
+    "widgets": [],
+    "metrics": []
 }

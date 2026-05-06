@@ -34,6 +34,14 @@ return new class extends Migration
             // Module management
             'module.view',
             'module.update',
+
+            // Extension management
+            'extension.view',
+            'extension.install',
+            'extension.uninstall',
+            'extension.enable',
+            'extension.disable',
+            'extension.update',
         ];
 
         foreach ($permissions as $permission) {
@@ -57,6 +65,8 @@ return new class extends Migration
             'invitation.create', 'invitation.cancel',
             'role.view', 'role.create', 'role.update', 'role.delete',
             'module.view', 'module.update',
+            'extension.view', 'extension.install', 'extension.uninstall',
+            'extension.enable', 'extension.disable', 'extension.update',
         ])->delete();
     }
 };

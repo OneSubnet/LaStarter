@@ -6,6 +6,11 @@ use App\Core\Modules\ModuleServiceProvider;
 
 class ProjectServiceProvider extends ModuleServiceProvider
 {
+    protected function identifier(): string
+    {
+        return 'projects';
+    }
+
     protected function registerModule(): void
     {
         //
@@ -13,18 +18,11 @@ class ProjectServiceProvider extends ModuleServiceProvider
 
     protected function bootModule(): void
     {
-        $this->loadModuleMigrations();
+        //
     }
 
-    protected function modulePath(string $path = ''): string
+    protected function policies(): array
     {
-        $basePath = dirname(__DIR__);
-
-        return $basePath.($path !== '' ? DIRECTORY_SEPARATOR.$path : '');
-    }
-
-    protected function moduleNamespace(): string
-    {
-        return 'Modules\\Projects';
+        return [];
     }
 }

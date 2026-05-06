@@ -9,22 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         // Core tables
-        Schema::table('extensions', function (Blueprint $table) {
-            $table->index('type');
-            $table->index('is_active');
-            $table->index('state');
-        });
-
-        Schema::table('team_extensions', function (Blueprint $table) {
-            $table->index('team_id');
-            $table->index('extension_id');
-            $table->index(['team_id', 'is_active']);
-        });
-
-        Schema::table('team_settings', function (Blueprint $table) {
-            $table->index(['team_id', 'key']);
-        });
-
         Schema::table('team_members', function (Blueprint $table) {
             $table->index('team_id');
             $table->index('user_id');
@@ -67,9 +51,6 @@ return new class extends Migration
     public function down(): void
     {
         $allIndexes = [
-            'extensions' => ['type', 'is_active', 'state'],
-            'team_extensions' => ['team_id', 'extension_id', 'team_id_is_active'],
-            'team_settings' => ['team_id_key'],
             'team_members' => ['team_id', 'user_id', 'status'],
             'team_invitations' => ['team_id', 'email'],
             'projects' => ['team_id', 'status', 'priority'],

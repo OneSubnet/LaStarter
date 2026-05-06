@@ -3,109 +3,106 @@
 namespace App\Core\Navigation;
 
 use App\Core\Extensions\ExtensionManager;
-use App\Models\User;
+use App\Core\Hooks\Hook;
+use Illuminate\Support\Collection;
 
-class NavigationBuilder
+final class NavigationBuilder
 {
     public function __construct(
-        protected ExtensionManager $extensionManager,
+        private readonly ExtensionManager $extensions,
     ) {}
 
     /**
-     * Build navigation items for a sidebar, filtered by permissions and active extensions.
+     * Build sidebar navigation for a team.
      *
-     * @return array<int, array{title: string, href?: string, icon: ?string, order: int, children?: array<int, array{title: string, href: string, icon: ?string, order: int}>}>
+     * @return list<array{group: string, items: list<array{label: string, href: string, icon: ?string, permission: ?string}>>}
      */
-    public function build(string $sidebar, int $teamId, User $user): array
+    public function build(string $sidebar, int $teamId, $user): array
     {
-        $enabledExtensions = $this->extensionManager->enabled($teamId);
-        $teamSlug = $user->currentTeam?->slug ?? (string) $teamId;
+        $groups = new Collection;
 
-        $items = [];
+        // Core navigation
+        $coreItems = $this->coreItems($user);
 
-        foreach ($enabledExtensions as $extension) {
-            $manifest = $extension->manifest();
+        if ($coreItems->isNotEmpty()) {
+            $groups->push(['group' => 'Platform', 'items' => $coreItems->all()]);
+        }
 
-            if (! $manifest) {
+        // Extension navigation
+        $enabledIds = $this->extensions->enabledIdentifiers($teamId);
+
+        foreach ($enabledIds as $identifier) {
+            $manifest = $this->extensions->manifest($identifier);
+
+            if ($manifest === null) {
                 continue;
             }
 
-            $navItems = $manifest->navigation[$sidebar] ?? [];
+            $items = $this->extensionItems($manifest, $user);
 
-            foreach ($navItems as $navItem) {
-                // Handle grouped navigation with children
-                if (isset($navItem['children']) && is_array($navItem['children'])) {
-                    $children = [];
-                    foreach ($navItem['children'] as $child) {
-                        // Filter by permission
-                        if (isset($child['permission']) && ! $user->hasPermissionTo($child['permission'])) {
-                            continue;
-                        }
-
-                        // Resolve route to relative URL
-                        $href = '#';
-                        if (isset($child['route'])) {
-                            try {
-                                $href = route($child['route'], ['current_team' => $teamSlug], false);
-                            } catch (\Exception) {
-                                $href = '#';
-                            }
-                        } elseif (isset($child['url'])) {
-                            $href = $child['url'];
-                        }
-
-                        $children[] = [
-                            'title' => $child['title'] ?? '',
-                            'href' => $href,
-                            'icon' => $child['icon'] ?? null,
-                            'order' => $child['order'] ?? 100,
-                            'group' => $child['group'] ?? null,
-                        ];
-                    }
-
-                    // Only add the group if it has visible children
-                    if (count($children) > 0) {
-                        usort($children, fn (array $a, array $b) => $a['order'] <=> $b['order']);
-
-                        $items[] = [
-                            'title' => $navItem['title'] ?? '',
-                            'icon' => $navItem['icon'] ?? null,
-                            'order' => $navItem['order'] ?? 100,
-                            'children' => $children,
-                        ];
-                    }
-
-                    continue;
-                }
-
-                // Filter by permission
-                if (isset($navItem['permission']) && ! $user->hasPermissionTo($navItem['permission'])) {
-                    continue;
-                }
-
-                // Resolve route to relative URL
-                $href = '#';
-                if (isset($navItem['route'])) {
-                    try {
-                        $href = route($navItem['route'], ['current_team' => $teamSlug], false);
-                    } catch (\Exception) {
-                        $href = '#';
-                    }
-                } elseif (isset($navItem['url'])) {
-                    $href = $navItem['url'];
-                }
-
-                $items[] = [
-                    'title' => $navItem['title'] ?? '',
-                    'href' => $href,
-                    'icon' => $navItem['icon'] ?? null,
-                    'order' => $navItem['order'] ?? 100,
-                ];
+            if ($items->isNotEmpty()) {
+                $groups->push(['group' => $manifest->name, 'items' => $items->all()]);
             }
         }
 
-        // Sort by order
-        usort($items, fn (array $a, array $b) => $a['order'] <=> $b['order']);
+        // Settings at the bottom
+        $settingsItems = $this->settingsItems($user);
+
+        if ($settingsItems->isNotEmpty()) {
+            $groups->push(['group' => 'Settings', 'items' => $settingsItems->all()]);
+        }
+
+        Hook::dispatch(Hook::SIDEBAR_BUILD, $groups);
+
+        return $groups->all();
+    }
+
+    private function coreItems($user): Collection
+    {
+        $items = new Collection;
+
+        $items->push([
+            'label' => 'Dashboard',
+            'href' => '/dashboard',
+            'icon' => 'LayoutDashboard',
+            'permission' => null,
+        ]);
+
+        return $items;
+    }
+
+    private function extensionItems($manifest, $user): Collection
+    {
+        $items = new Collection;
+
+        foreach ($manifest->navigation as $navItem) {
+            $permission = $navItem['permission'] ?? null;
+
+            if ($permission && $user && ! $user->hasPermissionTo($permission)) {
+                continue;
+            }
+
+            $items->push([
+                'label' => $navItem['label'] ?? '',
+                'href' => $navItem['href'] ?? '#',
+                'icon' => $navItem['icon'] ?? null,
+                'permission' => $permission,
+            ]);
+        }
+
+        return $items;
+    }
+
+    private function settingsItems($user): Collection
+    {
+        $items = new Collection;
+
+        $items->push([
+            'label' => 'Settings',
+            'href' => '/settings/general',
+            'icon' => 'Settings',
+            'permission' => 'team.update',
+        ]);
 
         return $items;
     }

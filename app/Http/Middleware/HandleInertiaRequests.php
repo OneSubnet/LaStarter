@@ -4,14 +4,12 @@ namespace App\Http\Middleware;
 
 use App\Core\Context\AppContext;
 use App\Core\Extensions\ExtensionManager;
-use App\Core\Navigation\NavigationBuilder;
-use App\Core\Themes\ComponentResolver;
+use App\Core\Widgets\WidgetRegistry;
 use App\Models\AuditLog;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
-use Modules\AilesInvisibles\Models\Conversation;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -40,7 +38,7 @@ class HandleInertiaRequests extends Middleware
             'navigation' => fn () => $this->buildNavigation($ctx),
             'teamMembers' => fn () => $this->resolveTeamMembers($ctx),
             'auditLogs' => fn () => $this->resolveAuditLogs($ctx),
-            'theme' => fn () => $this->resolveTheme($ctx),
+            'theme' => fn () => null,
             'locale' => $ctx->team()?->locale ?? $user?->locale ?? app()->getLocale(),
             'fallbackLocale' => config('app.fallback_locale'),
             'availableLocales' => config('app.available_locales', ['en', 'fr']),
@@ -48,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => fn () => $this->resolveUnreadNotificationCount($ctx),
             'recentNotifications' => fn () => $this->resolveRecentNotifications($ctx),
             'unreadMessageCount' => fn () => $this->resolveUnreadMessageCount($ctx),
+            'availableWidgets' => fn () => $this->resolveAvailableWidgets($ctx),
         ];
     }
 
@@ -61,12 +60,90 @@ class HandleInertiaRequests extends Middleware
         }
 
         try {
-            return app(NavigationBuilder::class)->build('app', $team->id, $user);
+            $manager = app(ExtensionManager::class);
+            $enabledIds = $manager->enabledIdentifiers($team->id);
+            $navItems = [];
+
+            foreach ($enabledIds as $identifier) {
+                $manifest = $manager->manifest($identifier);
+
+                if ($manifest === null) {
+                    continue;
+                }
+
+                $rawNav = $manifest->navigation['app'] ?? [];
+
+                foreach ($rawNav as $item) {
+                    $navItems[] = $this->resolveNavItem($item, $team, $user);
+                }
+            }
+
+            return array_filter($navItems);
         } catch (\Throwable $e) {
             logger()->error('Failed to build navigation: '.$e->getMessage());
 
             return [];
         }
+    }
+
+    protected function resolveNavItem(array $item, $team, $user): ?array
+    {
+        $permission = $item['permission'] ?? null;
+
+        if ($permission && $user && ! $user->hasPermissionTo($permission)) {
+            return null;
+        }
+
+        $resolved = [
+            'title' => $item['title'] ?? '',
+            'icon' => $item['icon'] ?? null,
+            'order' => $item['order'] ?? 0,
+        ];
+
+        if (isset($item['route'])) {
+            try {
+                $resolved['href'] = route($item['route'], ['current_team' => $team->slug], false);
+            } catch (\Throwable) {
+                $resolved['href'] = $item['href'] ?? '#';
+            }
+        } elseif (isset($item['href'])) {
+            $resolved['href'] = $item['href'];
+        }
+
+        if (isset($item['children']) && is_array($item['children'])) {
+            $children = [];
+
+            foreach ($item['children'] as $child) {
+                $childPermission = $child['permission'] ?? null;
+
+                if ($childPermission && $user && ! $user->hasPermissionTo($childPermission)) {
+                    continue;
+                }
+
+                $childItem = [
+                    'title' => $child['title'] ?? '',
+                    'icon' => $child['icon'] ?? null,
+                    'order' => $child['order'] ?? 0,
+                    'group' => $child['group'] ?? null,
+                ];
+
+                if (isset($child['route'])) {
+                    try {
+                        $childItem['href'] = route($child['route'], ['current_team' => $team->slug], false);
+                    } catch (\Throwable) {
+                        $childItem['href'] = $child['href'] ?? '#';
+                    }
+                } elseif (isset($child['href'])) {
+                    $childItem['href'] = $child['href'];
+                }
+
+                $children[] = $childItem;
+            }
+
+            $resolved['children'] = $children;
+        }
+
+        return $resolved;
     }
 
     protected function resolveTeamMembers(AppContext $ctx): array
@@ -124,35 +201,6 @@ class HandleInertiaRequests extends Middleware
             ->all();
     }
 
-    protected function resolveTheme(AppContext $ctx): ?string
-    {
-        $team = $ctx->team();
-
-        if (! $team) {
-            return null;
-        }
-
-        try {
-            $identifier = app(ComponentResolver::class)->activeTheme($team->id);
-
-            if (! $identifier) {
-                return null;
-            }
-
-            $manager = app(ExtensionManager::class);
-
-            if (! $manager->isEnabled($identifier, $team->id)) {
-                return null;
-            }
-
-            return $identifier;
-        } catch (\Throwable $e) {
-            logger()->error('Failed to resolve theme: '.$e->getMessage());
-
-            return null;
-        }
-    }
-
     protected function resolveFooterLinks(AppContext $ctx): array
     {
         $team = $ctx->team();
@@ -194,14 +242,14 @@ class HandleInertiaRequests extends Middleware
             return 0;
         }
 
-        if (! class_exists(Conversation::class)) {
+        $class = 'Modules\\AilesInvisibles\\Models\\Conversation';
+
+        if (! class_exists($class)) {
             return 0;
         }
 
         try {
-            $conversationClass = Conversation::class;
-
-            return $conversationClass::notArchived()
+            return $class::notArchived()
                 ->whereHas('participants', fn ($q) => $q->where('participant_type', get_class($user))->where('participant_id', $user->id))
                 ->withCount(['messages as unread_count' => fn ($q) => $q
                     ->where(fn ($q2) => $q2->where('sender_type', '!=', get_class($user))->orWhere(fn ($q3) => $q3->where('sender_type', get_class($user))->where('sender_id', '!=', $user->id)))
@@ -235,5 +283,21 @@ class HandleInertiaRequests extends Middleware
                 'created_at' => $n->created_at->toISOString(),
             ])
             ->all();
+    }
+
+    protected function resolveAvailableWidgets(AppContext $ctx): array
+    {
+        $user = $ctx->user();
+        $team = $ctx->team();
+
+        if (! $user || ! $team) {
+            return [];
+        }
+
+        try {
+            return app(WidgetRegistry::class)->forTeam($team->id, $user);
+        } catch (\Throwable) {
+            return [];
+        }
     }
 }

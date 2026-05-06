@@ -414,7 +414,7 @@
         "permissions_summary_title": "Permissions summary",
         "permissions_summary_message": "This role has all permissions and cannot be modified.",
         "permissions_title": "Permissions",
-        "permissions_count": "Permissions",
+        "permissions_count": "{{count}} permissions",
         "members_title": "Members",
         "badge_system": "System",
         "badge_custom": "Custom"
@@ -507,10 +507,18 @@
       "type_module": "module",
       "type_theme": "theme",
       "status_active": "Active",
+      "status_enabled": "Enabled",
       "status_disabled": "Disabled",
+      "status_installed": "Installed",
       "status_not_installed": "Not Installed",
       "status_error": "Error",
       "status_incompatible": "Incompatible",
+      "status_label": "Status",
+      "check_updates": "Check for Updates",
+      "update": "Update",
+      "update_available": "Update available: v{{version}}",
+      "has_routes": "Has routes",
+      "has_migrations": "Has migrations",
       "error_message": "Error",
       "error_description": "{{message}}",
       "requires_version": "LaStarter {{version}}",
@@ -548,6 +556,8 @@
       "installed": "Installed",
       "install": "Install",
       "installing": "Installing...",
+      "search": "Search extensions...",
+      "view_on_github": "View on GitHub",
       "github": "GitHub",
       "version": "Version",
       "latest_release": "Latest Release",
@@ -1374,5 +1384,17 @@
     "hours_ago": "{{count}}h ago",
     "days_ago": "{{count}}d ago",
     "view_all": "View all notifications"
+  },
+  "form": {
+    "unsaved_changes": "You have unsaved changes. Save now!",
+    "saved": "Changes saved successfully",
+    "saving_failed": "Failed to save changes"
+  },
+  "pagination": {
+    "first": "First page",
+    "previous": "Previous",
+    "next": "Next",
+    "last": "Last page",
+    "page_of": "Page {{page}} of {{total}}"
   }
 }
