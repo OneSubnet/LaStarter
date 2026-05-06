@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import type { SharedData } from '@/types';
 
 interface GuardProps {
     permission: string | string[];
@@ -7,8 +8,12 @@ interface GuardProps {
     children: ReactNode;
 }
 
-export default function Guard({ permission, fallback = null, children }: GuardProps) {
-    const permissions = usePage().props.auth?.permissions as string[] | undefined;
+export default function Guard({
+    permission,
+    fallback = null,
+    children,
+}: GuardProps) {
+    const permissions = usePage<SharedData>().props.auth?.permissions;
 
     if (!permissions) {
         return <>{fallback}</>;

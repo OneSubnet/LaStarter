@@ -20,9 +20,7 @@ export default function AccountLayout({
                     title={t('layouts.account.title')}
                     description={t('layouts.account.description')}
                 />
-                <div className="mt-6 max-w-xl space-y-12">
-                    {children}
-                </div>
+                <div className="mt-6 max-w-xl space-y-12">{children}</div>
             </div>
         </AppSidebarLayout>
     );

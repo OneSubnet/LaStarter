@@ -48,15 +48,23 @@ export default function ForgotPassword({ status }: { status?: string }) {
                             <Input
                                 type="email"
                                 value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
                                 onBlur={field.handleBlur}
                                 autoComplete="off"
                                 autoFocus
-                                placeholder={t('auth.forgot_password.email_placeholder')}
+                                placeholder={t(
+                                    'auth.forgot_password.email_placeholder',
+                                )}
                                 className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"
                             />
                             <InputError
-                                message={field.state.meta.errors?.[0] as string | undefined}
+                                message={
+                                    field.state.meta.errors?.[0] as
+                                        | string
+                                        | undefined
+                                }
                             />
                         </div>
                     )}
@@ -68,13 +76,17 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     disabled={!form.state.canSubmit || form.state.isSubmitting}
                     data-test="email-password-reset-link-button"
                 >
-                    {form.state.isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                    {form.state.isSubmitting && (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                    )}
                     {t('auth.forgot_password.submit')}
                 </Button>
             </form>
 
             <p className="w-full text-center text-sm tracking-tight text-foreground/40">
-                <TextLink href={login()}>{t('auth.forgot_password.login_link')}</TextLink>
+                <TextLink href={login()}>
+                    {t('auth.forgot_password.login_link')}
+                </TextLink>
             </p>
         </AuthLayout>
     );

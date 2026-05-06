@@ -6,6 +6,7 @@ export type Team = {
     role?: string;
     roleLabel?: string;
     isCurrent?: boolean;
+    iconUrl?: string;
 };
 
 export type TeamMember = {

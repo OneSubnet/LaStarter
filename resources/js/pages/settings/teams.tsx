@@ -14,7 +14,7 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { general } from '@/routes/settings/team';
 import { index } from '@/routes/settings/teams';
-import type { Team } from '@/types';
+import type { Team, SharedData } from '@/types';
 
 type Props = {
     teams: Team[];
@@ -22,7 +22,7 @@ type Props = {
 
 export default function TeamsIndex({ teams }: Props) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
+    const { currentTeam } = usePage<SharedData>().props;
     const teamSlug = currentTeam?.slug ?? '';
 
     return (
@@ -89,16 +89,21 @@ export default function TeamsIndex({ teams }: Props) {
                                                     asChild
                                                 >
                                                     <Link
-                                                        href={general(
-                                                            team.slug,
-                                                        ).url}
+                                                        href={
+                                                            general(team.slug)
+                                                                .url
+                                                        }
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>{t('settings.teams.view_tooltip')}</p>
+                                                <p>
+                                                    {t(
+                                                        'settings.teams.view_tooltip',
+                                                    )}
+                                                </p>
                                             </TooltipContent>
                                         </Tooltip>
                                     ) : (
@@ -111,16 +116,21 @@ export default function TeamsIndex({ teams }: Props) {
                                                     asChild
                                                 >
                                                     <Link
-                                                        href={general(
-                                                            team.slug,
-                                                        ).url}
+                                                        href={
+                                                            general(team.slug)
+                                                                .url
+                                                        }
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
-                                                <p>{t('settings.teams.edit_tooltip')}</p>
+                                                <p>
+                                                    {t(
+                                                        'settings.teams.edit_tooltip',
+                                                    )}
+                                                </p>
                                             </TooltipContent>
                                         </Tooltip>
                                     )}

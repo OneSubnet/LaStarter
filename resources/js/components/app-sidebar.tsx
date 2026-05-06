@@ -23,6 +23,7 @@ import {
     Shield,
     ShieldCheck,
     Store,
+    Server,
     Users,
     Megaphone,
 } from 'lucide-react';
@@ -32,7 +33,11 @@ import { useTranslation } from 'react-i18next';
 import { NavUser } from '@/components/nav-user';
 import { TeamSwitcher } from '@/components/team-switcher';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Sidebar,
     SidebarContent,
@@ -50,7 +55,11 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
-import { index as notificationsIndex, read as readNotification, readAll as readAllNotifications } from '@/routes/notifications';
+import {
+    index as notificationsIndex,
+    read as readNotification,
+    readAll as readAllNotifications,
+} from '@/routes/notifications';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import {
@@ -61,6 +70,7 @@ import {
     members,
     roles,
 } from '@/routes/settings/team';
+import type { SharedData } from '@/types';
 
 // ── Types ──────────────────────────────────────────────
 
@@ -129,33 +139,26 @@ const iconMap: Record<string, LucideIcon> = {
 
 // ── Helpers ────────────────────────────────────────────
 
-type SidebarNotification = {
-    id: number;
-    title: string;
-    body: string | null;
-    data: Record<string, unknown> | null;
-    read_at: string | null;
-    created_at: string;
-};
-
 function timeAgo(dateStr: string): string {
-    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    const seconds = Math.floor(
+        (Date.now() - new Date(dateStr).getTime()) / 1000,
+    );
 
     if (seconds < 60) {
-return 'now';
-}
+        return 'now';
+    }
 
     const minutes = Math.floor(seconds / 60);
 
     if (minutes < 60) {
-return `${minutes}m`;
-}
+        return `${minutes}m`;
+    }
 
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-return `${hours}h`;
-}
+        return `${hours}h`;
+    }
 
     const days = Math.floor(hours / 24);
 
@@ -164,26 +167,38 @@ return `${hours}h`;
 
 function NotificationBell({ teamSlug }: { teamSlug: string }) {
     const { t } = useTranslation();
-    const page = usePage();
-    const unreadCount = (page.props.unreadNotifications as number) ?? 0;
-    const notifications = (page.props.recentNotifications as SidebarNotification[]) ?? [];
+    const page = usePage<SharedData>();
+    const unreadCount = page.props.unreadNotifications;
+    const notifications = page.props.recentNotifications;
     const [open, setOpen] = useState(false);
 
-    const markRead = (id: number) => {
-        router.post(readNotification.url({ current_team: teamSlug, id }), {}, { preserveScroll: true });
+    const markRead = (id: string) => {
+        router.post(
+            readNotification.url({ current_team: teamSlug, id }),
+            {},
+            { preserveScroll: true },
+        );
     };
 
     const markAllRead = () => {
-        router.post(readAllNotifications.url({ current_team: teamSlug }), {}, { preserveScroll: true });
+        router.post(
+            readAllNotifications.url({ current_team: teamSlug }),
+            {},
+            { preserveScroll: true },
+        );
     };
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-8 w-8 shrink-0">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-8 w-8 shrink-0"
+                >
                     <Bell className="size-4" />
                     {unreadCount > 0 && (
-                        <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                        <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
                             {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                     )}
@@ -191,9 +206,16 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0">
                 <div className="flex items-center justify-between border-b px-4 py-3">
-                    <p className="text-sm font-semibold">{t('notifications.title')}</p>
+                    <p className="text-sm font-semibold">
+                        {t('notifications.title')}
+                    </p>
                     {unreadCount > 0 && (
-                        <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={markAllRead}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 px-2 text-xs"
+                            onClick={markAllRead}
+                        >
                             <Check className="size-3" />
                             {t('notifications.mark_all_read')}
                         </Button>
@@ -203,7 +225,9 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                     {notifications.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                             <Bell className="mb-2 size-8 opacity-40" />
-                            <p className="text-sm">{t('notifications.empty')}</p>
+                            <p className="text-sm">
+                                {t('notifications.empty')}
+                            </p>
                         </div>
                     ) : (
                         notifications.map((n) => (
@@ -216,10 +240,12 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                                 )}
                                 onClick={() => {
                                     if (!n.read_at) {
-markRead(n.id);
-}
+                                        markRead(n.id);
+                                    }
 
-                                    const url = n.data?.url as string | undefined;
+                                    const url = n.data?.url as
+                                        | string
+                                        | undefined;
 
                                     if (url) {
                                         setOpen(false);
@@ -228,18 +254,30 @@ markRead(n.id);
                                 }}
                             >
                                 <div className="flex items-start justify-between gap-2">
-                                    <p className="text-sm font-medium leading-tight">{n.title}</p>
-                                    <span className="shrink-0 text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</span>
+                                    <p className="text-sm leading-tight font-medium">
+                                        {n.title}
+                                    </p>
+                                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                                        {timeAgo(n.created_at ?? '')}
+                                    </span>
                                 </div>
                                 {n.body && (
-                                    <p className="line-clamp-1 text-xs text-muted-foreground">{n.body}</p>
+                                    <p className="line-clamp-1 text-xs text-muted-foreground">
+                                        {n.body}
+                                    </p>
                                 )}
                             </button>
                         ))
                     )}
                 </div>
                 <div className="border-t px-4 py-2">
-                    <Button variant="ghost" size="sm" className="w-full text-xs" asChild onClick={() => setOpen(false)}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-xs"
+                        asChild
+                        onClick={() => setOpen(false)}
+                    >
                         <Link href={notificationsIndex(teamSlug).url}>
                             {t('notifications.view_all')}
                         </Link>
@@ -251,15 +289,18 @@ markRead(n.id);
 }
 
 function urlMatches(currentUrl: string, patterns: string[]): boolean {
-    return patterns.some((pattern) => currentUrl === pattern || currentUrl.startsWith(pattern + '/'));
+    return patterns.some(
+        (pattern) =>
+            currentUrl === pattern || currentUrl.startsWith(pattern + '/'),
+    );
 }
 
 // ── Module Panel (expanded panel content) ──────────────
 
 function ModulePanel({ module }: { module: NavModule }) {
     const { isCurrentUrl } = useCurrentUrl();
-    const page = usePage();
-    const unreadMessageCount = (page.props.unreadMessageCount as number) ?? 0;
+    const page = usePage<SharedData>();
+    const unreadMessageCount = page.props.unreadMessageCount;
 
     return (
         <div className="space-y-4 px-4 py-3 text-sm">
@@ -273,8 +314,13 @@ function ModulePanel({ module }: { module: NavModule }) {
                     <SidebarMenu>
                         {section.items.map((item) => {
                             const Icon = item.icon;
-                            const isMessaging = item.href.includes('/ai/conversations/inbox');
-                            const badge = isMessaging && unreadMessageCount > 0 ? unreadMessageCount : null;
+                            const isMessaging = item.href.includes(
+                                '/ai/conversations/inbox',
+                            );
+                            const badge =
+                                isMessaging && unreadMessageCount > 0
+                                    ? unreadMessageCount
+                                    : null;
 
                             return (
                                 <SidebarMenuItem
@@ -310,16 +356,16 @@ function ModulePanel({ module }: { module: NavModule }) {
 
 export function AppSidebar() {
     const { t } = useTranslation();
-    const page = usePage();
+    const page = usePage<SharedData>();
     const { setOpen, isMobile } = useSidebar();
 
-    const teamSlug = (page.props.currentTeam as { slug: string } | null)?.slug ?? '';
-    const permissions = (page.props.auth?.permissions as string[]) ?? [];
-    const can = (perm: string | undefined) => !perm || permissions.includes(perm);
+    const teamSlug = page.props.currentTeam?.slug ?? '';
+    const permissions = page.props.auth?.permissions ?? [];
+    const can = (perm: string | undefined) =>
+        !perm || permissions.includes(perm);
 
-    const extensionNav = (
-        (page.props.navigation as ExtensionNavItem[] | undefined) ?? []
-    );
+    const extensionNav =
+        (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
 
     const currentUrl = page.url;
 
@@ -333,23 +379,33 @@ export function AppSidebar() {
             label: t('common.dashboard'),
             icon: LayoutGrid,
             urlPatterns: [dashUrl],
-            sections: [{
-                title: t('components.app_sidebar.overview'),
-                items: [{
-                    label: t('common.dashboard'),
-                    icon: LayoutGrid,
-                    href: dashUrl,
-                }],
-            }],
+            sections: [
+                {
+                    title: t('components.app_sidebar.overview'),
+                    items: [
+                        {
+                            label: t('common.dashboard'),
+                            icon: LayoutGrid,
+                            href: dashUrl,
+                        },
+                    ],
+                },
+            ],
         });
 
         // Extension modules — each grouped extension gets its own rail entry
-        const flatExtItems: { title: string; href: string; icon: string | null }[] = [];
+        const flatExtItems: {
+            title: string;
+            href: string;
+            icon: string | null;
+        }[] = [];
 
         for (const ext of extensionNav) {
             if (ext.children && ext.children.length > 0) {
                 // Each grouped extension becomes its own module in the icon rail
-                const extIcon = ext.icon ? iconMap[ext.icon] ?? Puzzle : Puzzle;
+                const extIcon = ext.icon
+                    ? (iconMap[ext.icon] ?? Puzzle)
+                    : Puzzle;
 
                 // Group children by their `group` field
                 const groupMap = new Map<string, typeof ext.children>();
@@ -358,8 +414,8 @@ export function AppSidebar() {
                     const key = child.group ?? '';
 
                     if (!groupMap.has(key)) {
-groupMap.set(key, []);
-}
+                        groupMap.set(key, []);
+                    }
 
                     groupMap.get(key)!.push(child);
                 }
@@ -377,10 +433,14 @@ groupMap.set(key, []);
 
                 for (const [groupKey, children] of groupMap) {
                     sections.push({
-                        title: groupKey ? (groupLabelMap[groupKey] ?? groupKey) : undefined,
+                        title: groupKey
+                            ? (groupLabelMap[groupKey] ?? groupKey)
+                            : undefined,
                         items: children.map((child) => ({
                             label: child.title,
-                            icon: child.icon ? iconMap[child.icon] ?? Puzzle : Puzzle,
+                            icon: child.icon
+                                ? (iconMap[child.icon] ?? Puzzle)
+                                : Puzzle,
                             href: child.href,
                         })),
                     });
@@ -395,30 +455,60 @@ groupMap.set(key, []);
                 });
                 flatExtItems.push(...ext.children);
             } else if (ext.href) {
-                flatExtItems.push({ title: ext.title, href: ext.href, icon: ext.icon });
+                flatExtItems.push({
+                    title: ext.title,
+                    href: ext.href,
+                    icon: ext.icon,
+                });
             }
         }
 
         // Generic Extensions module — flat nav items + management (Modules, Themes, Marketplace)
         const extSections: NavSection[] = flatExtItems
-            .filter((item) => !extensionNav.some((ext) => ext.children?.some((c) => c.href === item.href)))
+            .filter(
+                (item) =>
+                    !extensionNav.some((ext) =>
+                        ext.children?.some((c) => c.href === item.href),
+                    ),
+            )
             .map((item) => ({
-                items: [{
-                    label: item.title,
-                    icon: item.icon ? iconMap[item.icon] ?? Puzzle : Puzzle,
-                    href: item.href,
-                }],
+                items: [
+                    {
+                        label: item.title,
+                        icon: item.icon
+                            ? (iconMap[item.icon] ?? Puzzle)
+                            : Puzzle,
+                        href: item.href,
+                    },
+                ],
             }));
 
         const manageItems: NavItem[] = [
-            { label: t('common.extensions_and_themes'), icon: Puzzle, href: extensions(teamSlug).url, permission: 'extension.view' },
-            { label: t('common.marketplace'), icon: Store, href: marketplace(teamSlug).url, permission: 'extension.view' },
+            {
+                label: t('common.extensions_and_themes'),
+                icon: Puzzle,
+                href: extensions(teamSlug).url,
+                permission: 'extension.view',
+            },
+            {
+                label: t('common.marketplace'),
+                icon: Store,
+                href: marketplace(teamSlug).url,
+                permission: 'extension.view',
+            },
         ].filter((item) => can(item.permission));
 
         if (extSections.length > 0 || manageItems.length > 0) {
             const sections: NavSection[] = [
                 ...extSections,
-                ...(manageItems.length > 0 ? [{ title: t('components.app_sidebar.manage'), items: manageItems }] : []),
+                ...(manageItems.length > 0
+                    ? [
+                          {
+                              title: t('components.app_sidebar.manage'),
+                              items: manageItems,
+                          },
+                      ]
+                    : []),
             ];
 
             result.push({
@@ -429,7 +519,14 @@ groupMap.set(key, []);
                     extensions(teamSlug).url,
                     marketplace(teamSlug).url,
                     ...flatExtItems
-                        .filter((item) => !extensionNav.some((ext) => ext.children?.some((c) => c.href === item.href)))
+                        .filter(
+                            (item) =>
+                                !extensionNav.some((ext) =>
+                                    ext.children?.some(
+                                        (c) => c.href === item.href,
+                                    ),
+                                ),
+                        )
                         .map((ext) => ext.href),
                 ],
                 sections,
@@ -438,16 +535,53 @@ groupMap.set(key, []);
 
         // Settings
         const settingsItems: NavItem[] = [
-            { label: t('common.general'), icon: Settings, href: general(teamSlug).url },
-            { label: t('common.members'), icon: Users, href: members(teamSlug).url, permission: 'member.view' },
-            { label: t('common.roles'), icon: ShieldCheck, href: roles(teamSlug).url, permission: 'role.view' },
-            { label: t('common.mail'), icon: Mail, href: mail(teamSlug).url, permission: 'team.update' },
+            {
+                label: t('common.general'),
+                icon: Settings,
+                href: general(teamSlug).url,
+            },
+            {
+                label: t('common.members'),
+                icon: Users,
+                href: members(teamSlug).url,
+                permission: 'member.view',
+            },
+            {
+                label: t('common.roles'),
+                icon: ShieldCheck,
+                href: roles(teamSlug).url,
+                permission: 'role.view',
+            },
+            {
+                label: t('common.mail'),
+                icon: Mail,
+                href: mail(teamSlug).url,
+                permission: 'team.update',
+            },
+            {
+                label: t('common.system'),
+                icon: Server,
+                href: `/${teamSlug}/settings/system`,
+                permission: 'system.update',
+            },
         ].filter((item) => can(item.permission));
 
         const accountItems: NavItem[] = [
-            { label: t('common.profile'), icon: Users, href: editProfile().url },
-            { label: t('common.security'), icon: Shield, href: editSecurity().url },
-            { label: t('common.appearance'), icon: Palette, href: editAppearance().url },
+            {
+                label: t('common.profile'),
+                icon: Users,
+                href: editProfile().url,
+            },
+            {
+                label: t('common.security'),
+                icon: Shield,
+                href: editSecurity().url,
+            },
+            {
+                label: t('common.appearance'),
+                icon: Palette,
+                href: editAppearance().url,
+            },
         ];
 
         result.push({
@@ -459,13 +593,16 @@ groupMap.set(key, []);
                 members(teamSlug).url,
                 roles(teamSlug).url,
                 mail(teamSlug).url,
+                `/${teamSlug}/settings/system`,
                 editProfile().url,
                 editSecurity().url,
                 editAppearance().url,
                 '/settings',
             ],
             sections: [
-                ...(settingsItems.length > 0 ? [{ title: t('common.team'), items: settingsItems }] : []),
+                ...(settingsItems.length > 0
+                    ? [{ title: t('common.team'), items: settingsItems }]
+                    : []),
                 { title: t('common.account'), items: accountItems },
             ],
         });
@@ -484,7 +621,10 @@ groupMap.set(key, []);
         for (const mod of modules) {
             for (const section of mod.sections) {
                 for (const item of section.items) {
-                    if (currentUrl === item.href || currentUrl.startsWith(item.href + '/')) {
+                    if (
+                        currentUrl === item.href ||
+                        currentUrl.startsWith(item.href + '/')
+                    ) {
                         return mod.id;
                     }
                 }
@@ -494,13 +634,19 @@ groupMap.set(key, []);
         return null;
     }, [currentUrl, modules]);
 
-    const [manualOverride, setManualOverride] = useState<{ url: string; key: string } | null>(null);
+    const [manualOverride, setManualOverride] = useState<{
+        url: string;
+        key: string;
+    } | null>(null);
 
-    const setManualKey = (key: string) => setManualOverride({ url: currentUrl, key });
+    const setManualKey = (key: string) =>
+        setManualOverride({ url: currentUrl, key });
 
-    const effectiveManualKey = manualOverride?.url === currentUrl ? manualOverride.key : null;
+    const effectiveManualKey =
+        manualOverride?.url === currentUrl ? manualOverride.key : null;
 
-    const activeKey = effectiveManualKey ?? urlActiveKey ?? modules[0]?.id ?? 'dashboard';
+    const activeKey =
+        effectiveManualKey ?? urlActiveKey ?? modules[0]?.id ?? 'dashboard';
 
     const activeModule = modules.find((m) => m.id === activeKey) ?? modules[0];
 
@@ -532,7 +678,9 @@ groupMap.set(key, []);
                                                     setManualKey(module.id);
                                                     setOpen(true);
                                                 }}
-                                                isActive={activeKey === module.id}
+                                                isActive={
+                                                    activeKey === module.id
+                                                }
                                                 aria-label={module.label}
                                                 className="px-2.5 md:px-2"
                                             >
@@ -560,7 +708,9 @@ groupMap.set(key, []);
                 <SidebarContent className="overflow-hidden">
                     <SidebarGroup className="px-0">
                         <SidebarGroupContent>
-                            {activeModule && <ModulePanel module={activeModule} />}
+                            {activeModule && (
+                                <ModulePanel module={activeModule} />
+                            )}
                         </SidebarGroupContent>
                     </SidebarGroup>
                 </SidebarContent>
@@ -568,8 +718,15 @@ groupMap.set(key, []);
                 <SidebarFooter>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild className="px-2 text-muted-foreground hover:text-foreground">
-                                <a href="https://discord.gg/KrVEWA9X" target="_blank" rel="noopener noreferrer">
+                            <SidebarMenuButton
+                                asChild
+                                className="px-2 text-muted-foreground hover:text-foreground"
+                            >
+                                <a
+                                    href="https://discord.gg/KrVEWA9X"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     <Megaphone className="size-4" />
                                     <span>{t('common.feedback')}</span>
                                 </a>
@@ -577,6 +734,9 @@ groupMap.set(key, []);
                         </SidebarMenuItem>
                     </SidebarMenu>
                     <NavUser />
+                    <div className="flex items-center justify-center py-1.5 text-[10px] text-muted-foreground/60">
+                        v{usePage<SharedData>().props.coreVersion}
+                    </div>
                 </SidebarFooter>
             </Sidebar>
         </Sidebar>

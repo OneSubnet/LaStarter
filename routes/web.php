@@ -7,6 +7,7 @@ use App\Http\Controllers\Settings\ExtensionController;
 use App\Http\Controllers\Settings\MarketplaceController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\SystemUpdateController;
 use App\Http\Controllers\Settings\TeamMailController;
 use App\Http\Controllers\Settings\TeamMembersController;
 use App\Http\Controllers\Settings\TeamRolesController;
@@ -120,6 +121,13 @@ Route::prefix('{current_team}')
             Route::get('mail', [TeamMailController::class, 'edit'])->name('settings.team.mail');
             Route::patch('mail', [TeamMailController::class, 'update'])->name('settings.team.mail.update');
             Route::post('mail/test', [TeamMailController::class, 'test'])->name('settings.team.mail.test');
+
+            // System
+            Route::get('system', [SystemUpdateController::class, 'index'])->name('settings.team.system');
+            Route::post('system/check-core', [SystemUpdateController::class, 'checkCore'])->name('settings.team.system.check-core');
+            Route::post('system/update-core', [SystemUpdateController::class, 'updateCore'])->name('settings.team.system.update-core');
+            Route::post('system/check-extensions', [SystemUpdateController::class, 'checkExtensions'])->name('settings.team.system.check-extensions');
+            Route::post('system/update-extension', [SystemUpdateController::class, 'updateExtension'])->name('settings.team.system.update-extension');
         });
     });
 

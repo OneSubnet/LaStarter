@@ -150,7 +150,9 @@ function TwoFactorVerificationStep({
     const { t } = useTranslation();
     const [code, setCode] = useState<string>('');
     const [processing, setProcessing] = useState(false);
-    const [errors, setErrors] = useState<{ confirmTwoFactorAuthentication?: { code?: string } } | undefined>(undefined);
+    const [errors, setErrors] = useState<
+        { confirmTwoFactorAuthentication?: { code?: string } } | undefined
+    >(undefined);
     const pinInputContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -165,17 +167,25 @@ function TwoFactorVerificationStep({
         e.preventDefault();
         setProcessing(true);
         setErrors(undefined);
-        router.post(confirm().url, { code }, {
-            onSuccess: () => {
-                setProcessing(false);
-                setCode('');
-                onClose();
+        router.post(
+            confirm().url,
+            { code },
+            {
+                onSuccess: () => {
+                    setProcessing(false);
+                    setCode('');
+                    onClose();
+                },
+                onError: (serverErrors) => {
+                    setProcessing(false);
+                    setErrors(
+                        serverErrors as {
+                            confirmTwoFactorAuthentication?: { code?: string };
+                        },
+                    );
+                },
             },
-            onError: (serverErrors) => {
-                setProcessing(false);
-                setErrors(serverErrors as { confirmTwoFactorAuthentication?: { code?: string } });
-            },
-        });
+        );
     };
 
     return (
@@ -197,18 +207,13 @@ function TwoFactorVerificationStep({
                             {Array.from(
                                 { length: OTP_MAX_LENGTH },
                                 (_, index) => (
-                                    <InputOTPSlot
-                                        key={index}
-                                        index={index}
-                                    />
+                                    <InputOTPSlot key={index} index={index} />
                                 ),
                             )}
                         </InputOTPGroup>
                     </InputOTP>
                     <InputError
-                        message={
-                            errors?.confirmTwoFactorAuthentication?.code
-                        }
+                        message={errors?.confirmTwoFactorAuthentication?.code}
                     />
                 </div>
 
@@ -225,9 +230,7 @@ function TwoFactorVerificationStep({
                     <Button
                         type="submit"
                         className="flex-1"
-                        disabled={
-                            processing || code.length < OTP_MAX_LENGTH
-                        }
+                        disabled={processing || code.length < OTP_MAX_LENGTH}
                     >
                         {t('common.confirm')}
                     </Button>
@@ -272,8 +275,9 @@ export default function TwoFactorSetupModal({
         if (twoFactorEnabled) {
             return {
                 title: t('components.two_factor_setup.enabled_title'),
-                description:
-                    t('components.two_factor_setup.enabled_description'),
+                description: t(
+                    'components.two_factor_setup.enabled_description',
+                ),
                 buttonText: t('common.close'),
             };
         }
@@ -281,16 +285,16 @@ export default function TwoFactorSetupModal({
         if (showVerificationStep) {
             return {
                 title: t('components.two_factor_setup.verify_title'),
-                description:
-                    t('components.two_factor_setup.verify_description'),
+                description: t(
+                    'components.two_factor_setup.verify_description',
+                ),
                 buttonText: t('common.continue'),
             };
         }
 
         return {
             title: t('components.two_factor_setup.enable_title'),
-            description:
-                t('components.two_factor_setup.enable_description'),
+            description: t('components.two_factor_setup.enable_description'),
             buttonText: t('common.continue'),
         };
     }, [twoFactorEnabled, showVerificationStep, t]);
@@ -328,7 +332,10 @@ export default function TwoFactorSetupModal({
     }, [isOpen, qrCodeSvg]);
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && handleClose()}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open: boolean) => !open && handleClose()}
+        >
             <DialogContent className="sm:max-w-md">
                 <DialogHeader className="flex items-center justify-center">
                     <GridScanIcon />

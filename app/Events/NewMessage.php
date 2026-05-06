@@ -8,45 +8,20 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewMessage implements ShouldBroadcastNow
+final class NewMessage implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public int $conversationId;
-
-    public int $messageId;
-
-    public string $senderType;
-
-    public int $senderId;
-
-    public string $senderName;
-
-    public string $content;
-
-    public string $type;
-
-    public string $createdAt;
-
     public function __construct(
-        int $conversationId,
-        int $messageId,
-        string $senderType,
-        int $senderId,
-        string $senderName,
-        string $content,
-        string $type,
-        string $createdAt,
-    ) {
-        $this->conversationId = $conversationId;
-        $this->messageId = $messageId;
-        $this->senderType = $senderType;
-        $this->senderId = $senderId;
-        $this->senderName = $senderName;
-        $this->content = $content;
-        $this->type = $type;
-        $this->createdAt = $createdAt;
-    }
+        public int $conversationId,
+        public int $messageId,
+        public string $senderType,
+        public int $senderId,
+        public string $senderName,
+        public string $content,
+        public string $type,
+        public string $createdAt,
+    ) {}
 
     public function broadcastOn(): array
     {

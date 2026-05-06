@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { dashboard, login, register } from '@/routes';
+import type { SharedData } from '@/types';
 
 export default function Welcome({
     canRegister = true,
@@ -8,7 +9,7 @@ export default function Welcome({
     canRegister?: boolean;
 }) {
     const { t } = useTranslation();
-    const { auth, currentTeam } = usePage().props;
+    const { auth, currentTeam } = usePage<SharedData>().props;
     const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
 
     return (
@@ -73,7 +74,9 @@ export default function Welcome({
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-primary underline underline-offset-4"
                                         >
-                                            <span>{t('welcome.documentation')}</span>
+                                            <span>
+                                                {t('welcome.documentation')}
+                                            </span>
                                             <svg
                                                 width={10}
                                                 height={11}
@@ -104,7 +107,9 @@ export default function Welcome({
                                             target="_blank"
                                             className="ml-1 inline-flex items-center space-x-1 font-medium text-primary underline underline-offset-4"
                                         >
-                                            <span>{t('welcome.laracasts')}</span>
+                                            <span>
+                                                {t('welcome.laracasts')}
+                                            </span>
                                             <svg
                                                 width={10}
                                                 height={11}

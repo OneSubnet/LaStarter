@@ -19,19 +19,28 @@ interface Props {
     values: Record<string, string | number | boolean>;
 }
 
-export default function ExtensionSettingsForm({ extensionIdentifier, settings, values }: Props) {
+export default function ExtensionSettingsForm({
+    extensionIdentifier,
+    settings,
+    values,
+}: Props) {
     const { t } = useTranslation();
-    const [form, setForm] = useState<Record<string, string | number | boolean>>(values);
+    const [form, setForm] =
+        useState<Record<string, string | number | boolean>>(values);
     const [saving, setSaving] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
 
-        router.put(`/settings/extensions/${extensionIdentifier}/settings`, form, {
-            preserveScroll: true,
-            onFinish: () => setSaving(false),
-        });
+        router.put(
+            `/settings/extensions/${extensionIdentifier}/settings`,
+            form,
+            {
+                preserveScroll: true,
+                onFinish: () => setSaving(false),
+            },
+        );
     };
 
     const renderField = (field: SettingField) => {
@@ -42,7 +51,9 @@ export default function ExtensionSettingsForm({ extensionIdentifier, settings, v
                 return (
                     <select
                         value={String(value)}
-                        onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                        onChange={(e) =>
+                            setForm({ ...form, [field.key]: e.target.value })
+                        }
                         className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
                     >
                         {field.options?.map((opt) => (
@@ -58,9 +69,13 @@ export default function ExtensionSettingsForm({ extensionIdentifier, settings, v
                         type="button"
                         role="switch"
                         aria-checked={Boolean(value)}
-                        onClick={() => setForm({ ...form, [field.key]: !value })}
-                        className={`mt-1 relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            value ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                        onClick={() =>
+                            setForm({ ...form, [field.key]: !value })
+                        }
+                        className={`relative mt-1 inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            value
+                                ? 'bg-blue-600'
+                                : 'bg-gray-300 dark:bg-gray-600'
                         }`}
                     >
                         <span
@@ -75,7 +90,12 @@ export default function ExtensionSettingsForm({ extensionIdentifier, settings, v
                     <input
                         type="number"
                         value={String(value)}
-                        onChange={(e) => setForm({ ...form, [field.key]: Number(e.target.value) })}
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                [field.key]: Number(e.target.value),
+                            })
+                        }
                         className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
                     />
                 );
@@ -84,7 +104,9 @@ export default function ExtensionSettingsForm({ extensionIdentifier, settings, v
                     <input
                         type="text"
                         value={String(value)}
-                        onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                        onChange={(e) =>
+                            setForm({ ...form, [field.key]: e.target.value })
+                        }
                         className="mt-1 w-full rounded-md border px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
                     />
                 );
@@ -92,12 +114,14 @@ export default function ExtensionSettingsForm({ extensionIdentifier, settings, v
     };
 
     if (settings.length === 0) {
-return null;
-}
+        return null;
+    }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <h3 className="text-lg font-semibold">{t('settings.extensions.configuration', 'Configuration')}</h3>
+            <h3 className="text-lg font-semibold">
+                {t('settings.extensions.configuration', 'Configuration')}
+            </h3>
             {settings.map((field) => (
                 <div key={field.key}>
                     <label className="text-sm font-medium">{field.label}</label>

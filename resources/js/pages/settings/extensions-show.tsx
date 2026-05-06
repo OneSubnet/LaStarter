@@ -1,5 +1,14 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Download, Globe, Package, PackageX, Power, PowerOff, RefreshCw, Tag } from 'lucide-react';
+import {
+    Download,
+    Globe,
+    Package,
+    PackageX,
+    Power,
+    PowerOff,
+    RefreshCw,
+    Tag,
+} from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Guard from '@/components/guard';
@@ -14,6 +23,7 @@ import {
     uninstall as uninstallUrl,
     update as updateUrl,
 } from '@/routes/settings/team/extensions';
+import type { SharedData } from '@/types';
 
 type Extension = {
     id: number;
@@ -38,17 +48,35 @@ type Props = {
 
 export default function ExtensionsShow({ extension }: Props) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+    const { currentTeam } = usePage<SharedData>().props;
+    const teamSlug = currentTeam?.slug ?? '';
 
     const stateConfig = useMemo<
-        Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }>
+        Record<
+            string,
+            {
+                label: string;
+                variant: 'default' | 'secondary' | 'destructive' | 'outline';
+            }
+        >
     >(
         () => ({
-            enabled: { label: t('settings.extensions.status_enabled'), variant: 'default' },
-            disabled: { label: t('settings.extensions.status_disabled'), variant: 'secondary' },
-            installed: { label: t('settings.extensions.status_installed'), variant: 'outline' },
-            errored: { label: t('settings.extensions.status_error'), variant: 'destructive' },
+            enabled: {
+                label: t('settings.extensions.status_enabled'),
+                variant: 'default',
+            },
+            disabled: {
+                label: t('settings.extensions.status_disabled'),
+                variant: 'secondary',
+            },
+            installed: {
+                label: t('settings.extensions.status_installed'),
+                variant: 'outline',
+            },
+            errored: {
+                label: t('settings.extensions.status_error'),
+                variant: 'destructive',
+            },
         }),
         [t],
     );
@@ -57,7 +85,7 @@ export default function ExtensionsShow({ extension }: Props) {
         ? 'enabled'
         : extension.state === 'enabled'
           ? 'disabled'
-          : extension.state ?? 'installed';
+          : (extension.state ?? 'installed');
 
     const config = stateConfig[displayState] ?? stateConfig.installed;
 
@@ -70,21 +98,34 @@ export default function ExtensionsShow({ extension }: Props) {
             activeTab="Extensions"
             wide
             breadcrumbs={[
-                { title: t('settings.extensions.title'), href: extensionsUrl(teamSlug).url },
+                {
+                    title: t('settings.extensions.title'),
+                    href: extensionsUrl(teamSlug).url,
+                },
                 { title: extension.name, href: '#' },
             ]}
         >
-            <Head title={`${extension.name} - ${t('settings.extensions.title')}`} />
+            <Head
+                title={`${extension.name} - ${t('settings.extensions.title')}`}
+            />
 
             <div className="space-y-6">
                 <div className="flex items-start justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-2xl font-bold tracking-tight">{extension.name}</h2>
-                            <Badge variant={config.variant}>{config.label}</Badge>
-                            <Badge variant="outline" className="capitalize">{extension.type}</Badge>
+                            <h2 className="text-2xl font-bold tracking-tight">
+                                {extension.name}
+                            </h2>
+                            <Badge variant={config.variant}>
+                                {config.label}
+                            </Badge>
+                            <Badge variant="outline" className="capitalize">
+                                {extension.type}
+                            </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{extension.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {extension.description}
+                        </p>
                     </div>
 
                     <Guard permission="extension.manage">
@@ -93,7 +134,10 @@ export default function ExtensionsShow({ extension }: Props) {
                                 <Button
                                     onClick={() =>
                                         postAction(
-                                            installUrl({ current_team: teamSlug, extension: extension.identifier }).url,
+                                            installUrl({
+                                                current_team: teamSlug,
+                                                extension: extension.identifier,
+                                            }).url,
                                         )
                                     }
                                 >
@@ -101,59 +145,84 @@ export default function ExtensionsShow({ extension }: Props) {
                                     {t('settings.extensions.install')}
                                 </Button>
                             )}
-                            {extension.state && extension.state !== 'errored' && (
-                                <>
-                                    {extension.is_enabled ? (
+                            {extension.state &&
+                                extension.state !== 'errored' && (
+                                    <>
+                                        {extension.is_enabled ? (
+                                            <Button
+                                                variant="outline"
+                                                onClick={() =>
+                                                    postAction(
+                                                        disableUrl({
+                                                            current_team:
+                                                                teamSlug,
+                                                            extension:
+                                                                extension.identifier,
+                                                        }).url,
+                                                    )
+                                                }
+                                            >
+                                                <PowerOff className="h-4 w-4" />
+                                                {t(
+                                                    'settings.extensions.disable',
+                                                )}
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                onClick={() =>
+                                                    postAction(
+                                                        enableUrl({
+                                                            current_team:
+                                                                teamSlug,
+                                                            extension:
+                                                                extension.identifier,
+                                                        }).url,
+                                                    )
+                                                }
+                                            >
+                                                <Power className="h-4 w-4" />
+                                                {t(
+                                                    'settings.extensions.enable',
+                                                )}
+                                            </Button>
+                                        )}
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
+                                            className="text-destructive hover:text-destructive"
                                             onClick={() =>
                                                 postAction(
-                                                    disableUrl({ current_team: teamSlug, extension: extension.identifier }).url,
+                                                    uninstallUrl({
+                                                        current_team: teamSlug,
+                                                        extension:
+                                                            extension.identifier,
+                                                    }).url,
                                                 )
                                             }
                                         >
-                                            <PowerOff className="h-4 w-4" />
-                                            {t('settings.extensions.disable')}
+                                            <PackageX className="h-4 w-4" />
+                                            {t('settings.extensions.uninstall')}
                                         </Button>
-                                    ) : (
-                                        <Button
-                                            onClick={() =>
-                                                postAction(
-                                                    enableUrl({ current_team: teamSlug, extension: extension.identifier }).url,
-                                                )
-                                            }
-                                        >
-                                            <Power className="h-4 w-4" />
-                                            {t('settings.extensions.enable')}
-                                        </Button>
-                                    )}
+                                    </>
+                                )}
+                            {extension.update_available &&
+                                extension.latest_version && (
                                     <Button
-                                        variant="ghost"
-                                        className="text-destructive hover:text-destructive"
+                                        variant="outline"
                                         onClick={() =>
                                             postAction(
-                                                uninstallUrl({ current_team: teamSlug, extension: extension.identifier }).url,
+                                                updateUrl({
+                                                    current_team: teamSlug,
+                                                    extension:
+                                                        extension.identifier,
+                                                }).url,
                                             )
                                         }
                                     >
-                                        <PackageX className="h-4 w-4" />
-                                        {t('settings.extensions.uninstall')}
+                                        <RefreshCw className="h-4 w-4" />
+                                        {t('settings.extensions.update')} (v
+                                        {extension.latest_version})
                                     </Button>
-                                </>
-                            )}
-                            {extension.update_available && extension.latest_version && (
-                                <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        postAction(
-                                            updateUrl({ current_team: teamSlug, extension: extension.identifier }).url,
-                                        )
-                                    }
-                                >
-                                    <RefreshCw className="h-4 w-4" />
-                                    {t('settings.extensions.update')} (v{extension.latest_version})
-                                </Button>
-                            )}
+                                )}
                         </div>
                     </Guard>
                 </div>
@@ -161,7 +230,9 @@ export default function ExtensionsShow({ extension }: Props) {
                 {extension.update_available && (
                     <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
                         <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                            {t('settings.extensions.update_available', { version: extension.latest_version })}
+                            {t('settings.extensions.update_available', {
+                                version: extension.latest_version,
+                            })}
                         </p>
                     </div>
                 )}
@@ -172,7 +243,9 @@ export default function ExtensionsShow({ extension }: Props) {
                             <Tag className="h-4 w-4" />
                             {t('settings.extensions.version')}
                         </div>
-                        <p className="mt-1 font-medium">{extension.version ? `v${extension.version}` : '—'}</p>
+                        <p className="mt-1 font-medium">
+                            {extension.version ? `v${extension.version}` : '—'}
+                        </p>
                     </div>
 
                     {extension.author && (
@@ -181,7 +254,9 @@ export default function ExtensionsShow({ extension }: Props) {
                                 <Globe className="h-4 w-4" />
                                 {t('settings.extensions.author')}
                             </div>
-                            <p className="mt-1 font-medium">{extension.author}</p>
+                            <p className="mt-1 font-medium">
+                                {extension.author}
+                            </p>
                         </div>
                     )}
 
@@ -191,7 +266,9 @@ export default function ExtensionsShow({ extension }: Props) {
                             {t('settings.extensions.status_label')}
                         </div>
                         <div className="mt-1">
-                            <Badge variant={config.variant}>{config.label}</Badge>
+                            <Badge variant={config.variant}>
+                                {config.label}
+                            </Badge>
                         </div>
                     </div>
                 </div>
@@ -200,17 +277,23 @@ export default function ExtensionsShow({ extension }: Props) {
                     <h3 className="text-sm font-medium text-muted-foreground">
                         {t('settings.extensions.identifier')}
                     </h3>
-                    <code className="rounded bg-muted px-2 py-1 text-sm">{extension.identifier}</code>
+                    <code className="rounded bg-muted px-2 py-1 text-sm">
+                        {extension.identifier}
+                    </code>
                 </div>
 
                 {extension.permissions.length > 0 && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
-                            {t('settings.extensions.permissions_title')} ({extension.permissions.length})
+                            {t('settings.extensions.permissions_title')} (
+                            {extension.permissions.length})
                         </h3>
                         <div className="flex flex-wrap gap-1">
                             {extension.permissions.map((perm) => (
-                                <code key={perm} className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                                <code
+                                    key={perm}
+                                    className="rounded bg-muted px-1.5 py-0.5 text-xs"
+                                >
                                     {perm}
                                 </code>
                             ))}
@@ -219,8 +302,16 @@ export default function ExtensionsShow({ extension }: Props) {
                 )}
 
                 <div className="flex gap-4 text-sm text-muted-foreground">
-                    {extension.has_routes && <Badge variant="outline">{t('settings.extensions.has_routes')}</Badge>}
-                    {extension.has_migrations && <Badge variant="outline">{t('settings.extensions.has_migrations')}</Badge>}
+                    {extension.has_routes && (
+                        <Badge variant="outline">
+                            {t('settings.extensions.has_routes')}
+                        </Badge>
+                    )}
+                    {extension.has_migrations && (
+                        <Badge variant="outline">
+                            {t('settings.extensions.has_migrations')}
+                        </Badge>
+                    )}
                 </div>
             </div>
         </TeamSettingsLayout>

@@ -8,13 +8,19 @@ type FormAutoSaveContextValue = {
     submit: () => void;
 };
 
-const FormAutoSaveContext = createContext<FormAutoSaveContextValue | null>(null);
+const FormAutoSaveContext = createContext<FormAutoSaveContextValue | null>(
+    null,
+);
 
 export function useFormAutoSave() {
     const ctx = useContext(FormAutoSaveContext);
+
     if (!ctx) {
-        throw new Error('useFormAutoSave must be used within FormAutoSaveProvider');
+        throw new Error(
+            'useFormAutoSave must be used within FormAutoSaveProvider',
+        );
     }
+
     return ctx;
 }
 
@@ -56,6 +62,7 @@ export function FormAutoSaveProvider({
             setIsDirty(form.store.state.isDirty);
             setIsLoading(form.store.state.isSubmitting);
         });
+
         return unsubscribe;
     }, [form.store]);
 
@@ -70,24 +77,42 @@ export function FormAutoSaveProvider({
     };
 
     useEffect(() => {
-        if (!isDirty) return;
+        if (!isDirty) {
+            return;
+        }
+
         const timeout = setTimeout(() => submit(), autoSaveMs);
+
         return () => clearTimeout(timeout);
     }, [form.state.values, isDirty, autoSaveMs, submit]);
 
     useEffect(() => {
-        if (!isDirty) return;
-        const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+        if (!isDirty) {
+            return;
+        }
+
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
         window.addEventListener('beforeunload', handler);
+
         return () => window.removeEventListener('beforeunload', handler);
     }, [isDirty]);
 
     useEffect(() => {
-        if (!isDirty) return;
+        if (!isDirty) {
+            return;
+        }
+
         const handler = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); submit(); }
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                submit();
+            }
         };
         window.addEventListener('keydown', handler);
+
         return () => window.removeEventListener('keydown', handler);
     }, [isDirty, submit]);
 
@@ -100,7 +125,9 @@ export function FormAutoSaveProvider({
     }, [isLoading]);
 
     return (
-        <FormAutoSaveContext.Provider value={{ isDirty, isLoading, cancel, submit }}>
+        <FormAutoSaveContext.Provider
+            value={{ isDirty, isLoading, cancel, submit }}
+        >
             {children}
         </FormAutoSaveContext.Provider>
     );

@@ -11,7 +11,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { index as notificationsIndex } from '@/routes/notifications';
-import type { User as UserType } from '@/types';
+import type { User as UserType, SharedData } from '@/types';
 
 type Props = {
     user: UserType;
@@ -20,7 +20,7 @@ type Props = {
 export function UserMenuContent({ user }: Props) {
     const { t } = useTranslation();
     const cleanup = useMobileNavigation();
-    const teamSlug = (usePage().props.currentTeam as { slug: string } | null)?.slug ?? '';
+    const teamSlug = usePage<SharedData>().props.currentTeam?.slug ?? '';
 
     const handleLogout = () => {
         cleanup();

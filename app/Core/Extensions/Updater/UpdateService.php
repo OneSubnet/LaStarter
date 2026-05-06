@@ -6,8 +6,13 @@ use App\Core\Extensions\ExtensionManager;
 use App\Core\Extensions\Installer\ZipInstaller;
 use App\Core\Extensions\Marketplace\MarketplaceClient;
 use App\Core\Extensions\Marketplace\UpdateInfo;
+use App\Core\Extensions\Updater\Events\ExtensionUpdateBlocked;
+use App\Core\Extensions\Updater\Events\ExtensionUpdateCompleted;
+use App\Core\System\CompatibilityChecker;
+use App\Core\System\CompatibilityReport;
 use App\Models\Extension;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
 final class UpdateService
@@ -16,6 +21,7 @@ final class UpdateService
         private readonly MarketplaceClient $marketplace,
         private readonly ZipInstaller $installer,
         private readonly ExtensionManager $manager,
+        private readonly CompatibilityChecker $compatibility,
     ) {}
 
     /**
@@ -33,10 +39,20 @@ final class UpdateService
      */
     public function update(string $identifier): bool
     {
+        $report = $this->updateWithReport($identifier);
+
+        return $report->compatible;
+    }
+
+    /**
+     * Update an extension and return a detailed compatibility report.
+     */
+    public function updateWithReport(string $identifier): CompatibilityReport
+    {
         $extension = Extension::where('identifier', $identifier)->first();
 
         if (! $extension) {
-            return false;
+            return CompatibilityReport::error("Extension '{$identifier}' not found.");
         }
 
         $raw = $extension->raw ?? [];
@@ -44,26 +60,58 @@ final class UpdateService
         $repo = $raw['marketplace_repo'] ?? null;
 
         if (! $owner || ! $repo) {
-            Log::warning("Cannot update {$identifier}: no marketplace source configured.");
+            $report = CompatibilityReport::error("No marketplace source configured for '{$identifier}'.");
 
-            return false;
+            Event::dispatch(new ExtensionUpdateBlocked($identifier, $report));
+
+            return $report;
         }
 
         try {
-            // Download and install new version
+            // Download to temp location and read manifest
             $manifest = $this->installer->installFromGithub($owner, $repo);
-
-            // Re-sync to update DB record
-            $this->manager->sync();
-
-            Log::info("Extension {$identifier} updated to {$manifest->version}");
-
-            return true;
         } catch (\Throwable $e) {
-            Log::error("Failed to update extension {$identifier}: {$e->getMessage()}");
+            $report = CompatibilityReport::error("Download failed: {$e->getMessage()}");
 
-            return false;
+            Event::dispatch(new ExtensionUpdateBlocked($identifier, $report));
+
+            return $report;
         }
+
+        // Check compatibility with core version
+        $coreReport = $this->compatibility->canUpdateExtension($manifest);
+
+        if (! $coreReport->compatible) {
+            Event::dispatch(new ExtensionUpdateBlocked($identifier, $coreReport));
+
+            return $coreReport;
+        }
+
+        // Validate manifest evolution (API contract)
+        $oldManifest = $this->manager->manifest($identifier);
+
+        if ($oldManifest !== null) {
+            $evolutionReport = $this->compatibility->validateManifestEvolution($oldManifest, $manifest);
+
+            if (! $evolutionReport->compatible) {
+                Event::dispatch(new ExtensionUpdateBlocked($identifier, $evolutionReport));
+
+                return $evolutionReport;
+            }
+        }
+
+        // Re-sync to update DB record
+        $this->manager->sync();
+
+        Log::info("Extension {$identifier} updated to {$manifest->version}");
+
+        Event::dispatch(new ExtensionUpdateCompleted(
+            $identifier,
+            $extension->version ?? '0.0.0',
+            $manifest->version ?? 'unknown',
+        ));
+
+        return CompatibilityReport::ok();
     }
 
     /**

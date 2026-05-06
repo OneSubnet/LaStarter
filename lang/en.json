@@ -26,5 +26,20 @@
     "emails.client_portal.set_password": "This link will let you set your password and access your portal.",
     "emails.client_portal.ignore": "If you were not expecting this invitation, you can ignore this email.",
     "This invitation link is invalid or has expired.": "This invitation link is invalid or has expired.",
-    "You have already accepted this invitation.": "You have already accepted this invitation."
+    "You have already accepted this invitation.": "You have already accepted this invitation.",
+    "Extension installed.": "Extension installed.",
+    "Extension uninstalled.": "Extension uninstalled.",
+    "Extension enabled.": "Extension enabled.",
+    "Extension disabled.": "Extension disabled.",
+    "Extension updated.": "Extension updated.",
+    "No team context.": "No team context.",
+    "Update failed. Check logs for details.": "Update failed. Check logs for details.",
+    "Update blocked: :errors": "Update blocked: :errors",
+    ":count updates available.": ":count updates available.",
+    "All extensions are up to date.": "All extensions are up to date.",
+    "Failed to check updates: :error": "Failed to check updates: :error",
+    "Platform updated to v:version": "Platform updated to v:version",
+    "Update failed: :errors": "Update failed: :errors",
+    "No release found.": "No release found.",
+    "Already up to date.": "Already up to date."
 }

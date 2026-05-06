@@ -11,7 +11,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-class CreateTeam
+final class CreateTeam
 {
     public function handle(User $user, string $name, bool $isPersonal = false): Team
     {

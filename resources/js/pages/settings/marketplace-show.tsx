@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { marketplace as marketplaceUrl } from '@/routes/settings/team';
 import { install as installUrl } from '@/routes/settings/team/marketplace';
+import type { SharedData } from '@/types';
 
 type MarketplaceDetail = {
     identifier: string;
@@ -27,28 +28,39 @@ type Props = {
 
 export default function MarketplaceShow({ extension }: Props) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+    const { currentTeam } = usePage<SharedData>().props;
+    const teamSlug = currentTeam?.slug ?? '';
 
     return (
         <TeamSettingsLayout
             activeTab="Extensions"
             wide
             breadcrumbs={[
-                { title: t('settings.marketplace.title'), href: marketplaceUrl(teamSlug).url },
+                {
+                    title: t('settings.marketplace.title'),
+                    href: marketplaceUrl(teamSlug).url,
+                },
                 { title: extension.name, href: '#' },
             ]}
         >
-            <Head title={`${extension.name} - ${t('settings.marketplace.title')}`} />
+            <Head
+                title={`${extension.name} - ${t('settings.marketplace.title')}`}
+            />
 
             <div className="space-y-6">
                 <div className="flex items-start justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-2xl font-bold tracking-tight">{extension.name}</h2>
-                            <Badge variant="outline" className="capitalize">{extension.type}</Badge>
+                            <h2 className="text-2xl font-bold tracking-tight">
+                                {extension.name}
+                            </h2>
+                            <Badge variant="outline" className="capitalize">
+                                {extension.type}
+                            </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{extension.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {extension.description}
+                        </p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -67,7 +79,11 @@ export default function MarketplaceShow({ extension }: Props) {
                         </Guard>
                         {extension.github_url && (
                             <Button variant="outline" asChild>
-                                <a href={extension.github_url} target="_blank" rel="noopener noreferrer">
+                                <a
+                                    href={extension.github_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     <ExternalLink className="h-4 w-4" />
                                     {t('settings.marketplace.view_on_github')}
                                 </a>
@@ -83,7 +99,9 @@ export default function MarketplaceShow({ extension }: Props) {
                                 <Tag className="h-4 w-4" />
                                 {t('settings.extensions.version')}
                             </div>
-                            <p className="mt-1 font-medium">v{extension.version}</p>
+                            <p className="mt-1 font-medium">
+                                v{extension.version}
+                            </p>
                         </div>
                     )}
                     {extension.author && (
@@ -91,7 +109,9 @@ export default function MarketplaceShow({ extension }: Props) {
                             <div className="text-sm text-muted-foreground">
                                 {t('settings.extensions.author')}
                             </div>
-                            <p className="mt-1 font-medium">{extension.author}</p>
+                            <p className="mt-1 font-medium">
+                                {extension.author}
+                            </p>
                         </div>
                     )}
                 </div>
@@ -99,11 +119,15 @@ export default function MarketplaceShow({ extension }: Props) {
                 {extension.permissions.length > 0 && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
-                            {t('settings.extensions.permissions_title')} ({extension.permissions.length})
+                            {t('settings.extensions.permissions_title')} (
+                            {extension.permissions.length})
                         </h3>
                         <div className="flex flex-wrap gap-1">
                             {extension.permissions.map((perm) => (
-                                <code key={perm} className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                                <code
+                                    key={perm}
+                                    className="rounded bg-muted px-1.5 py-0.5 text-xs"
+                                >
                                     {perm}
                                 </code>
                             ))}
@@ -115,7 +139,9 @@ export default function MarketplaceShow({ extension }: Props) {
                     <h3 className="text-sm font-medium text-muted-foreground">
                         {t('settings.extensions.identifier')}
                     </h3>
-                    <code className="rounded bg-muted px-2 py-1 text-sm">{extension.identifier}</code>
+                    <code className="rounded bg-muted px-2 py-1 text-sm">
+                        {extension.identifier}
+                    </code>
                 </div>
             </div>
         </TeamSettingsLayout>

@@ -45,7 +45,9 @@ export default function ConfirmPassword() {
                                     field.handleChange(e.target.value)
                                 }
                                 onBlur={field.handleBlur}
-                                placeholder={t('auth.confirm_password.password_placeholder')}
+                                placeholder={t(
+                                    'auth.confirm_password.password_placeholder',
+                                )}
                                 autoComplete="current-password"
                                 autoFocus
                                 className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"

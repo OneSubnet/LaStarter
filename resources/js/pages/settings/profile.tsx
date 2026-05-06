@@ -20,6 +20,7 @@ import { inertiaSubmit, zodValidator } from '@/lib/inertia-form';
 import { profileSchema } from '@/lib/schemas';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
+import type { SharedData } from '@/types';
 
 export default function Profile({
     mustVerifyEmail,
@@ -29,7 +30,7 @@ export default function Profile({
     status?: string;
 }) {
     const { t, i18n } = useTranslation();
-    const { auth } = usePage().props;
+    const { auth } = usePage<SharedData>().props;
 
     const availableLocales = [
         { value: 'en', label: 'English' },

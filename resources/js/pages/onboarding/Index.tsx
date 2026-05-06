@@ -1,6 +1,15 @@
 import { Head, router } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Briefcase, Check, Globe, Rocket, User, Users } from 'lucide-react';
+import {
+    ArrowLeft,
+    ArrowRight,
+    Briefcase,
+    Check,
+    Globe,
+    Rocket,
+    User,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -30,7 +39,9 @@ const TOTAL_STEPS = 4;
 
 export default function OnboardingIndex({ user, team }: Props) {
     const { t, i18n } = useTranslation();
-    const [step, setStep] = useState(Math.min(user.onboarding_step, TOTAL_STEPS - 1));
+    const [step, setStep] = useState(
+        Math.min(user.onboarding_step, TOTAL_STEPS - 1),
+    );
 
     const [name, setName] = useState(user.name);
     const [teamName, setTeamName] = useState(team?.name ?? '');
@@ -40,7 +51,11 @@ export default function OnboardingIndex({ user, team }: Props) {
     const goNext = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
     const goPrev = () => setStep((s) => Math.max(s - 1, 0));
 
-    const saveStep = (stepIndex: number, data: Record<string, unknown>, onSuccess?: () => void) => {
+    const saveStep = (
+        stepIndex: number,
+        data: Record<string, unknown>,
+        onSuccess?: () => void,
+    ) => {
         router.post(
             `/${team?.slug ?? ''}/onboarding`,
             { step: stepIndex, ...data },
@@ -77,9 +92,24 @@ export default function OnboardingIndex({ user, team }: Props) {
     };
 
     const roleOptions = [
-        { id: 'freelance', icon: User, label: t('onboarding.roles.freelance'), desc: t('onboarding.roles.freelance_desc') },
-        { id: 'agency', icon: Briefcase, label: t('onboarding.roles.agency'), desc: t('onboarding.roles.agency_desc') },
-        { id: 'team_lead', icon: Users, label: t('onboarding.roles.team_lead'), desc: t('onboarding.roles.team_lead_desc') },
+        {
+            id: 'freelance',
+            icon: User,
+            label: t('onboarding.roles.freelance'),
+            desc: t('onboarding.roles.freelance_desc'),
+        },
+        {
+            id: 'agency',
+            icon: Briefcase,
+            label: t('onboarding.roles.agency'),
+            desc: t('onboarding.roles.agency_desc'),
+        },
+        {
+            id: 'team_lead',
+            icon: Users,
+            label: t('onboarding.roles.team_lead'),
+            desc: t('onboarding.roles.team_lead_desc'),
+        },
     ];
 
     return (
@@ -89,7 +119,11 @@ export default function OnboardingIndex({ user, team }: Props) {
             {/* Top bar */}
             <div className="flex items-center justify-between px-6 py-4">
                 <button
-                    onClick={() => (step > 0 ? goPrev() : router.visit(`/${team?.slug ?? ''}/dashboard`))}
+                    onClick={() =>
+                        step > 0
+                            ? goPrev()
+                            : router.visit(`/${team?.slug ?? ''}/dashboard`)
+                    }
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="h-4 w-4" />
@@ -122,10 +156,16 @@ export default function OnboardingIndex({ user, team }: Props) {
                                               : 'bg-muted text-muted-foreground'
                                     }`}
                                 >
-                                    {i < step ? <Check className="h-4 w-4" /> : i + 1}
+                                    {i < step ? (
+                                        <Check className="h-4 w-4" />
+                                    ) : (
+                                        i + 1
+                                    )}
                                 </div>
                                 {i < TOTAL_STEPS - 1 && (
-                                    <div className={`h-0.5 w-8 ${i < step ? 'bg-primary' : 'bg-muted'}`} />
+                                    <div
+                                        className={`h-0.5 w-8 ${i < step ? 'bg-primary' : 'bg-muted'}`}
+                                    />
                                 )}
                             </div>
                         ))}
@@ -145,12 +185,24 @@ export default function OnboardingIndex({ user, team }: Props) {
                                 <div className="space-y-6">
                                     <div className="text-center">
                                         <User className="mx-auto mb-3 h-10 w-10 text-primary" />
-                                        <h2 className="text-xl font-semibold">{t('onboarding.profile_title')}</h2>
-                                        <p className="mt-1 text-sm text-muted-foreground">{t('onboarding.profile_desc')}</p>
+                                        <h2 className="text-xl font-semibold">
+                                            {t('onboarding.profile_title')}
+                                        </h2>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {t('onboarding.profile_desc')}
+                                        </p>
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="name">{t('onboarding.name_label')}</Label>
-                                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                                        <Label htmlFor="name">
+                                            {t('onboarding.name_label')}
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            value={name}
+                                            onChange={(e) =>
+                                                setName(e.target.value)
+                                            }
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -159,12 +211,24 @@ export default function OnboardingIndex({ user, team }: Props) {
                                 <div className="space-y-6">
                                     <div className="text-center">
                                         <Rocket className="mx-auto mb-3 h-10 w-10 text-primary" />
-                                        <h2 className="text-xl font-semibold">{t('onboarding.workspace_title')}</h2>
-                                        <p className="mt-1 text-sm text-muted-foreground">{t('onboarding.workspace_desc')}</p>
+                                        <h2 className="text-xl font-semibold">
+                                            {t('onboarding.workspace_title')}
+                                        </h2>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {t('onboarding.workspace_desc')}
+                                        </p>
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="team_name">{t('onboarding.team_name_label')}</Label>
-                                        <Input id="team_name" value={teamName} onChange={(e) => setTeamName(e.target.value)} />
+                                        <Label htmlFor="team_name">
+                                            {t('onboarding.team_name_label')}
+                                        </Label>
+                                        <Input
+                                            id="team_name"
+                                            value={teamName}
+                                            onChange={(e) =>
+                                                setTeamName(e.target.value)
+                                            }
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -173,15 +237,21 @@ export default function OnboardingIndex({ user, team }: Props) {
                                 <div className="space-y-6">
                                     <div className="text-center">
                                         <Users className="mx-auto mb-3 h-10 w-10 text-primary" />
-                                        <h2 className="text-xl font-semibold">{t('onboarding.connections_title')}</h2>
-                                        <p className="mt-1 text-sm text-muted-foreground">{t('onboarding.connections_desc')}</p>
+                                        <h2 className="text-xl font-semibold">
+                                            {t('onboarding.connections_title')}
+                                        </h2>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {t('onboarding.connections_desc')}
+                                        </p>
                                     </div>
                                     <div className="space-y-3">
                                         {emails.map((email, i) => (
                                             <Input
                                                 key={i}
                                                 type="email"
-                                                placeholder={t('onboarding.email_placeholder')}
+                                                placeholder={t(
+                                                    'onboarding.email_placeholder',
+                                                )}
                                                 value={email}
                                                 onChange={(e) => {
                                                     const updated = [...emails];
@@ -194,7 +264,9 @@ export default function OnboardingIndex({ user, team }: Props) {
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setEmails([...emails, ''])}
+                                            onClick={() =>
+                                                setEmails([...emails, ''])
+                                            }
                                         >
                                             + {t('onboarding.add_email')}
                                         </Button>
@@ -206,15 +278,21 @@ export default function OnboardingIndex({ user, team }: Props) {
                                 <div className="space-y-6">
                                     <div className="text-center">
                                         <Globe className="mx-auto mb-3 h-10 w-10 text-primary" />
-                                        <h2 className="text-xl font-semibold">{t('onboarding.role_title')}</h2>
-                                        <p className="mt-1 text-sm text-muted-foreground">{t('onboarding.role_desc')}</p>
+                                        <h2 className="text-xl font-semibold">
+                                            {t('onboarding.role_title')}
+                                        </h2>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {t('onboarding.role_desc')}
+                                        </p>
                                     </div>
                                     <div className="space-y-3">
                                         {roleOptions.map((opt) => (
                                             <button
                                                 key={opt.id}
                                                 type="button"
-                                                onClick={() => setSelectedRole(opt.id)}
+                                                onClick={() =>
+                                                    setSelectedRole(opt.id)
+                                                }
                                                 className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-colors ${
                                                     selectedRole === opt.id
                                                         ? 'border-primary bg-primary/5'
@@ -223,8 +301,12 @@ export default function OnboardingIndex({ user, team }: Props) {
                                             >
                                                 <opt.icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                                                 <div>
-                                                    <div className="font-medium">{opt.label}</div>
-                                                    <div className="text-sm text-muted-foreground">{opt.desc}</div>
+                                                    <div className="font-medium">
+                                                        {opt.label}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        {opt.desc}
+                                                    </div>
                                                 </div>
                                             </button>
                                         ))}
@@ -241,7 +323,11 @@ export default function OnboardingIndex({ user, team }: Props) {
                 <div />
                 <div className="flex items-center gap-3">
                     {step < 3 && (
-                        <Button type="button" variant="ghost" onClick={skipStep}>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={skipStep}
+                        >
                             {t('onboarding.skip')}
                         </Button>
                     )}
@@ -249,7 +335,9 @@ export default function OnboardingIndex({ user, team }: Props) {
                         {step < TOTAL_STEPS - 1
                             ? t('onboarding.next')
                             : t('onboarding.get_started')}
-                        {step < TOTAL_STEPS - 1 && <ArrowRight className="ml-2 h-4 w-4" />}
+                        {step < TOTAL_STEPS - 1 && (
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        )}
                     </Button>
                 </div>
             </div>

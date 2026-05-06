@@ -26,5 +26,20 @@
     "emails.client_portal.set_password": "Ce lien vous permettra de définir votre mot de passe et d'accéder à votre espace.",
     "emails.client_portal.ignore": "Si vous n'attendiez pas cette invitation, vous pouvez ignorer cet e-mail.",
     "This invitation link is invalid or has expired.": "Ce lien d'invitation est invalide ou a expiré.",
-    "You have already accepted this invitation.": "Vous avez déjà accepté cette invitation."
+    "You have already accepted this invitation.": "Vous avez déjà accepté cette invitation.",
+    "Extension installed.": "Extension installée.",
+    "Extension uninstalled.": "Extension désinstallée.",
+    "Extension enabled.": "Extension activée.",
+    "Extension disabled.": "Extension désactivée.",
+    "Extension updated.": "Extension mise à jour.",
+    "No team context.": "Aucun contexte d'équipe.",
+    "Update failed. Check logs for details.": "Échec de la mise à jour. Consultez les logs.",
+    "Update blocked: :errors": "Mise à jour bloquée : :errors",
+    ":count updates available.": ":count mise(s) à jour disponible(s).",
+    "All extensions are up to date.": "Toutes les extensions sont à jour.",
+    "Failed to check updates: :error": "Impossible de vérifier les mises à jour : :error",
+    "Platform updated to v:version": "Plateforme mise à jour en v:version",
+    "Update failed: :errors": "Échec de la mise à jour : :errors",
+    "No release found.": "Aucune release trouvée.",
+    "Already up to date.": "Déjà à jour."
 }

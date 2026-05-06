@@ -1,9 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import {
-    LayoutGrid,
-    MoreHorizontal,
-    Settings,
-} from 'lucide-react';
+import { LayoutGrid, MoreHorizontal, Settings } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -24,7 +20,7 @@ import {
     SidebarInset,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem, SharedData } from '@/types';
 
 type ExtensionNavItem = {
     title: string;
@@ -58,33 +54,42 @@ export default function AppSidebarLayout({
     breadcrumbs?: BreadcrumbItem[];
     headerActions?: ReactNode;
 }) {
-    const page = usePage();
+    const page = usePage<SharedData>();
     const isOpen = page.props.sidebarOpen;
     const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
-    const currentTeam = page.props.currentTeam as { name: string; slug: string } | undefined;
-    const extensionNav = (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
+    const currentTeam = page.props.currentTeam;
+    const extensionNav =
+        (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
     const teamSlug = currentTeam?.slug ?? '';
     const currentPath = page.url;
     const { t } = useTranslation();
 
-    const footerLinks = (page.props.footerLinks as { title: string; href: string }[] | undefined) ?? [];
+    const footerLinks = page.props.footerLinks;
 
     // Flatten extension nav items for mobile (include children from grouped items)
     const flatExtNav = extensionNav.flatMap((ext) => {
         if (ext.children && ext.children.length > 0) {
             return ext.children.map((child) => ({
                 label: child.title,
-                icon: child.icon ? iconMap[child.icon] ?? LayoutGrid : LayoutGrid,
+                icon: child.icon
+                    ? (iconMap[child.icon] ?? LayoutGrid)
+                    : LayoutGrid,
                 href: child.href,
             }));
         }
 
-        return ext.href ? [{
-            label: ext.title,
-            icon: ext.icon ? iconMap[ext.icon] ?? LayoutGrid : LayoutGrid,
-            href: ext.href,
-        }] : [];
+        return ext.href
+            ? [
+                  {
+                      label: ext.title,
+                      icon: ext.icon
+                          ? (iconMap[ext.icon] ?? LayoutGrid)
+                          : LayoutGrid,
+                      href: ext.href,
+                  },
+              ]
+            : [];
     });
 
     return (
@@ -99,7 +104,7 @@ export default function AppSidebarLayout({
 
             {/* Main content area */}
             <SidebarInset className="pb-20 md:pb-0">
-                <div className="flex flex-1 flex-col gap-4 min-h-0">
+                <div className="flex min-h-0 flex-1 flex-col gap-4">
                     {/* Mobile header */}
                     <div className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-background px-4 md:hidden">
                         <SidebarTrigger />
@@ -116,7 +121,7 @@ export default function AppSidebarLayout({
                     </div>
 
                     {/* Desktop header with breadcrumbs */}
-                    <header className="hidden md:flex h-14 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
+                    <header className="hidden h-14 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:flex md:px-4">
                         <div className="flex items-center gap-2">
                             <SidebarTrigger className="-ml-1" />
                             <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -127,7 +132,7 @@ export default function AppSidebarLayout({
                     </header>
 
                     {/* Page content */}
-                    <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
+                    <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
                         {children}
                     </div>
 
@@ -165,18 +170,31 @@ export default function AppSidebarLayout({
                     <div className="space-y-4 px-4 pb-6">
                         <div className="space-y-1">
                             {[
-                                { label: t('common.dashboard'), icon: LayoutGrid, href: `/${teamSlug}` },
+                                {
+                                    label: t('common.dashboard'),
+                                    icon: LayoutGrid,
+                                    href: `/${teamSlug}`,
+                                },
                                 ...flatExtNav.slice(0, 6).map((item) => item),
-                                { label: t('common.settings'), icon: Settings, href: `/${teamSlug}/settings/general` },
+                                {
+                                    label: t('common.settings'),
+                                    icon: Settings,
+                                    href: `/${teamSlug}/settings/general`,
+                                },
                             ].map((item) => {
                                 const Icon = item.icon;
-                                const isActive = currentPath === item.href || (item.href !== `/${teamSlug}` && currentPath.startsWith(item.href));
+                                const isActive =
+                                    currentPath === item.href ||
+                                    (item.href !== `/${teamSlug}` &&
+                                        currentPath.startsWith(item.href));
 
                                 return (
                                     <Link
                                         key={item.label}
                                         href={item.href}
-                                        onClick={() => setIsMobilePanelOpen(false)}
+                                        onClick={() =>
+                                            setIsMobilePanelOpen(false)
+                                        }
                                         className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm ${
                                             isActive
                                                 ? 'bg-accent font-medium text-accent-foreground'
@@ -243,7 +261,7 @@ export default function AppSidebarLayout({
                     </button>
                 </div>
             </nav>
-        <CommandPalette />
+            <CommandPalette />
         </SidebarProvider>
     );
 }

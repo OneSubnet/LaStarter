@@ -7,6 +7,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import type { SharedData } from '@/types';
 
 type FooterLink = { title: string; href: string };
 
@@ -33,7 +34,7 @@ const inviteRegisterSchema = z.object({
 
 export default function Accept({ invitation, team, inviter }: Props) {
     const { t } = useTranslation();
-    const footerLinks = (usePage().props.footerLinks as FooterLink[] | undefined) ?? [];
+    const footerLinks = usePage<SharedData>().props.footerLinks ?? [];
 
     const form = useForm({
         defaultValues: {
@@ -55,7 +56,11 @@ export default function Accept({ invitation, team, inviter }: Props) {
                 {/* Team logo */}
                 <div className="flex items-center justify-center">
                     {team.icon_url ? (
-                        <img src={team.icon_url} alt={team.name} className="h-12 w-auto dark:invert" />
+                        <img
+                            src={team.icon_url}
+                            alt={team.name}
+                            className="h-12 w-auto dark:invert"
+                        />
                     ) : (
                         <div className="flex h-12 items-center gap-2 text-xl font-bold">
                             <AppLogoIcon className="h-10 w-8 fill-current text-[var(--foreground)] dark:text-white" />
@@ -81,14 +86,26 @@ export default function Accept({ invitation, team, inviter }: Props) {
                                         <Input
                                             type="text"
                                             value={field.state.value}
-                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
+                                            }
                                             onBlur={field.handleBlur}
                                             autoFocus
                                             autoComplete="name"
-                                            placeholder={t('invitations.name_placeholder')}
+                                            placeholder={t(
+                                                'invitations.name_placeholder',
+                                            )}
                                             className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"
                                         />
-                                        <InputError message={field.state.meta.errors?.[0] as string | undefined} />
+                                        <InputError
+                                            message={
+                                                field.state.meta.errors?.[0] as
+                                                    | string
+                                                    | undefined
+                                            }
+                                        />
                                     </div>
                                 )}
                             </form.Field>
@@ -99,14 +116,26 @@ export default function Accept({ invitation, team, inviter }: Props) {
                                         <Input
                                             type="email"
                                             value={field.state.value}
-                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
+                                            }
                                             onBlur={field.handleBlur}
                                             autoComplete="email"
                                             readOnly
-                                            placeholder={t('invitations.email_label')}
+                                            placeholder={t(
+                                                'invitations.email_label',
+                                            )}
                                             className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium opacity-60"
                                         />
-                                        <InputError message={field.state.meta.errors?.[0] as string | undefined} />
+                                        <InputError
+                                            message={
+                                                field.state.meta.errors?.[0] as
+                                                    | string
+                                                    | undefined
+                                            }
+                                        />
                                     </div>
                                 )}
                             </form.Field>
@@ -117,19 +146,34 @@ export default function Accept({ invitation, team, inviter }: Props) {
                                         <Input
                                             type="password"
                                             value={field.state.value}
-                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value,
+                                                )
+                                            }
                                             onBlur={field.handleBlur}
                                             autoComplete="new-password"
-                                            placeholder={t('invitations.password_placeholder')}
+                                            placeholder={t(
+                                                'invitations.password_placeholder',
+                                            )}
                                             className="h-14 rounded-full border-none bg-muted px-5 py-4 font-medium"
                                         />
-                                        <InputError message={field.state.meta.errors?.[0] as string | undefined} />
+                                        <InputError
+                                            message={
+                                                field.state.meta.errors?.[0] as
+                                                    | string
+                                                    | undefined
+                                            }
+                                        />
                                     </div>
                                 )}
                             </form.Field>
 
                             <form.Subscribe
-                                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                                selector={(state) => [
+                                    state.canSubmit,
+                                    state.isSubmitting,
+                                ]}
                             >
                                 {([canSubmit, isSubmitting]) => (
                                     <Button
@@ -156,18 +200,35 @@ export default function Accept({ invitation, team, inviter }: Props) {
                         </h3>
                         <div className="space-y-4 text-sm font-medium text-muted-foreground">
                             {inviter && (
-                                <p>{t('invitations.description_inviter', { name: inviter.name, team: team.name })}</p>
+                                <p>
+                                    {t('invitations.description_inviter', {
+                                        name: inviter.name,
+                                        team: team.name,
+                                    })}
+                                </p>
                             )}
-                            <p>{t('invitations.description', { team: team.name })}</p>
+                            <p>
+                                {t('invitations.description', {
+                                    team: team.name,
+                                })}
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer links */}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <p>&copy; {new Date().getFullYear()} {team.name}</p>
+                    <p>
+                        &copy; {new Date().getFullYear()} {team.name}
+                    </p>
                     {footerLinks.map((link) => (
-                        <a key={link.href} href={link.href} className="underline" target="_blank" rel="noopener noreferrer">
+                        <a
+                            key={link.href}
+                            href={link.href}
+                            className="underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             {link.title}
                         </a>
                     ))}

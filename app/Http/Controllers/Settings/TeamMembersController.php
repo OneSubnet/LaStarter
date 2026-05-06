@@ -16,7 +16,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
-class TeamMembersController extends Controller
+final class TeamMembersController extends Controller
 {
     public function index(Request $request, MapTeamMembers $mapTeamMembers): Response
     {

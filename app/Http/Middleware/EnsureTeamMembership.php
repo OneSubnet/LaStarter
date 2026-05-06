@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureTeamMembership
+final class EnsureTeamMembership
 {
     /**
      * Handle an incoming request.

@@ -71,7 +71,9 @@ export default function TwoFactorChallenge() {
                                 value={code}
                                 onChange={(e) => setCode(e.target.value)}
                                 type="text"
-                                placeholder={t('auth.two_factor.recovery_placeholder')}
+                                placeholder={t(
+                                    'auth.two_factor.recovery_placeholder',
+                                )}
                                 autoFocus={showRecoveryInput}
                                 required
                             />

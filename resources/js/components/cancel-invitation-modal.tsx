@@ -35,19 +35,27 @@ export default function CancelInvitationModal({
             return;
         }
 
-        router.visit(destroyInvitation({ current_team: team.slug, invitation_code: invitation.code }).url, {
-            method: 'delete',
-            onStart: () => setProcessing(true),
-            onFinish: () => setProcessing(false),
-            onSuccess: () => onOpenChange(false),
-        });
+        router.visit(
+            destroyInvitation({
+                current_team: team.slug,
+                invitation_code: invitation.code,
+            }).url,
+            {
+                method: 'delete',
+                onStart: () => setProcessing(true),
+                onFinish: () => setProcessing(false),
+                onSuccess: () => onOpenChange(false),
+            },
+        );
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{t('components.cancel_invitation.title')}</DialogTitle>
+                    <DialogTitle>
+                        {t('components.cancel_invitation.title')}
+                    </DialogTitle>
                     <DialogDescription>
                         {t('components.cancel_invitation.description')}{' '}
                         <strong>{invitation?.email}</strong>?
@@ -56,7 +64,9 @@ export default function CancelInvitationModal({
 
                 <DialogFooter className="gap-2">
                     <DialogClose asChild>
-                        <Button variant="secondary">{t('components.cancel_invitation.keep')}</Button>
+                        <Button variant="secondary">
+                            {t('components.cancel_invitation.keep')}
+                        </Button>
                     </DialogClose>
 
                     <Button

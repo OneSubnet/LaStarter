@@ -11,7 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 
-class TeamMemberController extends Controller
+final class TeamMemberController extends Controller
 {
     public function update(UpdateTeamMemberRequest $request, Team $team, User $user, UpdateTeamMemberRole $updateRole): RedirectResponse
     {

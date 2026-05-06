@@ -131,13 +131,13 @@ final class ExtensionController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $identifier = $this->resolveIdentifier($request);
-        $success = app(UpdateService::class)->update($identifier);
+        $report = app(UpdateService::class)->updateWithReport($identifier);
 
-        if ($success) {
+        if ($report->compatible) {
             return back()->with('toast', ['type' => 'success', 'message' => __('Extension updated.')]);
         }
 
-        return back()->with('toast', ['type' => 'error', 'message' => __('Update failed. Check logs for details.')]);
+        return back()->with('toast', ['type' => 'error', 'message' => __('Update blocked: :errors', ['errors' => implode(', ', $report->errors)])]);
     }
 
     public function checkUpdates(): RedirectResponse

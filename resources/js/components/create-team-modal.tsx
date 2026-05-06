@@ -16,10 +16,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { store } from '@/routes/settings/teams';
+import type { SharedData } from '@/types';
 
 export default function CreateTeamModal({ children }: PropsWithChildren) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
+    const { currentTeam } = usePage<SharedData>().props;
     const teamSlug = currentTeam?.slug ?? '';
     const [open, setOpen] = useState(false);
 
@@ -41,33 +42,39 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
                     className="space-y-6"
                 >
                     <DialogHeader>
-                        <DialogTitle>{t('components.create_team.title')}</DialogTitle>
+                        <DialogTitle>
+                            {t('components.create_team.title')}
+                        </DialogTitle>
                         <DialogDescription>
                             {t('components.create_team.description')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="name">{t('components.create_team.name_label')}</Label>
+                        <Label htmlFor="name">
+                            {t('components.create_team.name_label')}
+                        </Label>
                         <Input
                             id="name"
                             name="name"
                             data-test="create-team-name"
-                            placeholder={t('components.create_team.placeholder')}
+                            placeholder={t(
+                                'components.create_team.placeholder',
+                            )}
                             required
                         />
                     </div>
 
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
-                            <Button variant="secondary">{t('common.cancel')}</Button>
+                            <Button variant="secondary">
+                                {t('common.cancel')}
+                            </Button>
                         </DialogClose>
 
-                        <Button
-                            type="submit"
-                            data-test="create-team-submit"
-                        >
-                            {t('common.create')} {t('common.team').toLowerCase()}
+                        <Button type="submit" data-test="create-team-submit">
+                            {t('common.create')}{' '}
+                            {t('common.team').toLowerCase()}
                         </Button>
                     </DialogFooter>
                 </form>

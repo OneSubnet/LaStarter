@@ -6,12 +6,14 @@ use App\Core\Extensions\Events\ExtensionDisabled;
 use App\Core\Extensions\Events\ExtensionEnabled;
 use App\Core\Extensions\Events\ExtensionInstalled;
 use App\Core\Extensions\Events\ExtensionUninstalled;
+use App\Enums\TeamRole;
 use App\Models\Extension;
 use App\Models\TeamExtension;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 final class ExtensionManager
 {
@@ -67,6 +69,8 @@ final class ExtensionManager
         }
 
         Extension::whereNotIn('identifier', $manifests->keys()->all())->delete();
+
+        $this->syncOwnerPermissions();
     }
 
     private function syncExtension(ExtensionManifest $manifest): void
@@ -104,6 +108,23 @@ final class ExtensionManager
                 ['guard_name' => 'web'],
             );
         }
+    }
+
+    /**
+     * Ensure every owner role has all permissions.
+     * Called after new permissions are created so existing teams stay up to date.
+     */
+    private function syncOwnerPermissions(): void
+    {
+        $allPermissions = Permission::pluck('name')->toArray();
+
+        if ($allPermissions === []) {
+            return;
+        }
+
+        Role::where('name', TeamRole::Owner->value)
+            ->where('guard_name', 'web')
+            ->eachById(fn (Role $role) => $role->syncPermissions($allPermissions));
     }
 
     // ──────────────────────────────────────────────

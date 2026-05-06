@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
-class SetTeamUrlDefaults
+final class SetTeamUrlDefaults
 {
     /**
      * Set the default URL parameters for team-based routes.

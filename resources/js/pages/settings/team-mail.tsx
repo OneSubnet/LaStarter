@@ -24,6 +24,7 @@ import {
     update as updateUrl,
     test as testUrl,
 } from '@/routes/settings/team/mail';
+import type { SharedData } from '@/types';
 
 type Props = {
     mail: {
@@ -39,8 +40,8 @@ type Props = {
 
 export default function TeamMail({ mail }: Props) {
     const { t } = useTranslation();
-    const { currentTeam } = usePage().props;
-    const teamSlug = (currentTeam as { slug: string } | null)?.slug ?? '';
+    const { currentTeam } = usePage<SharedData>().props;
+    const teamSlug = currentTeam?.slug ?? '';
     const [serverErrors, setServerErrors] = useState<Record<string, string>>(
         {},
     );
