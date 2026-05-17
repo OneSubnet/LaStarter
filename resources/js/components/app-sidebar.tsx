@@ -46,7 +46,7 @@ import {
     roles,
 } from '@/routes/settings/team';
 import type { SharedData } from '@/types';
-import type { ExtensionNavChild, ExtensionNavItem } from '@/types/navigation';
+import type { ExtensionNavItem } from '@/types/navigation';
 import type { ContextualSidebar } from '@/types/shared-data';
 
 // ── Types ──────────────────────────────────────────────
