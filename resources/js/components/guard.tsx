@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react';
-import { useMemo  } from 'react';
-import type {ReactNode} from 'react';
+import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import type { SharedData } from '@/types';
 
 interface GuardProps {
@@ -15,10 +15,7 @@ export default function Guard({
     children,
 }: GuardProps) {
     const raw = usePage<SharedData>().props.auth?.permissions;
-    const permissions = useMemo(
-        () => new Set(raw ?? []),
-        [raw],
-    );
+    const permissions = useMemo(() => new Set(raw ?? []), [raw]);
 
     if (!raw) {
         return <>{fallback}</>;

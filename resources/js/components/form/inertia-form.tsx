@@ -1,11 +1,6 @@
 import { Form as InertiaForm } from '@inertiajs/react';
-import {
-    
-    createContext,
-    
-    useContext
-} from 'react';
-import type {ComponentProps, PropsWithChildren} from 'react';
+import { createContext, useContext } from 'react';
+import type { ComponentProps, PropsWithChildren } from 'react';
 
 type Props = PropsWithChildren<ComponentProps<typeof InertiaForm>>;
 

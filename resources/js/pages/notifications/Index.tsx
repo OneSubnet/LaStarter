@@ -92,8 +92,13 @@ export default function NotificationsIndex({ notifications }: Props) {
                             <button
                                 key={notification.id}
                                 type="button"
-                                aria-label={notification.title || t('notifications.title')}
-                                aria-current={notification.read_at ? undefined : 'true'}
+                                aria-label={
+                                    notification.title ||
+                                    t('notifications.title')
+                                }
+                                aria-current={
+                                    notification.read_at ? undefined : 'true'
+                                }
                                 onClick={() => {
                                     if (!notification.read_at) {
                                         markRead(notification.id);

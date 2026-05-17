@@ -34,14 +34,25 @@ class ErrorBoundaryInner extends Component<Props, State> {
                 return this.props.fallback;
             }
 
-            return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;
+            return (
+                <ErrorFallback
+                    error={this.state.error}
+                    onRetry={this.handleRetry}
+                />
+            );
         }
 
         return this.props.children;
     }
 }
 
-function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
+function ErrorFallback({
+    error,
+    onRetry,
+}: {
+    error: Error | null;
+    onRetry: () => void;
+}) {
     const { t } = useTranslation();
 
     return (
@@ -71,13 +82,11 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
 }
 
 export function ErrorBoundary({ children, fallback }: Props) {
-    return <ErrorBoundaryInner fallback={fallback}>{children}</ErrorBoundaryInner>;
+    return (
+        <ErrorBoundaryInner fallback={fallback}>{children}</ErrorBoundaryInner>
+    );
 }
 
 export function PageErrorBoundary({ children }: { children: ReactNode }) {
-    return (
-        <ErrorBoundary>
-            {children}
-        </ErrorBoundary>
-    );
+    return <ErrorBoundary>{children}</ErrorBoundary>;
 }

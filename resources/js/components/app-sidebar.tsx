@@ -1,11 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import {
-    Bell,
-    Check,
-    CheckCircle2,
-    FileText,
-    Megaphone,
-} from 'lucide-react';
+import { Bell, Check, CheckCircle2, FileText, Megaphone } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -271,10 +265,31 @@ function ModulePanel({ module }: { module: NavModule }) {
 
 function contextualIcon(icon: string) {
     switch (icon) {
-        case 'check': return <Check className="size-3.5 shrink-0 text-green-500" />;
-        case 'video': return <svg xmlns="http://www.w3.org/2000/svg" className="size-3.5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>;
-        case 'quiz': return <CheckCircle2 className="size-3.5 shrink-0 text-muted-foreground" />;
-        default: return <FileText className="size-3.5 shrink-0 text-muted-foreground" />;
+        case 'check':
+            return <Check className="size-3.5 shrink-0 text-green-500" />;
+        case 'video':
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-3.5 shrink-0 text-muted-foreground"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                >
+                    <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+            );
+        case 'quiz':
+            return (
+                <CheckCircle2 className="size-3.5 shrink-0 text-muted-foreground" />
+            );
+        default:
+            return (
+                <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+            );
     }
 }
 
@@ -284,13 +299,18 @@ function ContextualPanel({ data }: { data: ContextualSidebar }) {
     return (
         <div className="flex flex-col">
             {header && (
-                <div className="px-3 py-3 border-b">
+                <div className="border-b px-3 py-3">
                     {header.href ? (
-                        <Link href={header.href} className="text-sm font-semibold leading-snug hover:underline">
+                        <Link
+                            href={header.href}
+                            className="text-sm leading-snug font-semibold hover:underline"
+                        >
                             {header.title}
                         </Link>
                     ) : (
-                        <p className="text-sm font-semibold leading-snug">{header.title}</p>
+                        <p className="text-sm leading-snug font-semibold">
+                            {header.title}
+                        </p>
                     )}
                     {header.progress != null && (
                         <div className="mt-2 flex items-center gap-2">
@@ -300,13 +320,15 @@ function ContextualPanel({ data }: { data: ContextualSidebar }) {
                                     style={{ width: `${header.progress}%` }}
                                 />
                             </div>
-                            <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                            <span className="shrink-0 text-[11px] text-muted-foreground tabular-nums">
                                 {header.progress}%
                             </span>
                         </div>
                     )}
                     {header.subtitle && header.progress == null && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{header.subtitle}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            {header.subtitle}
+                        </p>
                     )}
                 </div>
             )}
@@ -314,7 +336,7 @@ function ContextualPanel({ data }: { data: ContextualSidebar }) {
                 {sections.map((section, i) => (
                     <div key={i}>
                         {section.title && (
-                            <p className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                            <p className="px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
                                 {section.title}
                             </p>
                         )}
@@ -331,9 +353,13 @@ function ContextualPanel({ data }: { data: ContextualSidebar }) {
                                     )}
                                 >
                                     {contextualIcon(item.icon)}
-                                    <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                                    <span className="min-w-0 flex-1 truncate">
+                                        {item.title}
+                                    </span>
                                     {item.meta && (
-                                        <span className="shrink-0 text-[11px] text-muted-foreground/70">{item.meta}</span>
+                                        <span className="shrink-0 text-[11px] text-muted-foreground/70">
+                                            {item.meta}
+                                        </span>
                                     )}
                                 </Link>
                             ))}
@@ -354,8 +380,7 @@ export function AppSidebar() {
 
     const teamSlug = page.props.currentTeam?.slug ?? '';
     const permissions = new Set(page.props.auth?.permissions ?? []);
-    const can = (perm: string | undefined) =>
-        !perm || permissions.has(perm);
+    const can = (perm: string | undefined) => !perm || permissions.has(perm);
 
     const coreUpdateAvailable = page.props.coreUpdateAvailable;
     const extensionUpdateCount = page.props.extensionUpdateCount;
@@ -588,7 +613,14 @@ export function AppSidebar() {
         });
 
         return result;
-    }, [teamSlug, extensionNav, permissions, t, systemBadgeCount, extensionUpdateCount]);
+    }, [
+        teamSlug,
+        extensionNav,
+        permissions,
+        t,
+        systemBadgeCount,
+        extensionUpdateCount,
+    ]);
 
     // Derive active module from current URL
     const urlActiveKey = useMemo(() => {
@@ -688,8 +720,11 @@ export function AppSidebar() {
                 <SidebarContent className="overflow-hidden">
                     <SidebarGroup className="px-0">
                         <SidebarGroupContent>
-                            {(page.props.contextualSidebar && !effectiveManualKey) ? (
-                                <ContextualPanel data={page.props.contextualSidebar} />
+                            {page.props.contextualSidebar &&
+                            !effectiveManualKey ? (
+                                <ContextualPanel
+                                    data={page.props.contextualSidebar}
+                                />
                             ) : activeModule ? (
                                 <ModulePanel module={activeModule} />
                             ) : null}

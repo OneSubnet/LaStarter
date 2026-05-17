@@ -128,7 +128,9 @@ export default function ExtensionSettingsForm({
             </h3>
             {settings.map((field) => (
                 <div key={field.key}>
-                    <label htmlFor={field.key} className="text-sm font-medium">{field.label}</label>
+                    <label htmlFor={field.key} className="text-sm font-medium">
+                        {field.label}
+                    </label>
                     {renderField(field)}
                 </div>
             ))}

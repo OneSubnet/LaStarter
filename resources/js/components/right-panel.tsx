@@ -39,9 +39,7 @@ export function RightPanel({
                     <DrawerHeader className="text-left">
                         <DrawerTitle>{title}</DrawerTitle>
                     </DrawerHeader>
-                    <div className="overflow-y-auto px-4 pb-4">
-                        {children}
-                    </div>
+                    <div className="overflow-y-auto px-4 pb-4">{children}</div>
                 </DrawerContent>
             </Drawer>
         );

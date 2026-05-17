@@ -280,7 +280,10 @@ export function SidebarRight() {
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs leading-snug">
                                                     <span className="font-medium">
-                                                        {entry.user ?? i18n.t('common.system')}
+                                                        {entry.user ??
+                                                            i18n.t(
+                                                                'common.system',
+                                                            )}
                                                     </span>{' '}
                                                     <span className="text-muted-foreground">
                                                         {entry.action}
@@ -321,15 +324,20 @@ export function SidebarRight() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        {t('components.sidebar_right.audit.user')}
+                                        {t(
+                                            'components.sidebar_right.audit.user',
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm font-medium">
-                                        {selectedLog.user ?? i18n.t('common.system')}
+                                        {selectedLog.user ??
+                                            i18n.t('common.system')}
                                     </p>
                                 </div>
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        {t('components.sidebar_right.audit.action')}
+                                        {t(
+                                            'components.sidebar_right.audit.action',
+                                        )}
                                     </p>
                                     <Badge variant="secondary" className="mt-1">
                                         {selectedLog.action}
@@ -337,7 +345,9 @@ export function SidebarRight() {
                                 </div>
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        {t('components.sidebar_right.audit.module')}
+                                        {t(
+                                            'components.sidebar_right.audit.module',
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {selectedLog.module ?? '—'}
@@ -345,7 +355,9 @@ export function SidebarRight() {
                                 </div>
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        {t('components.sidebar_right.audit.date')}
+                                        {t(
+                                            'components.sidebar_right.audit.date',
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {formatDateTime(selectedLog.created_at)}
@@ -360,7 +372,9 @@ export function SidebarRight() {
                                         <Separator />
                                         <div>
                                             <p className="mb-2 text-xs text-muted-foreground">
-                                                {t('components.sidebar_right.audit.details')}
+                                                {t(
+                                                    'components.sidebar_right.audit.details',
+                                                )}
                                             </p>
                                             <pre className="max-h-60 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
                                                 {JSON.stringify(

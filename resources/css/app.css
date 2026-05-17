@@ -212,10 +212,10 @@
     @apply rounded-lg border border-border;
 }
 .mdeditor .EasyMDEContainer .editor-toolbar {
-    @apply border-b border-border bg-muted/50 rounded-t-lg;
+    @apply rounded-t-lg border-b border-border bg-muted/50;
 }
 .mdeditor .EasyMDEContainer .CodeMirror {
-    @apply bg-background border-none;
+    @apply border-none bg-background;
     min-height: 300px;
 }
 .mdeditor .EasyMDEContainer .editor-preview {

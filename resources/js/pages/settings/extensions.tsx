@@ -1,5 +1,9 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import type { ColumnDef, SortingState, VisibilityState } from '@tanstack/react-table';
+import type {
+    ColumnDef,
+    SortingState,
+    VisibilityState,
+} from '@tanstack/react-table';
 import {
     flexRender,
     getCoreRowModel,
@@ -153,10 +157,7 @@ function ExtensionDetailPanel({
                         <p className="text-xs text-muted-foreground">
                             {t('settings.extensions.type')}
                         </p>
-                        <Badge
-                            variant="outline"
-                            className="mt-1 capitalize"
-                        >
+                        <Badge variant="outline" className="mt-1 capitalize">
                             {ext.type}
                         </Badge>
                     </div>
@@ -710,19 +711,30 @@ export default function Extensions({ extensions }: Props) {
                                                 onClick={() => {
                                                     const identifiers = table
                                                         .getFilteredSelectedRowModel()
-                                                        .rows
-                                                        .filter(
+                                                        .rows.filter(
                                                             (row) =>
-                                                                row.original.state &&
-                                                                !row.original.is_enabled,
+                                                                row.original
+                                                                    .state &&
+                                                                !row.original
+                                                                    .is_enabled,
                                                         )
-                                                        .map((row) => row.original.identifier);
+                                                        .map(
+                                                            (row) =>
+                                                                row.original
+                                                                    .identifier,
+                                                        );
 
-                                                    if (identifiers.length > 0) {
+                                                    if (
+                                                        identifiers.length > 0
+                                                    ) {
                                                         router.post(
-                                                            batchEnableUrl(teamSlug ?? '').url,
+                                                            batchEnableUrl(
+                                                                teamSlug ?? '',
+                                                            ).url,
                                                             { identifiers },
-                                                            { preserveScroll: true },
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
                                                         );
                                                     }
 
@@ -740,15 +752,28 @@ export default function Extensions({ extensions }: Props) {
                                                 onClick={() => {
                                                     const identifiers = table
                                                         .getFilteredSelectedRowModel()
-                                                        .rows
-                                                        .filter((row) => row.original.is_enabled)
-                                                        .map((row) => row.original.identifier);
+                                                        .rows.filter(
+                                                            (row) =>
+                                                                row.original
+                                                                    .is_enabled,
+                                                        )
+                                                        .map(
+                                                            (row) =>
+                                                                row.original
+                                                                    .identifier,
+                                                        );
 
-                                                    if (identifiers.length > 0) {
+                                                    if (
+                                                        identifiers.length > 0
+                                                    ) {
                                                         router.post(
-                                                            batchDisableUrl(teamSlug ?? '').url,
+                                                            batchDisableUrl(
+                                                                teamSlug ?? '',
+                                                            ).url,
                                                             { identifiers },
-                                                            { preserveScroll: true },
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
                                                         );
                                                     }
 
@@ -914,7 +939,8 @@ export default function Extensions({ extensions }: Props) {
                                                         )
                                                     }
                                                 >
-                                                    {columnLabels[col.id] ?? col.id}
+                                                    {columnLabels[col.id] ??
+                                                        col.id}
                                                 </DropdownMenuCheckboxItem>
                                             ))}
                                     </DropdownMenuContent>
@@ -1073,7 +1099,9 @@ export default function Extensions({ extensions }: Props) {
                                                             disabled={
                                                                 !table.getCanPreviousPage()
                                                             }
-                                                            aria-label={t('common.first_page')}
+                                                            aria-label={t(
+                                                                'common.first_page',
+                                                            )}
                                                         >
                                                             <ChevronsLeft className="h-4 w-4" />
                                                         </Button>
@@ -1096,7 +1124,9 @@ export default function Extensions({ extensions }: Props) {
                                                             disabled={
                                                                 !table.getCanPreviousPage()
                                                             }
-                                                            aria-label={t('common.previous')}
+                                                            aria-label={t(
+                                                                'common.previous',
+                                                            )}
                                                         >
                                                             <ChevronLeft className="h-4 w-4" />
                                                         </Button>
@@ -1119,7 +1149,9 @@ export default function Extensions({ extensions }: Props) {
                                                             disabled={
                                                                 !table.getCanNextPage()
                                                             }
-                                                            aria-label={t('common.next')}
+                                                            aria-label={t(
+                                                                'common.next',
+                                                            )}
                                                         >
                                                             <ChevronRight className="h-4 w-4" />
                                                         </Button>
@@ -1145,7 +1177,9 @@ export default function Extensions({ extensions }: Props) {
                                                             disabled={
                                                                 !table.getCanNextPage()
                                                             }
-                                                            aria-label={t('common.last_page')}
+                                                            aria-label={t(
+                                                                'common.last_page',
+                                                            )}
                                                         >
                                                             <ChevronsRight className="h-4 w-4" />
                                                         </Button>

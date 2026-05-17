@@ -203,9 +203,7 @@ export default function AppSidebarLayout({
                     <Link
                         href={`/${teamSlug}`}
                         aria-current={
-                            currentPath === `/${teamSlug}`
-                                ? 'page'
-                                : undefined
+                            currentPath === `/${teamSlug}` ? 'page' : undefined
                         }
                         className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
                             currentPath === `/${teamSlug}`

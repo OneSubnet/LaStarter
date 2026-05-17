@@ -5,12 +5,13 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    useReactTable
-    
-    
-    
+    useReactTable,
 } from '@tanstack/react-table';
-import type {ColumnDef, SortingState, VisibilityState} from '@tanstack/react-table';
+import type {
+    ColumnDef,
+    SortingState,
+    VisibilityState,
+} from '@tanstack/react-table';
 import {
     ArrowUpDown,
     CheckCircle2,
@@ -104,36 +105,39 @@ export default function System({
         router.post(url, data, { preserveScroll: true });
     };
 
-    const handleDownload = useCallback(async (filename: string) => {
-        try {
-            const response = await fetch(
-                `/${teamSlug}/settings/system/backups/download-url`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-CSRF-TOKEN':
-                            document
-                                .querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content') ?? '',
+    const handleDownload = useCallback(
+        async (filename: string) => {
+            try {
+                const response = await fetch(
+                    `/${teamSlug}/settings/system/backups/download-url`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN':
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute('content') ?? '',
+                        },
+                        body: JSON.stringify({ filename }),
                     },
-                    body: JSON.stringify({ filename }),
-                },
-            );
+                );
 
-            const data = await response.json();
-            const link = document.createElement('a');
-            link.href = data.url;
-            link.download = filename;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch {
-            // Download failed silently
-        }
-    }, [teamSlug]);
+                const data = await response.json();
+                const link = document.createElement('a');
+                link.href = data.url;
+                link.download = filename;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch {
+                // Download failed silently
+            }
+        },
+        [teamSlug],
+    );
 
     const handleCheckCore = useCallback(() => {
         if (!teamSlug) {
@@ -183,9 +187,7 @@ export default function System({
                         size="sm"
                         className="-ml-3 h-8"
                         onClick={() =>
-                            column.toggleSorting(
-                                column.getIsSorted() === 'asc',
-                            )
+                            column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
                         {t('settings.backups.col_filename')}
@@ -206,9 +208,7 @@ export default function System({
                         size="sm"
                         className="-ml-3 h-8"
                         onClick={() =>
-                            column.toggleSorting(
-                                column.getIsSorted() === 'asc',
-                            )
+                            column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
                         {t('settings.backups.col_type')}
@@ -238,9 +238,7 @@ export default function System({
                         size="sm"
                         className="-ml-3 h-8"
                         onClick={() =>
-                            column.toggleSorting(
-                                column.getIsSorted() === 'asc',
-                            )
+                            column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
                         {t('settings.backups.col_size')}
@@ -257,9 +255,7 @@ export default function System({
                         size="sm"
                         className="-ml-3 h-8"
                         onClick={() =>
-                            column.toggleSorting(
-                                column.getIsSorted() === 'asc',
-                            )
+                            column.toggleSorting(column.getIsSorted() === 'asc')
                         }
                     >
                         {t('settings.backups.col_date')}
@@ -547,7 +543,7 @@ export default function System({
                                                                                   .columnDef
                                                                                   .header,
                                                                               header.getContext(),
-                                                                            )}
+                                                                          )}
                                                                 </TableHead>
                                                             ),
                                                         )}
@@ -560,28 +556,24 @@ export default function System({
                                                 table
                                                     .getRowModel()
                                                     .rows.map((row) => (
-                                                        <TableRow
-                                                            key={row.id}
-                                                        >
+                                                        <TableRow key={row.id}>
                                                             {row
                                                                 .getVisibleCells()
-                                                                .map(
-                                                                    (cell) => (
-                                                                        <TableCell
-                                                                            key={
-                                                                                cell.id
-                                                                            }
-                                                                        >
-                                                                            {flexRender(
-                                                                                cell
-                                                                                    .column
-                                                                                    .columnDef
-                                                                                    .cell,
-                                                                                cell.getContext(),
-                                                                            )}
-                                                                        </TableCell>
-                                                                    ),
-                                                                )}
+                                                                .map((cell) => (
+                                                                    <TableCell
+                                                                        key={
+                                                                            cell.id
+                                                                        }
+                                                                    >
+                                                                        {flexRender(
+                                                                            cell
+                                                                                .column
+                                                                                .columnDef
+                                                                                .cell,
+                                                                            cell.getContext(),
+                                                                        )}
+                                                                    </TableCell>
+                                                                ))}
                                                         </TableRow>
                                                     ))
                                             ) : (
@@ -590,9 +582,7 @@ export default function System({
                                                         colSpan={columns.length}
                                                         className="h-24 text-center"
                                                     >
-                                                        {t(
-                                                            'common.no_results',
-                                                        )}
+                                                        {t('common.no_results')}
                                                     </TableCell>
                                                 </TableRow>
                                             )}
@@ -607,9 +597,7 @@ export default function System({
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                table.previousPage()
-                                            }
+                                            onClick={() => table.previousPage()}
                                             disabled={
                                                 !table.getCanPreviousPage()
                                             }
@@ -628,9 +616,7 @@ export default function System({
                                             variant="outline"
                                             size="sm"
                                             onClick={() => table.nextPage()}
-                                            disabled={
-                                                !table.getCanNextPage()
-                                            }
+                                            disabled={!table.getCanNextPage()}
                                         >
                                             {t('common.next')}
                                         </Button>
