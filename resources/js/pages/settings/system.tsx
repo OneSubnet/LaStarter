@@ -64,13 +64,7 @@ import {
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { formatBytes, formatDateTime } from '@/lib/format';
 import type { SharedData } from '@/types';
-
-type BackupItem = {
-    filename: string;
-    type: string;
-    size: number;
-    created_at: string;
-};
+import type { BackupItem } from '@/types/system';
 
 type Props = {
     coreVersion: string;

@@ -33,7 +33,7 @@ final class WidgetRegistry
         $enabled = app(ExtensionManager::class)->enabledIdentifiers($teamId);
 
         return array_values(array_filter($this->widgets, function (WidgetDefinition $w) use ($enabled, $user) {
-            if (! in_array($w->module, $enabled, true)) {
+            if ($w->module !== 'core' && ! in_array($w->module, $enabled, true)) {
                 return false;
             }
 

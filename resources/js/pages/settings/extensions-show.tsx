@@ -24,23 +24,7 @@ import {
     update as updateUrl,
 } from '@/routes/settings/team/extensions';
 import type { SharedData } from '@/types';
-
-type Extension = {
-    id: number;
-    identifier: string;
-    name: string;
-    type: 'module' | 'theme';
-    version: string | null;
-    description: string | null;
-    author: string | null;
-    state: string | null;
-    permissions: string[];
-    is_enabled: boolean;
-    has_routes: boolean;
-    has_migrations: boolean;
-    update_available: boolean;
-    latest_version: string | null;
-};
+import type { Extension } from '@/types/extensions';
 
 type Props = {
     extension: Extension;
@@ -282,14 +266,14 @@ export default function ExtensionsShow({ extension }: Props) {
                     </code>
                 </div>
 
-                {extension.permissions.length > 0 && (
+                {(extension.permissions ?? []).length > 0 && (
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">
                             {t('settings.extensions.permissions_title')} (
-                            {extension.permissions.length})
+                            {(extension.permissions ?? []).length})
                         </h3>
                         <div className="flex flex-wrap gap-1">
-                            {extension.permissions.map((perm) => (
+                            {(extension.permissions ?? []).map((perm) => (
                                 <code
                                     key={perm}
                                     className="rounded bg-muted px-1.5 py-0.5 text-xs"

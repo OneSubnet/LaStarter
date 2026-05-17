@@ -9,17 +9,7 @@ import {
     read,
     readAll,
 } from '@/routes/notifications';
-import type { SharedData } from '@/types';
-
-type NotificationItem = {
-    id: number;
-    type: string;
-    title: string;
-    body: string | null;
-    data: Record<string, unknown> | null;
-    read_at: string | null;
-    created_at: string;
-};
+import type { SharedData, NotificationItem } from '@/types';
 
 type Props = {
     notifications: {
@@ -33,7 +23,7 @@ export default function NotificationsIndex({ notifications }: Props) {
     const { t } = useTranslation();
     const teamSlug = usePage<SharedData>().props.currentTeam?.slug ?? '';
 
-    const markRead = (id: number) => {
+    const markRead = (id: string) => {
         router.post(
             read.url({ current_team: teamSlug, id }),
             {},
@@ -130,7 +120,7 @@ export default function NotificationsIndex({ notifications }: Props) {
                                         )}
                                     </div>
                                     <span className="shrink-0 text-xs text-muted-foreground">
-                                        {timeAgo(notification.created_at)}
+                                        {notification.created_at ? timeAgo(notification.created_at) : ''}
                                     </span>
                                 </div>
                             </button>

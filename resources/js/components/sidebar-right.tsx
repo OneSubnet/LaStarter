@@ -31,16 +31,7 @@ import {
 } from '@/components/ui/sidebar';
 import { formatDateTime as fmtDateTimeLib, getInitials } from '@/lib/format';
 import { switchMethod } from '@/routes/settings/teams';
-import type { SharedData } from '@/types';
-
-type AuditEntry = {
-    id: number;
-    user: string | null;
-    action: string;
-    module: string | null;
-    properties: Record<string, unknown> | null;
-    created_at: string | null;
-};
+import type { SharedData, AuditLogItem } from '@/types';
 
 function formatTimeAgo(dateStr: string | null): string {
     if (!dateStr) {
@@ -92,7 +83,7 @@ export function SidebarRight() {
     const teamMembers = page.props.teamMembers;
     const auditLogs = page.props.auditLogs;
 
-    const [selectedLog, setSelectedLog] = useState<AuditEntry | null>(null);
+    const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
 
     const switchTeam = (team: { slug: string }) => {
         router.visit(

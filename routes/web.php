@@ -60,6 +60,10 @@ Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
+        Route::get('dashboard/widget-data', [DashboardController::class, 'widgetData'])->name('dashboard.widget-data');
+        Route::put('dashboard/layout', [DashboardController::class, 'updateLayout'])->name('dashboard.layout.update');
+        Route::delete('dashboard/layout', [DashboardController::class, 'destroyLayout'])->name('dashboard.layout.destroy');
+        Route::post('dashboard/layout/default', [DashboardController::class, 'setDefault'])->name('dashboard.layout.default');
 
         Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
         Route::post('onboarding', [OnboardingController::class, 'update'])->name('onboarding.update');

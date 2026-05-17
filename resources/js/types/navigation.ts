@@ -28,3 +28,24 @@ export type ExtensionNavItem = {
     order: number;
     children?: ExtensionNavChild[];
 };
+
+export type SidebarNavItem = {
+    label: string;
+    icon: LucideIcon;
+    href: string;
+    permission?: string;
+    badge?: number | null;
+};
+
+export type SidebarNavSection = {
+    title?: string;
+    items: SidebarNavItem[];
+};
+
+export type SidebarNavModule = {
+    id: string;
+    label: string;
+    icon: LucideIcon;
+    sections: SidebarNavSection[];
+    urlPatterns: string[];
+};

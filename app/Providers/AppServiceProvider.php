@@ -36,6 +36,9 @@ use App\Core\System\Console\CoreUpdateCommand;
 use App\Core\System\Console\CoreVersionCommand;
 use App\Core\System\CoreUpdater;
 use App\Core\System\ReleaseClient;
+use App\Core\Widgets\CoreWidgetDataProvider;
+use App\Core\Widgets\WidgetDataProvider;
+use App\Core\Widgets\WidgetDefinition;
 use App\Core\Widgets\WidgetRegistry;
 use App\Http\Middleware\EnsureTeamMembership;
 use App\Models\Team;
@@ -93,6 +96,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleApiRegistry::class);
         $this->app->singleton(MetricsAggregator::class);
         $this->app->singleton(WidgetRegistry::class);
+        $this->app->singleton(WidgetDataProvider::class);
         $this->app->singleton(ModuleRouteRegistrar::class);
 
         // System update
@@ -148,6 +152,37 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ExtensionUninstalled::class, [$cacheListener, 'handleExtensionUninstalled']);
 
         require_once app_path('Core/Support/helpers.php');
+
+        // Register core widgets
+        $widgets = $this->app->make(WidgetRegistry::class);
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-team-members',
+            label: 'Team Members',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 2],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-activity',
+            label: 'Recent Activity',
+            module: 'core',
+            type: 'list',
+            size: ['w' => 4, 'h' => 3],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-unread-notifications',
+            label: 'Unread Notifications',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 2],
+        ));
+
+        // Register core widget data provider
+        $this->app->make(ModuleApiRegistry::class)->register(
+            CoreWidgetDataProvider::class,
+            'core',
+            new CoreWidgetDataProvider,
+        );
 
         // Register extension autoloaders and service providers
         try {

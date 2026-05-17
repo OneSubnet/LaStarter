@@ -62,7 +62,7 @@ export default function OnboardingIndex({ user, team }: Props) {
             {
                 preserveScroll: true,
                 onSuccess: onSuccess ?? goNext,
-                onError: (errors) => console.error(errors),
+                onError: () => {},
             },
         );
     };

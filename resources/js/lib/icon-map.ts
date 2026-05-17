@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+    Activity,
+    Bell,
     BookOpen,
     Calculator,
     Calendar,
@@ -31,6 +33,8 @@ import {
 } from 'lucide-react';
 
 export const iconMap: Record<string, LucideIcon> = {
+    Activity,
+    Bell,
     LayoutGrid,
     LayoutDashboard,
     FolderKanban,

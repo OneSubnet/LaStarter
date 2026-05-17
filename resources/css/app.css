@@ -224,3 +224,62 @@
 .mdeditor .EasyMDEContainer .editor-statusbar {
     @apply border-t border-border;
 }
+
+/* Dashboard grid layout overrides */
+.react-grid-placeholder {
+    background: var(--primary) !important;
+    opacity: 0.15;
+    border-radius: 0.25rem;
+}
+
+.react-grid-item.react-grid-placeholder {
+    border-radius: 0.25rem;
+}
+
+.react-grid-item > .react-resizable-handle {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+    z-index: 10;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+    content: '';
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--muted-foreground);
+    border-bottom: 2px solid var(--muted-foreground);
+    opacity: 0.3;
+    transition: opacity 0.15s;
+}
+
+.react-grid-item:hover > .react-resizable-handle::after {
+    opacity: 0.6;
+}
+
+.react-grid-item {
+    transition: transform 200ms ease;
+    position: relative;
+}
+
+.react-grid-item.cssTransforms {
+    transition-property: transform;
+}
+
+.react-grid-item.resizing {
+    opacity: 0.9;
+    z-index: 3;
+}
+
+.react-grid-item.react-draggable-dragging {
+    transition: none;
+    z-index: 3;
+    opacity: 0.9;
+    will-change: transform;
+}

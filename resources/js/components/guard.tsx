@@ -1,13 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { useMemo } from 'react';
-import type { ReactNode } from 'react';
 import type { SharedData } from '@/types';
-
-interface GuardProps {
-    permission: string | string[];
-    fallback?: ReactNode;
-    children: ReactNode;
-}
+import type { GuardProps } from '@/types/ui';
 
 export default function Guard({
     permission,

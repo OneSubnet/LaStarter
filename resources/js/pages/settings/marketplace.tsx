@@ -20,18 +20,7 @@ import {
     show as showUrl,
 } from '@/routes/settings/team/marketplace';
 import type { SharedData } from '@/types';
-
-type MarketplaceExtension = {
-    identifier: string;
-    name: string;
-    description: string;
-    type: 'module' | 'theme';
-    version: string | null;
-    author: string | null;
-    owner: string | null;
-    repo: string | null;
-    github_url: string | null;
-};
+import type { MarketplaceExtension } from '@/types/extensions';
 
 type Props = {
     extensions: MarketplaceExtension[];
