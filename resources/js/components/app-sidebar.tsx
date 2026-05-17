@@ -547,6 +547,12 @@ export function AppSidebar() {
                 permission: 'system.update',
                 badge: systemBadgeCount,
             },
+            {
+                label: t('settings.audit.title'),
+                icon: iconMap.FileText,
+                href: `/${teamSlug}/settings/audit`,
+                permission: 'audit.view',
+            },
         ].filter((item) => can(item.permission));
 
         const accountItems: SidebarNavItem[] = [
@@ -577,6 +583,7 @@ export function AppSidebar() {
                 roles(teamSlug).url,
                 mail(teamSlug).url,
                 `/${teamSlug}/settings/system`,
+                `/${teamSlug}/settings/audit`,
                 editProfile().url,
                 editSecurity().url,
                 editAppearance().url,

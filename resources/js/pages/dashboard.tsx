@@ -4,20 +4,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
-import type { WidgetConfig, WidgetInstance, DisplayMode, DateRange, WidgetData } from '@/types/dashboard';
+import type { WidgetConfig, WidgetInstance, DisplayMode, DateRange, WidgetData, ChartType } from '@/types/dashboard';
 import { WidgetMap } from '@/components/dashboard/widget-map';
 import { WidgetPicker } from '@/components/dashboard/widget-picker';
+import { SourcePicker } from '@/components/dashboard/source-picker';
 import { DateRangePicker } from '@/components/dashboard/date-range-picker';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Star, Plus } from 'lucide-react';
+import { RotateCcw, Plus } from 'lucide-react';
 
 const BREAKPOINTS = { lg: 1200, md: 996, sm: 768 };
 const COLS = { lg: 12, md: 8, sm: 4 };
-const ROW_HEIGHT = 80;
+const ROW_HEIGHT = 60;
 const MARGIN = 8;
 const SAVE_DEBOUNCE = 500;
 
-const DEFAULT_H: Record<DisplayMode, number> = { stat: 1, chart: 3, table: 3 };
+const DEFAULT_H: Record<DisplayMode, number> = { stat: 1, chart: 4, table: 4 };
 
 export default function Dashboard() {
     const { t } = useTranslation();
@@ -36,6 +37,10 @@ export default function Dashboard() {
 
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isInitialRender = useRef(true);
+    const widgetsRef = useRef(widgets);
+    widgetsRef.current = widgets;
+    const layoutRef = useRef(layout);
+    layoutRef.current = layout;
 
     const { width, containerRef, mounted } = useContainerWidth({ initialWidth: 1200 });
 
@@ -52,6 +57,8 @@ export default function Dashboard() {
             type: w.type as string,
             size: w.size as { w: number; h: number },
             permission: (w.permission as string) ?? null,
+            description: (w.description as string) ?? null,
+            modes: (w.modes as DisplayMode[] | undefined) ?? undefined,
         }));
     }, [page.props.availableWidgets]);
 
@@ -72,7 +79,7 @@ export default function Dashboard() {
                     `/${teamSlug}/dashboard/layout`,
                     {
                         layout: newLayout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })),
-                        widgets: newWidgets.map(({ id, identifier, displayMode }) => ({ id, identifier, displayMode })),
+                        widgets: newWidgets.map(({ id, identifier, displayMode, config }) => ({ id, identifier, displayMode, config: config as Record<string, string | string[] | undefined> | undefined })),
                     },
                     { preserveScroll: true },
                 );
@@ -91,55 +98,75 @@ export default function Dashboard() {
     const handleLayoutChange = useCallback(
         (newLayout: readonly LayoutItem[]) => {
             setLayout([...newLayout]);
-            persistLayout(newLayout, widgets);
+            persistLayout(newLayout, widgetsRef.current);
         },
-        [widgets, persistLayout],
+        [persistLayout],
     );
 
     const handleRemoveWidget = useCallback(
         (id: string) => {
-            const newWidgets = widgets.filter((w) => w.id !== id);
-            const newLayout = layout.filter((l) => l.i !== id);
+            if (saveTimer.current) clearTimeout(saveTimer.current);
+            const newWidgets = widgetsRef.current.filter((w) => w.id !== id);
+            const newLayout = layoutRef.current.filter((l) => l.i !== id);
+            widgetsRef.current = newWidgets;
+            layoutRef.current = newLayout;
             setWidgets(newWidgets);
             setLayout(newLayout);
-            persistLayout(newLayout, newWidgets);
+            router.put(
+                `/${teamSlug}/dashboard/layout`,
+                {
+                    layout: newLayout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })),
+                    widgets: newWidgets.map(({ id: wId, identifier, displayMode, config }) => ({ id: wId, identifier, displayMode, config: config as Record<string, string | string[] | undefined> | undefined })),
+                },
+                { preserveScroll: true },
+            );
         },
-        [widgets, layout, persistLayout],
+        [teamSlug],
     );
 
     const handleAddWidget = useCallback(
         (widget: WidgetInstance) => {
+            if (saveTimer.current) clearTimeout(saveTimer.current);
             const config = configMap.get(widget.identifier);
-            const maxY = layout.reduce((max, l) => Math.max(max, l.y + l.h), 0);
+            const maxY = layoutRef.current.reduce((max, l) => Math.max(max, l.y + l.h), 0);
             const newItem: LayoutItem = {
                 i: widget.id,
                 x: 0,
                 y: maxY,
                 w: config?.size?.w ?? 3,
-                h: config?.size?.h ?? 2,
+                h: config?.size?.h ?? DEFAULT_H.stat,
             };
-            const newWidgets = [...widgets, widget];
-            const newLayout = [...layout, newItem];
+            const newWidgets = [...widgetsRef.current, widget];
+            const newLayout = [...layoutRef.current, newItem];
+            widgetsRef.current = newWidgets;
+            layoutRef.current = newLayout;
             setWidgets(newWidgets);
             setLayout(newLayout);
-            persistLayout(newLayout, newWidgets);
+            router.put(
+                `/${teamSlug}/dashboard/layout`,
+                {
+                    layout: newLayout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })),
+                    widgets: newWidgets.map(({ id: wId, identifier, displayMode, config }) => ({ id: wId, identifier, displayMode, config: config as Record<string, string | string[] | undefined> | undefined })),
+                },
+                { preserveScroll: true },
+            );
         },
-        [widgets, layout, configMap, persistLayout],
+        [teamSlug, configMap],
     );
 
     const handleModeChange = useCallback(
         (widgetId: string, mode: DisplayMode) => {
-            const newWidgets = widgets.map((w) =>
+            const newWidgets = widgetsRef.current.map((w) =>
                 w.id === widgetId ? { ...w, displayMode: mode } : w,
             );
-            const newLayout = layout.map((l) =>
+            const newLayout = layoutRef.current.map((l) =>
                 l.i === widgetId ? { ...l, h: DEFAULT_H[mode] } : l,
             );
             setWidgets(newWidgets);
             setLayout(newLayout);
             persistLayout(newLayout, newWidgets);
         },
-        [widgets, layout, persistLayout],
+        [persistLayout],
     );
 
     const handleDateRangeChange = useCallback(
@@ -153,12 +180,64 @@ export default function Dashboard() {
         [],
     );
 
-    const handleReset = useCallback(() => {
-        router.delete(`/${teamSlug}/dashboard/layout`);
-    }, [teamSlug]);
+    const [combineTarget, setCombineTarget] = useState<string | null>(null);
+    const [sourcePickerOpen, setSourcePickerOpen] = useState(false);
 
-    const handleSetDefault = useCallback(() => {
-        router.post(`/${teamSlug}/dashboard/layout/default`, {}, { preserveScroll: true });
+    const chartSources = useMemo(
+        () => availableWidgets.filter((w) => w.modes?.includes('chart')),
+        [availableWidgets],
+    );
+
+    const handleCombineRequest = useCallback((widgetId: string) => {
+        setCombineTarget(widgetId);
+        setSourcePickerOpen(true);
+    }, []);
+
+    const handleCombineConfirm = useCallback(
+        (sources: string[], chartType: ChartType) => {
+            if (combineTarget === null) return;
+            if (saveTimer.current) clearTimeout(saveTimer.current);
+
+            const newWidgets = widgetsRef.current.map((w) =>
+                w.id === combineTarget
+                    ? { ...w, identifier: 'combined', displayMode: 'chart' as DisplayMode, config: { sources, chartType } }
+                    : w,
+            );
+            const newLayout = layoutRef.current.map((l) =>
+                l.i === combineTarget ? { ...l, h: 4 } : l,
+            );
+
+            widgetsRef.current = newWidgets;
+            layoutRef.current = newLayout;
+            setWidgets(newWidgets);
+            setLayout(newLayout);
+
+            router.put(
+                `/${teamSlug}/dashboard/layout`,
+                {
+                    layout: newLayout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })),
+                    widgets: newWidgets.map(({ id, identifier, displayMode, config }) => ({ id, identifier, displayMode, config: config as Record<string, string | string[] | undefined> | undefined })),
+                },
+                { preserveScroll: true },
+            );
+
+            setCombineTarget(null);
+            setSourcePickerOpen(false);
+        },
+        [combineTarget, teamSlug],
+    );
+
+    const handleReset = useCallback(() => {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        widgetsRef.current = [];
+        layoutRef.current = [];
+        setWidgets([]);
+        setLayout([]);
+        router.put(
+            `/${teamSlug}/dashboard/layout`,
+            { layout: [], widgets: [] },
+            { preserveScroll: true },
+        );
     }, [teamSlug]);
 
     const activeWidgetIds = widgets.map((w) => w.id);
@@ -173,10 +252,6 @@ export default function Dashboard() {
                 open={pickerOpen}
                 onOpenChange={setPickerOpen}
             />
-            <Button variant="ghost" size="sm" onClick={handleSetDefault}>
-                <Star className="mr-1 h-4 w-4" />
-                {t('dashboard.set_default')}
-            </Button>
             <Button variant="ghost" size="sm" onClick={handleReset}>
                 <RotateCcw className="mr-1 h-4 w-4" />
                 {t('dashboard.reset_layout')}
@@ -223,14 +298,16 @@ export default function Dashboard() {
                             onLayoutChange={handleLayoutChange}
                         >
                             {widgets.map((widget) => (
-                                <div key={widget.id} className="h-full">
+                                <div key={widget.id}>
                                     <WidgetMap
                                         widget={widget}
                                         config={configMap.get(widget.identifier)}
-                                        data={widgetData[widget.identifier] ?? null}
+                                        data={widgetData[widget.id] ?? null}
                                         onRemove={handleRemoveWidget}
                                         noDataLabel={t('dashboard.widget.no_data')}
                                         onModeChange={handleModeChange}
+                                        onCombine={handleCombineRequest}
+                                        chartSources={chartSources}
                                     />
                                 </div>
                             ))}
@@ -238,6 +315,16 @@ export default function Dashboard() {
                     )}
                 </div>
             )}
+
+            <SourcePicker
+                availableSources={chartSources}
+                existingSources={combineTarget
+                    ? (widgetsRef.current.find((w) => w.id === combineTarget)?.config as { sources?: string[] } | undefined)?.sources ?? []
+                    : []}
+                onConfirm={handleCombineConfirm}
+                open={sourcePickerOpen}
+                onOpenChange={setSourcePickerOpen}
+            />
         </AppLayout>
     );
 }

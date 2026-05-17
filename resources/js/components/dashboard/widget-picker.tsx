@@ -2,22 +2,59 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     Drawer,
-    DrawerClose,
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
 } from '@/components/ui/drawer';
-import { BarChart3, Bell, LayoutList, Plus, Search, Users } from 'lucide-react';
+import {
+    BarChart3, Bell, BellRing, GraduationCap, Key, Layers, LayoutList,
+    MailCheck, Package, Plus, Search, Shield, ShieldCheck, UserCheck,
+    UserPlus, Users, Wifi, Zap,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WidgetConfig, WidgetInstance, WidgetPickerProps } from '@/types/dashboard';
 
 const WIDGET_ICONS: Record<string, React.ElementType> = {
     'core-team-members': Users,
+    'core-online-members': Users,
     'core-activity': BarChart3,
     'core-unread-notifications': Bell,
+    'core-active-extensions': Package,
+    'core-team-roles': Shield,
+    'core-member-activity': UserCheck,
+    'core-audit-by-module': Layers,
+    'core-session-trend': Wifi,
+    'core-permission-coverage': Key,
+    'core-notification-response': MailCheck,
+    'core-onboarding-progress': GraduationCap,
+    'core-member-joins': UserPlus,
+    'core-top-actions': Zap,
+    'core-security-overview': ShieldCheck,
+    'core-notification-types': BellRing,
 };
+
+const WIDGET_CATEGORIES: Record<string, string> = {
+    'core-team-members': 'Team',
+    'core-online-members': 'Team',
+    'core-member-activity': 'Team',
+    'core-member-joins': 'Team',
+    'core-onboarding-progress': 'Team',
+    'core-activity': 'Activity',
+    'core-audit-by-module': 'Activity',
+    'core-top-actions': 'Activity',
+    'core-unread-notifications': 'Notifications',
+    'core-notification-response': 'Notifications',
+    'core-notification-types': 'Notifications',
+    'core-security-overview': 'Security',
+    'core-session-trend': 'Security',
+    'core-permission-coverage': 'Security',
+    'core-active-extensions': 'System',
+    'core-team-roles': 'System',
+};
+
+const CATEGORY_ORDER = ['Team', 'Activity', 'Notifications', 'Security', 'System'];
 
 const DEFAULT_ICON = LayoutList;
 
@@ -34,17 +71,21 @@ export function WidgetPicker({ availableWidgets, activeWidgetIds, onAdd, open, o
         if (!search.trim()) return notAdded;
         const q = search.toLowerCase();
         return notAdded.filter(
-            (w) => w.label.toLowerCase().includes(q) || w.type.toLowerCase().includes(q) || w.identifier.toLowerCase().includes(q),
+            (w) => w.label.toLowerCase().includes(q) || w.identifier.toLowerCase().includes(q) || (w.description ?? '').toLowerCase().includes(q),
         );
     }, [notAdded, search]);
 
     const grouped = useMemo(() => {
         const groups: Record<string, WidgetConfig[]> = {};
         for (const w of filtered) {
-            const key = w.type;
+            const key = WIDGET_CATEGORIES[w.identifier] ?? 'Other';
             (groups[key] ??= []).push(w);
         }
-        return groups;
+        const ordered: Record<string, WidgetConfig[]> = {};
+        for (const cat of CATEGORY_ORDER) {
+            if (groups[cat]) ordered[cat] = groups[cat];
+        }
+        return ordered;
     }, [filtered]);
 
     return (
@@ -70,7 +111,7 @@ export function WidgetPicker({ availableWidgets, activeWidgetIds, onAdd, open, o
                         />
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto px-4 pb-4">
+                <div className="flex-1 overflow-y-auto px-4 pb-6">
                     {filtered.length === 0 && (
                         <p className="text-muted-foreground py-8 text-center text-sm">
                             {notAdded.length === 0
@@ -78,12 +119,12 @@ export function WidgetPicker({ availableWidgets, activeWidgetIds, onAdd, open, o
                                 : t('dashboard.widget_picker_no_match', 'No widgets match your search.')}
                         </p>
                     )}
-                    {Object.entries(grouped).map(([type, widgets]) => (
-                        <div key={type} className="mb-4">
+                    {Object.entries(grouped).map(([category, widgets]) => (
+                        <div key={category} className="mb-5">
                             <h3 className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wider">
-                                {type}
+                                {category}
                             </h3>
-                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                                 {widgets.map((widget) => {
                                     const Icon = WIDGET_ICONS[widget.identifier] ?? DEFAULT_ICON;
                                     return (
@@ -97,26 +138,21 @@ export function WidgetPicker({ availableWidgets, activeWidgetIds, onAdd, open, o
                                                 });
                                                 onOpenChange?.(false);
                                             }}
-                                            className="hover:bg-accent flex items-center gap-3 rounded-lg border p-3 text-left transition-colors"
+                                            className="hover:bg-accent flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-colors"
                                         >
-                                            <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-md">
+                                            <div className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
                                                 <Icon className="h-4 w-4" />
                                             </div>
-                                            <div className="min-w-0">
-                                                <span className="block text-sm font-medium truncate">{widget.label}</span>
-                                                <span className="text-muted-foreground block text-xs capitalize">{widget.identifier.replace(/-/g, ' ')}</span>
-                                            </div>
+                                            <span className="text-xs font-medium leading-tight">{widget.label}</span>
+                                            {widget.description && (
+                                                <span className="text-muted-foreground text-[10px] leading-tight">{widget.description}</span>
+                                            )}
                                         </button>
                                     );
                                 })}
                             </div>
                         </div>
                     ))}
-                </div>
-                <div className="flex justify-end border-t px-4 py-3">
-                    <DrawerClose asChild>
-                        <Button variant="ghost" size="sm">{t('dashboard.widget.close', 'Close')}</Button>
-                    </DrawerClose>
                 </div>
             </DrawerContent>
         </Drawer>

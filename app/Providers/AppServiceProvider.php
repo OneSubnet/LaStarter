@@ -160,21 +160,147 @@ class AppServiceProvider extends ServiceProvider
             label: 'Team Members',
             module: 'core',
             type: 'stat',
-            size: ['w' => 3, 'h' => 2],
+            size: ['w' => 3, 'h' => 1],
+            description: 'Total members and membership trends',
+            modes: ['stat', 'chart', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-online-members',
+            label: 'Online Members',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Currently online team members',
+            modes: ['stat', 'table'],
         ));
         $widgets->register(new WidgetDefinition(
             identifier: 'core-activity',
             label: 'Recent Activity',
             module: 'core',
             type: 'list',
-            size: ['w' => 4, 'h' => 3],
+            size: ['w' => 4, 'h' => 2],
+            description: 'Latest actions across the team',
+            modes: ['stat', 'chart', 'table'],
         ));
         $widgets->register(new WidgetDefinition(
             identifier: 'core-unread-notifications',
             label: 'Unread Notifications',
             module: 'core',
             type: 'stat',
-            size: ['w' => 3, 'h' => 2],
+            size: ['w' => 3, 'h' => 1],
+            description: 'Your pending notifications',
+            modes: ['stat'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-active-extensions',
+            label: 'Active Extensions',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Enabled extensions and modules',
+            modes: ['stat', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-team-roles',
+            label: 'Team Roles',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Roles and member distribution',
+            modes: ['stat', 'table'],
+        ));
+
+        // ── Cross-referenced data widgets ──────────────────
+
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-member-activity',
+            label: 'Member Activity',
+            module: 'core',
+            type: 'list',
+            size: ['w' => 4, 'h' => 2],
+            description: 'Most active members ranked by actions',
+            modes: ['stat', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-audit-by-module',
+            label: 'Audit by Module',
+            module: 'core',
+            type: 'chart',
+            size: ['w' => 4, 'h' => 2],
+            description: 'Action distribution across modules',
+            modes: ['stat', 'chart', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-session-trend',
+            label: 'Session Trend',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Active sessions and unique visitors',
+            modes: ['stat', 'chart'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-permission-coverage',
+            label: 'Permission Coverage',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Permissions assigned per role',
+            modes: ['stat', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-notification-response',
+            label: 'Notification Response',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Read rate and response time',
+            modes: ['stat'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-onboarding-progress',
+            label: 'Onboarding Progress',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Members who completed onboarding',
+            modes: ['stat', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-member-joins',
+            label: 'Member Joins',
+            module: 'core',
+            type: 'chart',
+            size: ['w' => 4, 'h' => 2],
+            description: 'New member registrations over time',
+            modes: ['stat', 'chart'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-top-actions',
+            label: 'Top Actions',
+            module: 'core',
+            type: 'list',
+            size: ['w' => 4, 'h' => 2],
+            description: 'Most performed actions this period',
+            modes: ['stat', 'table'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-security-overview',
+            label: 'Security Overview',
+            module: 'core',
+            type: 'stat',
+            size: ['w' => 3, 'h' => 1],
+            description: 'Unique IPs, devices and access patterns',
+            modes: ['stat'],
+        ));
+        $widgets->register(new WidgetDefinition(
+            identifier: 'core-notification-types',
+            label: 'Notification Types',
+            module: 'core',
+            type: 'chart',
+            size: ['w' => 4, 'h' => 2],
+            description: 'Distribution of notifications by category',
+            modes: ['stat', 'chart', 'table'],
         ));
 
         // Register core widget data provider

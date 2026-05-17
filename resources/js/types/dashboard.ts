@@ -10,11 +10,17 @@ export type GridLayout = {
     h: number;
 };
 
+export type CombinedWidgetConfig = {
+    sources: string[];
+    chartType?: ChartType;
+    label?: string;
+};
+
 export type WidgetInstance = {
     id: string;
     identifier: string;
     displayMode?: DisplayMode;
-    config?: Record<string, unknown>;
+    config?: CombinedWidgetConfig | Record<string, unknown>;
 };
 
 export type WidgetConfig = {
@@ -23,6 +29,8 @@ export type WidgetConfig = {
     type: string;
     size: { w: number; h: number };
     permission: string | null;
+    description: string | null;
+    modes?: DisplayMode[];
 };
 
 export type DashboardLayoutData = {
@@ -108,6 +116,11 @@ export type WidgetData = {
     table?: WidgetTable;
 };
 
+export type CombinedWidgetData = WidgetData & {
+    warnings: string[];
+    sources: Array<{ identifier: string; label: string }>;
+};
+
 // ── Component Props ─────────────────────────────────────
 
 export type WidgetWrapperProps = {
@@ -121,6 +134,9 @@ export type WidgetWrapperProps = {
     onModeChange?: (mode: DisplayMode) => void;
     availableModes?: DisplayMode[];
     onRename?: () => void;
+    onCombine?: () => void;
+    isCombined?: boolean;
+    warnings?: string[];
 };
 
 export type ListWidgetProps = {
@@ -142,9 +158,11 @@ export type WidgetPickerProps = {
 export type WidgetMapProps = {
     widget: WidgetInstance;
     config: WidgetConfig | undefined;
-    data: WidgetData | null;
+    data: WidgetData | CombinedWidgetData | null;
     onRemove: (id: string) => void;
     noDataLabel: string;
     onModeChange?: (id: string, mode: DisplayMode) => void;
     onRename?: (id: string) => void;
+    onCombine?: (id: string) => void;
+    chartSources?: WidgetConfig[];
 };

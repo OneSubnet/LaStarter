@@ -185,13 +185,32 @@ export function ChartRenderer({ chart, className }: ChartRendererProps) {
                         {yaxis}
                         {tooltip}
                         {legend}
-                        {chart.dataKeys.map((key, i) =>
-                            i === 0 ? (
-                                <Bar key={key} dataKey={key} fill={`var(--color-${key})`} radius={[4, 4, 0, 0]} />
-                            ) : (
-                                <Line key={key} type="monotone" dataKey={key} stroke={`var(--color-${key})`} strokeWidth={2} dot={false} />
-                            ),
-                        )}
+                        {chart.dataKeys.map((key, i) => {
+                            const color = `var(--color-${key})`;
+                            if (i % 2 === 0) {
+                                return (
+                                    <Bar
+                                        key={key}
+                                        dataKey={key}
+                                        fill={color}
+                                        radius={[4, 4, 0, 0]}
+                                        fillOpacity={0.7}
+                                    />
+                                );
+                            }
+                            return (
+                                <Area
+                                    key={key}
+                                    type="monotone"
+                                    dataKey={key}
+                                    stroke={color}
+                                    fill={color}
+                                    fillOpacity={0.1}
+                                    strokeWidth={2}
+                                    dot={false}
+                                />
+                            );
+                        })}
                     </ComposedChart>
                 </ChartContainer>
             );

@@ -13,15 +13,13 @@ export function StatCard({ stat, className }: StatCardProps) {
     const Icon = stat.icon ? iconMap[stat.icon] : undefined;
 
     return (
-        <div className={cn('flex h-full flex-col justify-between gap-2 p-1', className)}>
+        <div className={cn('flex flex-col gap-1 p-1', className)}>
             <div className="flex items-start justify-between">
-                <div className="flex flex-col gap-1">
+                <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold tracking-tight">
                         {stat.formatted ?? String(stat.value)}
                     </span>
-                    {stat.label && (
-                        <span className="text-muted-foreground text-xs">{stat.label}</span>
-                    )}
+                    {stat.trend && <TrendIndicator trend={stat.trend} />}
                 </div>
                 {Icon && (
                     <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
@@ -29,10 +27,10 @@ export function StatCard({ stat, className }: StatCardProps) {
                     </div>
                 )}
             </div>
-            <div className="flex items-center gap-2">
-                {stat.trend && <TrendIndicator trend={stat.trend} />}
-                {stat.sparkline && <Sparkline data={stat.sparkline} />}
-            </div>
+            {stat.label && (
+                <span className="text-muted-foreground text-xs">{stat.label}</span>
+            )}
+            {stat.sparkline && <Sparkline data={stat.sparkline} />}
         </div>
     );
 }

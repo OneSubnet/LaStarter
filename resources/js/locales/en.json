@@ -77,6 +77,7 @@
         "last_page": "Last page",
         "previous": "Previous",
         "next": "Next",
+        "clear": "Clear",
         "page_of": "Page {{current}} of {{total}}",
         "columns": "Columns",
         "customize_columns": "Customize columns",
@@ -257,6 +258,16 @@
         "widget_picker_empty": "No widgets available.",
         "widget_picker_no_match": "No widgets match your search.",
         "search_widgets": "Search widgets...",
+        "source_picker_title": "Combine data sources",
+        "search_sources": "Search data sources...",
+        "combine": "Combine",
+        "combine_sources": "Combine with...",
+        "edit_sources": "Edit sources",
+        "unavailable_sources": "{{count}} unavailable",
+        "chart_composed": "Composed",
+        "chart_area": "Area",
+        "chart_bar": "Bar",
+        "chart_line": "Line",
         "members_online": "{{count}} online",
         "toolbar": {
             "feedback": "Feedback",
@@ -1496,5 +1507,28 @@
         "next": "Next",
         "last": "Last page",
         "page_of": "Page {{page}} of {{total}}"
+    },
+    "settings": {
+        "audit": {
+            "title": "Audit Log",
+            "description": "Track all actions performed across your team.",
+            "export": "Export",
+            "search": "Search",
+            "search_placeholder": "Search by action, module, user...",
+            "action": "Action",
+            "module": "Module",
+            "user": "User",
+            "date": "Date",
+            "subject": "Subject",
+            "ip": "IP",
+            "details": "Details",
+            "view_details": "Details",
+            "all_actions": "All actions",
+            "all_modules": "All modules",
+            "all_users": "All users",
+            "results": "{{count}} entries",
+            "page_info": "Page {{current}} of {{total}}",
+            "empty": "No audit logs found."
+        }
     }
 }

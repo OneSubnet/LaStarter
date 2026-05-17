@@ -77,6 +77,7 @@
         "last_page": "Dernière page",
         "previous": "Précédent",
         "next": "Suivant",
+        "clear": "Effacer",
         "page_of": "Page {{current}} sur {{total}}",
         "columns": "Colonnes",
         "customize_columns": "Personnaliser les colonnes",
@@ -256,6 +257,16 @@
         "widget_picker_empty": "Aucun widget disponible.",
         "widget_picker_no_match": "Aucun widget ne correspond à votre recherche.",
         "search_widgets": "Rechercher un widget...",
+        "source_picker_title": "Combiner les sources de données",
+        "search_sources": "Rechercher des sources...",
+        "combine": "Combiner",
+        "combine_sources": "Combiner avec...",
+        "edit_sources": "Modifier les sources",
+        "unavailable_sources": "{{count}} indisponible(s)",
+        "chart_composed": "Composé",
+        "chart_area": "Aire",
+        "chart_bar": "Barres",
+        "chart_line": "Ligne",
         "members_online": "{{count}} en ligne",
         "toolbar": {
             "feedback": "Commentaire",
@@ -1495,5 +1506,28 @@
         "next": "Suivant",
         "last": "Dernière page",
         "page_of": "Page {{page}} sur {{total}}"
+    },
+    "settings": {
+        "audit": {
+            "title": "Journal d'audit",
+            "description": "Suivez toutes les actions effectuées dans votre équipe.",
+            "export": "Exporter",
+            "search": "Rechercher",
+            "search_placeholder": "Rechercher par action, module, utilisateur...",
+            "action": "Action",
+            "module": "Module",
+            "user": "Utilisateur",
+            "date": "Date",
+            "subject": "Sujet",
+            "ip": "IP",
+            "details": "Détails",
+            "view_details": "Détails",
+            "all_actions": "Toutes les actions",
+            "all_modules": "Tous les modules",
+            "all_users": "Tous les utilisateurs",
+            "results": "{{count}} entrées",
+            "page_info": "Page {{current}} sur {{total}}",
+            "empty": "Aucun journal d'audit trouvé."
+        }
     }
 }

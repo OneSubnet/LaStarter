@@ -76,6 +76,11 @@ final class DashboardController extends Controller
             'widgets.*.id' => 'required|string',
             'widgets.*.identifier' => 'required|string',
             'widgets.*.displayMode' => 'nullable|string|in:stat,chart,table',
+            'widgets.*.config' => 'nullable|array',
+            'widgets.*.config.sources' => 'nullable|array|max:4',
+            'widgets.*.config.sources.*' => 'string',
+            'widgets.*.config.chartType' => 'nullable|string|in:area,bar,line,composed',
+            'widgets.*.config.label' => 'nullable|string|max:100',
         ]);
 
         $user = Auth::user();
@@ -93,6 +98,7 @@ final class DashboardController extends Controller
             'id' => $w['id'],
             'identifier' => $w['identifier'],
             'displayMode' => $w['displayMode'] ?? null,
+            'config' => $w['config'] ?? null,
         ])->all();
         $layout->save();
 
@@ -134,36 +140,11 @@ final class DashboardController extends Controller
 
     private function createDefaultLayout(int $userId, int $teamId): DashboardLayout
     {
-        $widgets = [];
-        $layout = [];
-        $x = 0;
-        $y = 0;
-
-        $available = app(WidgetRegistry::class)->forTeam($teamId, Auth::user());
-
-        foreach ($available as $widget) {
-            $id = $widget->identifier;
-            $widgets[] = ['id' => $id, 'identifier' => $id, 'displayMode' => null];
-            $layout[] = [
-                'i' => $id,
-                'x' => $x,
-                'y' => $y,
-                'w' => $widget->size['w'],
-                'h' => $widget->size['h'],
-            ];
-
-            $x += $widget->size['w'];
-            if ($x >= 12) {
-                $x = 0;
-                $y += 2;
-            }
-        }
-
         return DashboardLayout::create([
             'user_id' => $userId,
             'team_id' => $teamId,
-            'layout' => $layout,
-            'widgets' => $widgets,
+            'layout' => [],
+            'widgets' => [],
             'is_default' => true,
         ]);
     }

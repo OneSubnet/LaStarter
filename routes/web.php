@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Settings\AuditController;
 use App\Http\Controllers\Settings\BackupController;
 use App\Http\Controllers\Settings\ExtensionController;
 use App\Http\Controllers\Settings\MarketplaceController;
@@ -128,6 +129,11 @@ Route::prefix('{current_team}')
             Route::get('mail', [TeamMailController::class, 'edit'])->name('settings.team.mail');
             Route::patch('mail', [TeamMailController::class, 'update'])->name('settings.team.mail.update');
             Route::post('mail/test', [TeamMailController::class, 'test'])->name('settings.team.mail.test');
+
+            // Audit
+            Route::get('audit', [AuditController::class, 'index'])->name('settings.team.audit');
+            Route::get('audit/export', [AuditController::class, 'export'])->name('settings.team.audit.export');
+            Route::post('audit', [AuditController::class, 'log'])->name('settings.team.audit.log');
 
             // System (core updates + backups)
             Route::get('system', [SystemUpdateController::class, 'index'])->name('settings.team.system');
