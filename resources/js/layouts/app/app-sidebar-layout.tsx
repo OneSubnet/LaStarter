@@ -1,13 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, MoreHorizontal, Settings } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { LayoutGrid, MoreHorizontal } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import CommandPalette from '@/components/command-palette';
-
 import {
     Drawer,
     DrawerContent,
@@ -20,39 +18,21 @@ import {
     SidebarInset,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { getInitials } from '@/lib/format';
+import { iconMap } from '@/lib/icon-map';
 import type { BreadcrumbItem, SharedData } from '@/types';
-
-type ExtensionNavItem = {
-    title: string;
-    href?: string;
-    icon: string | null;
-    children?: { title: string; href: string; icon: string | null }[];
-};
-
-const iconMap: Record<string, LucideIcon> = {
-    LayoutGrid,
-    Settings,
-};
-
-function getInitials(name: string) {
-    return (
-        name
-            .split(' ')
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((part) => part[0]?.toUpperCase())
-            .join('') || 'U'
-    );
-}
+import type { ExtensionNavItem } from '@/types/navigation';
 
 export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
     headerActions,
+    rightSidebar,
 }: {
     children: ReactNode;
     breadcrumbs?: BreadcrumbItem[];
     headerActions?: ReactNode;
+    rightSidebar?: ReactNode;
 }) {
     const page = usePage<SharedData>();
     const isOpen = page.props.sidebarOpen;
@@ -95,7 +75,7 @@ export default function AppSidebarLayout({
     return (
         <SidebarProvider
             defaultOpen={isOpen}
-            style={{ '--sidebar-width': '300px' } as React.CSSProperties}
+            style={{ '--sidebar-width': '350px' } as React.CSSProperties}
         >
             {/* Desktop left sidebar */}
             <div className="hidden md:block">
@@ -157,6 +137,9 @@ export default function AppSidebarLayout({
                 </div>
             </SidebarInset>
 
+            {/* Right sidebar (if provided) */}
+            {rightSidebar}
+
             {/* Mobile drawer for full navigation */}
             <Drawer
                 open={isMobilePanelOpen}
@@ -178,7 +161,7 @@ export default function AppSidebarLayout({
                                 ...flatExtNav.slice(0, 6).map((item) => item),
                                 {
                                     label: t('common.settings'),
-                                    icon: Settings,
+                                    icon: iconMap.Settings,
                                     href: `/${teamSlug}/settings/general`,
                                 },
                             ].map((item) => {
@@ -212,52 +195,73 @@ export default function AppSidebarLayout({
             </Drawer>
 
             {/* Mobile bottom nav */}
-            <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden">
+            <nav
+                className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden"
+                aria-label={t('common.navigation_menu')}
+            >
                 <div className="flex items-center justify-around">
                     <Link
                         href={`/${teamSlug}`}
-                        className={`flex flex-col items-center justify-center py-3 text-xs ${
+                        aria-current={
                             currentPath === `/${teamSlug}`
-                                ? 'text-foreground'
+                                ? 'page'
+                                : undefined
+                        }
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
+                            currentPath === `/${teamSlug}`
+                                ? 'font-medium text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
                         <LayoutGrid className="h-5 w-5" />
+                        <span>{t('common.dashboard')}</span>
                     </Link>
                     {flatExtNav.slice(0, 2).map((item) => {
                         const Icon = item.icon;
+                        const isActive = currentPath.startsWith(item.href);
 
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`flex flex-col items-center justify-center py-3 text-xs ${
-                                    currentPath.startsWith(item.href)
-                                        ? 'text-foreground'
+                                aria-current={isActive ? 'page' : undefined}
+                                className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
+                                    isActive
+                                        ? 'font-medium text-foreground'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
                                 <Icon className="h-5 w-5" />
+                                <span className="max-w-[60px] truncate">
+                                    {item.label}
+                                </span>
                             </Link>
                         );
                     })}
                     <Link
                         href={`/${teamSlug}/settings/general`}
-                        className={`flex flex-col items-center justify-center py-3 text-xs ${
+                        aria-current={
                             currentPath.includes('/settings')
-                                ? 'text-foreground'
+                                ? 'page'
+                                : undefined
+                        }
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] ${
+                            currentPath.includes('/settings')
+                                ? 'font-medium text-foreground'
                                 : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
-                        <Settings className="h-5 w-5" />
+                        <iconMap.Settings className="h-5 w-5" />
+                        <span>{t('common.settings')}</span>
                     </Link>
                     <button
                         type="button"
                         onClick={() => setIsMobilePanelOpen(true)}
-                        className="flex flex-col items-center justify-center py-3 text-xs text-muted-foreground hover:text-foreground"
+                        className="flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-muted-foreground hover:text-foreground"
                         aria-label={t('common.more')}
                     >
                         <MoreHorizontal className="h-5 w-5" />
+                        <span>{t('common.more')}</span>
                     </button>
                 </div>
             </nav>

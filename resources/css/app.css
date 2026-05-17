@@ -2,10 +2,12 @@
 
 @import 'tw-animate-css';
 
+@plugin '@tailwindcss/typography';
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
     --background: oklch(1 0 0);
@@ -203,4 +205,22 @@
         @apply bg-background text-foreground;
         letter-spacing: var(--tracking-normal);
     }
+}
+
+/* EasyMDE overrides */
+.mdeditor .EasyMDEContainer {
+    @apply rounded-lg border border-border;
+}
+.mdeditor .EasyMDEContainer .editor-toolbar {
+    @apply border-b border-border bg-muted/50 rounded-t-lg;
+}
+.mdeditor .EasyMDEContainer .CodeMirror {
+    @apply bg-background border-none;
+    min-height: 300px;
+}
+.mdeditor .EasyMDEContainer .editor-preview {
+    @apply bg-background;
+}
+.mdeditor .EasyMDEContainer .editor-statusbar {
+    @apply border-t border-border;
 }

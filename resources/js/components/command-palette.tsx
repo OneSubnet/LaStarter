@@ -1,17 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import {
-    Calculator,
-    Calendar,
-    FileText,
-    FolderKanban,
-    LayoutGrid,
-    MessageSquare,
-    Receipt,
-    Settings,
-    ShieldCheck,
-    Users,
-    Plus,
-} from 'lucide-react';
+import { LayoutGrid, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,35 +11,11 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
+import { iconMap } from '@/lib/icon-map';
 import { dashboard } from '@/routes';
 import { extensions, general, members, roles } from '@/routes/settings/team';
 import type { SharedData } from '@/types';
-
-type ExtensionNavChild = {
-    title: string;
-    href: string;
-    icon: string | null;
-};
-
-type ExtensionNavItem = {
-    title: string;
-    href?: string;
-    icon: string | null;
-    children?: ExtensionNavChild[];
-};
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    LayoutGrid,
-    FolderKanban,
-    Settings,
-    Users,
-    ShieldCheck,
-    MessageSquare,
-    FileText,
-    Calendar,
-    Receipt,
-    Calculator,
-};
+import type { ExtensionNavItem } from '@/types/navigation';
 
 function IconFor({
     name,
@@ -252,7 +216,7 @@ export default function CommandPalette() {
                                     handleSelect(general(teamSlug).url)
                                 }
                             >
-                                <Settings className="h-4 w-4" />
+                                <iconMap.Settings className="h-4 w-4" />
                                 <span>{t('common.general')}</span>
                             </CommandItem>
                             <CommandItem

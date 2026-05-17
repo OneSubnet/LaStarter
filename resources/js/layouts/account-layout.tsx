@@ -15,7 +15,7 @@ export default function AccountLayout({
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
-            <div className="px-4 py-6">
+            <div className="px-4 pt-4 pb-6">
                 <Heading
                     title={t('layouts.account.title')}
                     description={t('layouts.account.description')}

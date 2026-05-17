@@ -24,7 +24,7 @@ class AuditLogger
             'properties' => ! empty($properties) ? $properties : null,
             'ip_address' => $request?->ip(),
             'user_agent' => $request?->userAgent(),
-            'trace_id' => $request?->header('X-Trace-ID') ?? Str::uuid()->toString(),
+            'trace_id' => $this->resolveTraceId($request),
             'module' => $module,
         ]);
     }
@@ -36,5 +36,16 @@ class AuditLogger
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    protected function resolveTraceId(?Request $request): string
+    {
+        $header = $request?->header('X-Trace-ID');
+
+        if ($header && preg_match('/^[a-f0-9\-]{1,64}$/i', $header)) {
+            return $header;
+        }
+
+        return Str::uuid()->toString();
     }
 }

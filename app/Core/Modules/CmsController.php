@@ -56,7 +56,8 @@ abstract class CmsController extends Controller
         $search = request('search', '');
 
         if ($search !== '' && $this->searchField !== '') {
-            $query->where($this->searchField, 'like', "%{$search}%");
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $query->where($this->searchField, 'like', "%{$escaped}%");
         }
 
         $paginator = $query->paginate($this->perPage)->withQueryString();
@@ -85,11 +86,12 @@ abstract class CmsController extends Controller
         }
 
         $model->save();
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Created successfully.')]);
 
         return Redirect::route("{$this->route}.show", [
             'current_team' => $this->teamSlug(),
             $this->resolveParam() => $model->id,
-        ])->with('toast', ['type' => 'success', 'message' => __('Created successfully.')]);
+        ]);
     }
 
     protected function cmsShow(Model $model): Response
@@ -132,21 +134,23 @@ abstract class CmsController extends Controller
         }
 
         $model->save();
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Updated successfully.')]);
 
         return Redirect::route("{$this->route}.show", [
             'current_team' => $this->teamSlug(),
             $this->resolveParam() => $model->id,
-        ])->with('toast', ['type' => 'success', 'message' => __('Updated successfully.')]);
+        ]);
     }
 
     protected function cmsDestroy(Model $model, string $message = ''): RedirectResponse
     {
         $model->delete();
-
-        return back()->with('toast', [
+        Inertia::flash('toast', [
             'type' => 'success',
             'message' => $message ?: __('Deleted successfully.'),
         ]);
+
+        return back();
     }
 
     protected function teamSlug(): string

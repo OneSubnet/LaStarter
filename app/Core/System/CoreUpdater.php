@@ -2,6 +2,7 @@
 
 namespace App\Core\System;
 
+use App\Core\Cache\CacheKey;
 use App\Core\System\Events\CoreUpdateCompleted;
 use App\Core\System\Events\CoreUpdateFailed;
 use Illuminate\Support\Facades\Event;
@@ -24,7 +25,7 @@ final class CoreUpdater
         $current = CoreVersion::current();
 
         try {
-            $release = cache()->remember('core.latest_release', now()->addHours(12), function (): ?ReleaseInfo {
+            $release = cache()->remember(CacheKey::coreUpdateAvailable().':release', now()->addHours(12), function (): ?ReleaseInfo {
                 return $this->releases->latestRelease();
             });
         } catch (\Throwable $e) {
@@ -106,6 +107,15 @@ final class CoreUpdater
         if ($release->zipUrl !== null) {
             $hash = hash_file('sha256', $zipPath);
             Log::info("Core update ZIP downloaded: {$zipPath} (SHA256: {$hash})");
+
+            if ($release->zipHash !== null && ! hash_equals($release->zipHash, $hash)) {
+                @unlink($zipPath);
+                Event::dispatch(new CoreUpdateFailed($current->current, $release->version, [
+                    'Integrity check failed: SHA256 hash mismatch.',
+                ]));
+
+                return CoreUpdateResult::failed(['Integrity check failed: SHA256 hash mismatch.'], $backupPath);
+            }
         }
 
         // Step 5: Extract and replace files
@@ -133,7 +143,9 @@ final class CoreUpdater
         $this->updateVersionConfig($release->version);
 
         // Clear caches
-        cache()->forget('core.latest_release');
+        cache()->forget(CacheKey::coreUpdateAvailable().':release');
+        cache()->forget(CacheKey::coreUpdateAvailable());
+        cache()->forget(CacheKey::extensionUpdates());
 
         Log::info("Core updated from v{$current->current} to v{$release->version}");
 
@@ -155,6 +167,16 @@ final class CoreUpdater
 
         if (! $zip->open($zipPath)) {
             throw new \RuntimeException('Cannot open update archive.');
+        }
+
+        // Validate ZIP entries for path traversal (Zip Slip protection)
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+
+            if (str_contains($name, '..') || str_starts_with($name, '/') || str_starts_with($name, '\\')) {
+                $zip->close();
+                throw new \RuntimeException('Update archive contains suspicious path entries.');
+            }
         }
 
         $tmpDir = sys_get_temp_dir().'/lastarter_update_'.time();
@@ -235,12 +257,15 @@ final class CoreUpdater
 
     private function runPostUpdateCommands(): void
     {
+        $phpBinary = PHP_BINARY;
+        $composerBinary = $this->resolveBinary('composer');
+
         $commands = [
-            'composer install --no-dev --optimize-autoloader 2>&1',
-            'php artisan migrate --force 2>&1',
-            'php artisan config:cache 2>&1',
-            'php artisan route:cache 2>&1',
-            'php artisan view:cache 2>&1',
+            "{$composerBinary} install --no-dev --optimize-autoloader 2>&1",
+            "{$phpBinary} artisan migrate --force 2>&1",
+            "{$phpBinary} artisan config:cache 2>&1",
+            "{$phpBinary} artisan route:cache 2>&1",
+            "{$phpBinary} artisan view:cache 2>&1",
         ];
 
         foreach ($commands as $command) {
@@ -272,6 +297,17 @@ final class CoreUpdater
         }
 
         file_put_contents($envPath, $content);
+    }
+
+    private function resolveBinary(string $name): string
+    {
+        exec("which {$name} 2>/dev/null", $output, $exitCode);
+
+        if ($exitCode === 0 && ! empty($output[0])) {
+            return $output[0];
+        }
+
+        return $name;
     }
 
     private function removeDirectory(string $dir): void

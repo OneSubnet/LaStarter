@@ -2,55 +2,57 @@
 
 namespace App\Http\Controllers\Settings;
 
-use App\Core\Extensions\Updater\UpdateService;
+use App\Core\System\BackupManager;
 use App\Core\System\CoreUpdater;
 use App\Core\System\CoreVersion;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class SystemUpdateController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorize('system.update');
+    }
+
     public function index(): Response
     {
         $coreVersion = CoreVersion::current();
-        $extensions = [];
-
-        try {
-            $updates = app(UpdateService::class)->checkForUpdates();
-            foreach ($updates as $identifier => $info) {
-                $extensions[] = [
-                    'identifier' => $identifier,
-                    'current_version' => $info->currentVersion,
-                    'latest_version' => $info->latestVersion,
-                ];
-            }
-        } catch (\Throwable) {
-            // Marketplace not configured
-        }
+        $backups = $this->buildBackupList();
 
         return Inertia::render('settings/system', [
             'coreVersion' => $coreVersion->current,
             'latestVersion' => $coreVersion->latest,
             'changelog' => $coreVersion->changelog,
             'updateAvailable' => $coreVersion->updateAvailable,
-            'extensionUpdates' => $extensions,
+            'backups' => $backups,
         ]);
     }
 
-    public function checkCore(): JsonResponse
+    public function checkCore(): RedirectResponse
     {
         $version = app(CoreUpdater::class)->checkForUpdate();
 
-        return response()->json([
-            'current' => $version->current,
-            'latest' => $version->latest,
-            'changelog' => $version->changelog,
-            'update_available' => $version->updateAvailable,
+        if ($version->updateAvailable) {
+            Inertia::flash('toast', [
+                'type' => 'info',
+                'message' => __('Update available: v:version', ['version' => $version->latest]),
+            ]);
+
+            return back();
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => __('Already up to date.'),
         ]);
+
+        return back();
     }
 
     public function updateCore(): RedirectResponse
@@ -58,53 +60,34 @@ final class SystemUpdateController extends Controller
         $result = app(CoreUpdater::class)->update();
 
         if ($result->success) {
-            return back()->with('toast', [
+            Inertia::flash('toast', [
                 'type' => 'success',
                 'message' => __('Platform updated to v:version', ['version' => $result->toVersion]),
             ]);
+
+            return back();
         }
 
-        return back()->with('toast', [
+        Inertia::flash('toast', [
             'type' => 'error',
             'message' => __('Update failed: :errors', ['errors' => implode(', ', $result->errors)]),
         ]);
+
+        return back();
     }
 
-    public function checkExtensions(): JsonResponse
+    /**
+     * @return list<array{filename: string, type: string, size: int, created_at: string}>
+     */
+    private function buildBackupList(): array
     {
-        try {
-            $updates = app(UpdateService::class)->checkForUpdates();
-
-            return response()->json([
-                'updates' => $updates->map(fn ($info) => [
-                    'identifier' => $info->identifier,
-                    'current_version' => $info->currentVersion,
-                    'latest_version' => $info->latestVersion,
-                ])->values(),
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json(['updates' => [], 'error' => $e->getMessage()]);
-        }
-    }
-
-    public function updateExtension(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'identifier' => 'required|string',
-        ]);
-
-        $report = app(UpdateService::class)->updateWithReport($validated['identifier']);
-
-        if ($report->compatible) {
-            return back()->with('toast', [
-                'type' => 'success',
-                'message' => __('Extension updated.'),
-            ]);
-        }
-
-        return back()->with('toast', [
-            'type' => 'error',
-            'message' => __('Update blocked: :errors', ['errors' => implode(', ', $report->errors)]),
-        ]);
+        return collect(app(BackupManager::class)->listAll())
+            ->map(fn (array $b) => [
+                'filename' => $b['filename'],
+                'type' => $b['type'],
+                'size' => $b['size'],
+                'created_at' => $b['created_at'],
+            ])
+            ->all();
     }
 }

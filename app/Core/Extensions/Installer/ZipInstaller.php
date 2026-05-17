@@ -38,7 +38,15 @@ final class ZipInstaller
         $rootDir = $this->detectRootDirectory($zip);
         $identifier = $rootDir ?? basename($zipPath, '.zip');
 
+        // Validate identifier to prevent path traversal
+        if (str_contains($identifier, '..') || str_contains($identifier, '/') || str_contains($identifier, '\\')) {
+            throw ZipInstallerException::invalidZip();
+        }
+
         $targetPath = $this->extensionsPath.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.$identifier;
+
+        // Validate ZIP entries for path traversal before extraction
+        $this->validateZipEntries($zip);
 
         // Extract to temp location first
         $tmpExtract = sys_get_temp_dir().DIRECTORY_SEPARATOR.'ext_install_'.uniqid();
@@ -61,6 +69,13 @@ final class ZipInstaller
 
         // Validate manifest before moving
         $manifest = ExtensionManifest::fromFile($sourcePath);
+
+        // Validate manifest identifier to prevent path traversal
+        if (str_contains($manifest->identifier, '..') || str_contains($manifest->identifier, '/') || str_contains($manifest->identifier, '\\')) {
+            File::deleteDirectory($tmpExtract);
+            throw ZipInstallerException::invalidZip();
+        }
+
         $finalPath = $this->extensionsPath.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.$manifest->identifier;
 
         // Remove existing installation if present
@@ -93,6 +108,22 @@ final class ZipInstaller
         }
 
         return $this->install($zipPath, cleanup: true);
+    }
+
+    /**
+     * Validate that no ZIP entry uses path traversal (Zip Slip protection).
+     *
+     * @throws ZipInstallerException if a malicious entry is detected
+     */
+    private function validateZipEntries(ZipArchive $zip): void
+    {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+
+            if (str_contains($name, '..') || str_starts_with($name, '/') || str_starts_with($name, '\\')) {
+                throw ZipInstallerException::invalidZip();
+            }
+        }
     }
 
     private function detectRootDirectory(ZipArchive $zip): ?string

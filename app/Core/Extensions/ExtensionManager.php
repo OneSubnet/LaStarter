@@ -6,6 +6,7 @@ use App\Core\Extensions\Events\ExtensionDisabled;
 use App\Core\Extensions\Events\ExtensionEnabled;
 use App\Core\Extensions\Events\ExtensionInstalled;
 use App\Core\Extensions\Events\ExtensionUninstalled;
+use App\Core\System\BackupManager;
 use App\Enums\TeamRole;
 use App\Models\Extension;
 use App\Models\TeamExtension;
@@ -102,12 +103,16 @@ final class ExtensionManager
 
     private function syncPermissions(ExtensionManifest $manifest): void
     {
-        foreach ($manifest->permissions as $permission) {
-            Permission::firstOrCreate(
-                ['name' => $permission],
-                ['guard_name' => 'web'],
-            );
+        if ($manifest->permissions === []) {
+            return;
         }
+
+        $rows = array_map(
+            fn (string $perm) => ['name' => $perm, 'guard_name' => 'web'],
+            $manifest->permissions,
+        );
+
+        Permission::upsert($rows, ['name', 'guard_name'], []);
     }
 
     /**
@@ -189,10 +194,20 @@ final class ExtensionManager
         Event::dispatch(new ExtensionDisabled($extension, $teamId));
     }
 
-    public function uninstall(string $identifier): void
+    /**
+     * @return string|null Backup path if $backup is true, null otherwise
+     */
+    public function uninstall(string $identifier, bool $backup = false): ?string
     {
         $manifest = $this->manifest($identifier);
         $extension = $this->findOrThrow($identifier);
+
+        $backupPath = null;
+
+        if ($backup && $manifest) {
+            $backupPath = app(BackupManager::class)
+                ->createExtensionBackup($manifest->basePath, $identifier);
+        }
 
         TeamExtension::where('extension_id', $extension->id)->delete();
 
@@ -203,6 +218,8 @@ final class ExtensionManager
         $extension->delete();
 
         Event::dispatch(new ExtensionUninstalled($identifier));
+
+        return $backupPath;
     }
 
     // ──────────────────────────────────────────────

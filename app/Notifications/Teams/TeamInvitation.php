@@ -29,8 +29,11 @@ class TeamInvitation extends Notification implements ShouldQueue
 
         $this->configureTeamMailer($team->id);
 
+        $locale = $notifiable->locale ?? config('app.locale', 'fr');
+
         return (new MailMessage)
             ->subject(__('emails.team_invitation.subject', ['teamName' => $team->name]))
+            ->locale($locale)
             ->markdown('emails.teams.invitation', [
                 'name' => $notifiable->name ?? $this->invitation->email,
                 'inviterName' => $this->invitation->inviter->name,

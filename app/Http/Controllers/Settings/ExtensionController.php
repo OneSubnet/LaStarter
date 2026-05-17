@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Extension;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,6 +16,7 @@ final class ExtensionController extends Controller
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('system.update');
         $manager = app(ExtensionManager::class);
         $team = $request->user()->currentTeam;
 
@@ -42,6 +44,7 @@ final class ExtensionController extends Controller
 
     public function show(Request $request): Response
     {
+        Gate::authorize('system.update');
         $extension = $this->resolveExtension($request);
         $manager = app(ExtensionManager::class);
         $team = $request->user()->currentTeam;
@@ -84,75 +87,171 @@ final class ExtensionController extends Controller
 
     public function install(Request $request): RedirectResponse
     {
+        Gate::authorize('system.update');
         $identifier = $this->resolveIdentifier($request);
 
         app(ExtensionManager::class)->install($identifier);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension installed.')]);
 
-        return back()->with('toast', ['type' => 'success', 'message' => __('Extension installed.')]);
+        return back();
     }
 
     public function uninstall(Request $request): RedirectResponse
     {
+        Gate::authorize('system.update');
         $identifier = $this->resolveIdentifier($request);
 
-        app(ExtensionManager::class)->uninstall($identifier);
+        $backupPath = app(ExtensionManager::class)->uninstall(
+            $identifier,
+            $request->boolean('backup'),
+        );
 
-        return back()->with('toast', ['type' => 'success', 'message' => __('Extension uninstalled.')]);
+        $message = __('Extension uninstalled.');
+
+        if ($backupPath) {
+            $message .= ' '.__('Backup saved to :path.', ['path' => basename($backupPath)]);
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
+
+        return back();
     }
 
     public function enable(Request $request): RedirectResponse
     {
+        Gate::authorize('system.update');
         $identifier = $this->resolveIdentifier($request);
         $team = $request->user()->currentTeam;
 
         if (! $team) {
-            return back()->with('toast', ['type' => 'error', 'message' => __('No team context.')]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('No team context.')]);
+
+            return back();
         }
 
         app(ExtensionManager::class)->enable($identifier, $team->id);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension enabled.')]);
 
-        return back()->with('toast', ['type' => 'success', 'message' => __('Extension enabled.')]);
+        return back();
     }
 
     public function disable(Request $request): RedirectResponse
     {
+        Gate::authorize('system.update');
         $identifier = $this->resolveIdentifier($request);
         $team = $request->user()->currentTeam;
 
         if (! $team) {
-            return back()->with('toast', ['type' => 'error', 'message' => __('No team context.')]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('No team context.')]);
+
+            return back();
         }
 
         app(ExtensionManager::class)->disable($identifier, $team->id);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension disabled.')]);
 
-        return back()->with('toast', ['type' => 'success', 'message' => __('Extension disabled.')]);
+        return back();
     }
 
     public function update(Request $request): RedirectResponse
     {
+        Gate::authorize('system.update');
         $identifier = $this->resolveIdentifier($request);
         $report = app(UpdateService::class)->updateWithReport($identifier);
 
         if ($report->compatible) {
-            return back()->with('toast', ['type' => 'success', 'message' => __('Extension updated.')]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension updated.')]);
+
+            return back();
         }
 
-        return back()->with('toast', ['type' => 'error', 'message' => __('Update blocked: :errors', ['errors' => implode(', ', $report->errors)])]);
+        Inertia::flash('toast', ['type' => 'error', 'message' => __('Update blocked: :errors', ['errors' => implode(', ', $report->errors)])]);
+
+        return back();
+    }
+
+    public function batchEnable(Request $request): RedirectResponse
+    {
+        Gate::authorize('system.update');
+        $team = $request->user()->currentTeam;
+
+        if (! $team) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('No team context.')]);
+
+            return back();
+        }
+
+        $identifiers = $request->validate([
+            'identifiers' => ['required', 'array'],
+            'identifiers.*' => ['string'],
+        ])['identifiers'];
+
+        $manager = app(ExtensionManager::class);
+
+        foreach ($identifiers as $identifier) {
+            try {
+                $manager->enable($identifier, $team->id);
+            } catch (\Throwable) {
+                // Skip extensions that fail to enable (missing deps, etc.)
+            }
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extensions enabled.')]);
+
+        return back();
+    }
+
+    public function batchDisable(Request $request): RedirectResponse
+    {
+        Gate::authorize('system.update');
+        $team = $request->user()->currentTeam;
+
+        if (! $team) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('No team context.')]);
+
+            return back();
+        }
+
+        $identifiers = $request->validate([
+            'identifiers' => ['required', 'array'],
+            'identifiers.*' => ['string'],
+        ])['identifiers'];
+
+        $manager = app(ExtensionManager::class);
+
+        foreach ($identifiers as $identifier) {
+            try {
+                $manager->disable($identifier, $team->id);
+            } catch (\Throwable) {
+                // Skip extensions that fail to disable (dependents, etc.)
+            }
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Extensions disabled.')]);
+
+        return back();
     }
 
     public function checkUpdates(): RedirectResponse
     {
+        Gate::authorize('system.update');
         try {
             $updates = app(UpdateService::class)->checkForUpdates();
             $count = $updates->count();
 
             if ($count > 0) {
-                return back()->with('toast', ['type' => 'info', 'message' => __(':count updates available.', ['count' => $count])]);
+                Inertia::flash('toast', ['type' => 'info', 'message' => __(':count updates available.', ['count' => $count])]);
+
+                return back();
             }
 
-            return back()->with('toast', ['type' => 'success', 'message' => __('All extensions are up to date.')]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('All extensions are up to date.')]);
+
+            return back();
         } catch (\Throwable $e) {
-            return back()->with('toast', ['type' => 'error', 'message' => __('Failed to check updates: :error', ['error' => $e->getMessage()])]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Failed to check updates: :error', ['error' => $e->getMessage()])]);
+
+            return back();
         }
     }
 

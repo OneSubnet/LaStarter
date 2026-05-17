@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Route;
 final class ModuleRouteRegistrar
 {
     /**
-     * Register module routes wrapped in team-scoped middleware.
+     * Register module routes wrapped in team-scoped and extension-state middleware.
      */
-    public function register(string $routesPath, string $prefix = ''): void
+    public function register(string $routesPath, string $identifier = '', string $prefix = ''): void
     {
         $urlPrefix = '{current_team}';
 
@@ -18,7 +18,13 @@ final class ModuleRouteRegistrar
             $urlPrefix .= '/'.ltrim($prefix, '/');
         }
 
-        Route::middleware(['web', 'auth', 'verified', EnsureTeamMembership::class])
+        $middleware = ['web', 'auth', 'verified', EnsureTeamMembership::class];
+
+        if ($identifier !== '') {
+            $middleware[] = 'extension:'.$identifier;
+        }
+
+        Route::middleware($middleware)
             ->prefix($urlPrefix)
             ->group($routesPath);
     }

@@ -40,7 +40,7 @@ final class NotificationController
 
         $url = $notification->data['url'] ?? null;
 
-        if ($url) {
+        if ($url && $this->isSafeRedirect($url)) {
             return redirect($url);
         }
 
@@ -63,5 +63,16 @@ final class NotificationController
             ->count();
 
         return response()->json(['count' => $count]);
+    }
+
+    private function isSafeRedirect(string $url): bool
+    {
+        if (filter_var($url, FILTER_VALIDATE_URL) !== false) {
+            $host = parse_url($url, PHP_URL_HOST);
+
+            return $host === request()->getHost();
+        }
+
+        return str_starts_with($url, '/') && ! str_starts_with($url, '//');
     }
 }

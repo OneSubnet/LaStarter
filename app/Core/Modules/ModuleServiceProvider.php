@@ -68,7 +68,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
             return;
         }
 
-        app(ModuleRouteRegistrar::class)->register($routesPath);
+        app(ModuleRouteRegistrar::class)->register($routesPath, $this->identifier());
     }
 
     private function loadModuleMigrations(): void

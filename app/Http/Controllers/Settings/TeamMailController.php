@@ -8,6 +8,7 @@ use App\Http\Requests\Settings\UpdateTeamMailRequest;
 use App\Mail\TestMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -45,6 +46,10 @@ final class TeamMailController extends Controller
                 continue;
             }
 
+            if ($key === 'password') {
+                $value = Crypt::encryptString($value);
+            }
+
             $this->settings->set("mail_{$key}", $value);
         }
 
@@ -68,7 +73,7 @@ final class TeamMailController extends Controller
         $to = $this->settings->get('mail_from_address', $request->user()->email);
 
         try {
-            Mail::to($to)->send((new TestMail($request->user()->currentTeam->name))->locale($request->user()->locale ?? app()->getLocale()));
+            Mail::to($to)->send(new TestMail($request->user()->currentTeam->name, $request->user()));
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Test email sent to :email.', ['email' => $to])]);
         } catch (\Throwable $e) {
             logger()->error('Mail test failed: '.$e->getMessage());

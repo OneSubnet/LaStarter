@@ -13,7 +13,19 @@
         "session_expired": "Votre session a expiré. Veuillez rafraîchir la page.",
         "server_error_generic": "Une erreur serveur est survenue. Veuillez réessayer.",
         "generic": "Une erreur est survenue.",
-        "network": "Erreur réseau. Vérifiez votre connexion."
+        "network": "Erreur réseau. Vérifiez votre connexion.",
+        "boundary_title": "Une erreur est survenue",
+        "boundary_message": "Une erreur inattendue s'est produite dans ce composant. Vous pouvez réessayer ou recharger la page."
+    },
+    "nav": {
+        "groups": {
+            "overview": "Vue d'ensemble",
+            "crm": "CRM",
+            "produits": "Produits",
+            "operations": "Opérations",
+            "finance": "Finance",
+            "communication": "Communication"
+        }
     },
     "common": {
         "save": "Enregistrer",
@@ -68,14 +80,34 @@
         "page_of": "Page {{current}} sur {{total}}",
         "columns": "Colonnes",
         "customize_columns": "Personnaliser les colonnes",
+        "created_at": "Créé le",
+        "actions": "Actions",
         "something_went_wrong": "Une erreur est survenue.",
         "navigation_menu": "Menu de navigation",
         "feedback": "Commentaire",
         "security": "Sécurité",
         "appearance": "Apparence",
+        "download": "Télécharger",
         "app_name": "Laravel Starter Kit",
         "by": "par",
-        "default": "(par défaut)"
+        "default": "(par défaut)",
+        "just_now": "maintenant",
+        "minutes_ago": "{{count}}m",
+        "hours_ago": "{{count}}h",
+        "days_ago": "{{count}}j"
+    },
+    "format": {
+        "just_now": "maintenant",
+        "minutes_ago": "{{count}}m",
+        "hours_ago": "{{count}}h",
+        "days_ago": "{{count}}j"
+    },
+    "a11y": {
+        "select_all": "Tout sélectionner",
+        "select_row": "Sélectionner la ligne",
+        "recovery_codes": "Codes de récupération",
+        "loading_recovery_codes": "Chargement des codes de récupération",
+        "search": "Rechercher"
     },
     "auth": {
         "login": {
@@ -188,9 +220,9 @@
         "role_title": "Comment comptez-vous utiliser la plateforme ?",
         "role_desc": "Cela nous aide à configurer votre espace de manière optimale.",
         "roles": {
-            "freelance": "Freelance / Indépendant",
+            "freelance": "Freelance \/ Indépendant",
             "freelance_desc": "Je gère mes projets et clients seul(e).",
-            "agency": "Agence / Entreprise",
+            "agency": "Agence \/ Entreprise",
             "agency_desc": "Je travaille en équipe avec plusieurs collaborateurs.",
             "team_lead": "Chef d'équipe",
             "team_lead_desc": "Je coordonne une équipe et gère les projets."
@@ -301,7 +333,7 @@
             "title": "Liens du pied de page",
             "description": "Ajoutez des liens personnalisés qui apparaissent en bas de chaque page (mentions légales, support, etc.)",
             "title_placeholder": "Titre du lien",
-            "url_placeholder": "https://example.com",
+            "url_placeholder": "https:\/\/example.com",
             "add": "Ajouter un lien"
         },
         "profile": {
@@ -365,7 +397,7 @@
                 "title": "Liens du pied de page",
                 "description": "Ajoutez des liens personnalisés qui apparaissent en bas de chaque page (mentions légales, support, etc.)",
                 "title_placeholder": "Titre du lien",
-                "url_placeholder": "https://example.com",
+                "url_placeholder": "https:\/\/example.com",
                 "add": "Ajouter un lien"
             },
             "members": {
@@ -433,7 +465,7 @@
                 "username_label": "Nom d'utilisateur",
                 "username_placeholder": "nom d'utilisateur smtp",
                 "password_label": "Mot de passe",
-                "password_placeholder": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
+                "password_placeholder": "••••••••",
                 "from_address_label": "Adresse d'expédition",
                 "from_address_placeholder": "noreply@exemple.com",
                 "from_name_label": "Nom d'expédition",
@@ -484,6 +516,11 @@
             "enable": "Activer",
             "disable": "Désactiver",
             "uninstall": "Désinstaller",
+            "uninstall_confirm_title": "Désinstaller l'extension",
+            "uninstall_confirm_description": "Vous allez désinstaller",
+            "uninstall_confirm_warning": "Cela supprimera toutes les données de l'extension, y compris les tables en base de données.",
+            "uninstall_confirm_label": "Tapez",
+            "uninstall_confirm_text": "pour confirmer.",
             "toggle_all": "Tout basculer",
             "permissions_title": "Permissions",
             "permissions_description": "Ces permissions sont ajoutées lorsque le module est activé. Assignez-les aux rôles pour contrôler l'accès.",
@@ -584,6 +621,33 @@
             "compatibility_warnings": "Alertes de compatibilité",
             "incompatible_extensions": "Certaines extensions peuvent être incompatibles avec la nouvelle version. Vérifiez la compatibilité avant de mettre à jour."
         },
+        "backups": {
+            "title": "Sauvegardes",
+            "description": "Gérez les sauvegardes de la plateforme, des extensions et de la base de données.",
+            "core_title": "Plateforme",
+            "core_description": "Sauvegarder les fichiers principaux (config, routes, migrations).",
+            "create_core": "Créer une sauvegarde",
+            "database_title": "Base de données",
+            "database_description": "Sauvegarder la base de données actuelle.",
+            "create_database": "Créer une sauvegarde",
+            "all_backups": "Toutes les sauvegardes",
+            "empty": "Aucune sauvegarde. Créez-en une ci-dessus.",
+            "col_filename": "Fichier",
+            "col_type": "Type",
+            "col_size": "Taille",
+            "col_date": "Date",
+            "col_actions": "Actions",
+            "type_core": "Core",
+            "type_extension": "Extension",
+            "type_database": "Base de données",
+            "delete_title": "Supprimer la sauvegarde",
+            "delete_description": "Êtes-vous sûr de vouloir supprimer cette sauvegarde ? Cette action est irréversible.",
+            "delete_confirm": "Supprimer",
+            "restore": "Restaurer",
+            "restore_title": "Restaurer la sauvegarde",
+            "restore_description": "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Les données actuelles seront remplacées.",
+            "restore_confirm": "Restaurer"
+        },
         "teams": {
             "title": "Équipes",
             "description": "Gérez vos équipes et adhésions",
@@ -656,7 +720,14 @@
             "recent_activity": "Activité récente",
             "no_activity": "Aucune activité enregistrée.",
             "new_team": "Nouvelle équipe",
-            "activity_detail": "Détail de l'activité"
+            "activity_detail": "Détail de l'activité",
+            "audit": {
+                "user": "Utilisateur",
+                "action": "Action",
+                "module": "Module",
+                "date": "Date",
+                "details": "Détails"
+            }
         },
         "password_input": {
             "show": "Afficher le mot de passe",
@@ -690,7 +761,7 @@
             "title": "Dashboard Ailes Invisibles",
             "breadcrumb": "Dashboard",
             "clients": "Clients",
-            "products": "Produits/Services",
+            "products": "Produits\/Services",
             "events": "Événements",
             "quotes": "Devis",
             "invoices": "Factures",
@@ -1238,7 +1309,7 @@
             "send_message": "Envoyer un message",
             "type_message": "Écrire un message...",
             "no_conversations": "Aucune conversation.",
-            "no_messages": "Aucun message dans cette conversation.",
+            "no_messages": "Aucun message",
             "search": "Rechercher...",
             "columns": "Colonnes",
             "customize_columns": "Personnaliser",
@@ -1294,30 +1365,29 @@
             "customer": "Client",
             "ai_analysis": "Analyse IA",
             "ai_analysis_placeholder": "L'analyse IA sera disponible une fois l'analyse des conversations activée.",
-            "no_messages": "Aucun message",
             "staff": "Staff",
             "file_attached": "Fichier joint",
-            "encrypted_message": "Message chiffr\u00e9",
+            "encrypted_message": "Message chiffré",
             "time_now": "maintenant",
             "time_m": "{{count}}m",
             "time_h": "{{count}}h",
             "time_d": "{{count}}j",
             "conversation_fallback": "Conversation",
-            "search_placeholder": "Rechercher\u2026",
+            "search_placeholder": "Rechercher…",
             "cmd_subtitle": "Rechercher des conversations et naviguer",
             "group_conversations": "Conversations",
             "group_navigation": "Navigation",
-            "event_created": "{{who}} a cr\u00e9\u00e9 la conversation",
-            "event_message_sent": "{{who}} a envoy\u00e9 un message",
+            "event_created": "{{who}} a créé la conversation",
+            "event_message_sent": "{{who}} a envoyé un message",
             "event_file_attached": "{{who}} a joint un fichier",
-            "event_participant_joined": "Un participant a \u00e9t\u00e9 ajout\u00e9",
-            "event_participant_left": "Un participant a \u00e9t\u00e9 retir\u00e9",
-            "event_archived": "{{who}} a archiv\u00e9 la conversation",
-            "event_unarchived": "{{who}} a d\u00e9sarchiv\u00e9 la conversation",
-            "event_system": "Syst\u00e8me",
+            "event_participant_joined": "Un participant a été ajouté",
+            "event_participant_left": "Un participant a été retiré",
+            "event_archived": "{{who}} a archivé la conversation",
+            "event_unarchived": "{{who}} a désarchivé la conversation",
+            "event_system": "Système",
             "edit_conversation": "Modifier la conversation",
             "save": "Enregistrer",
-            "encryption_tooltip": "Les messages sont chiffr\u00e9s en AES-256-CBC avec la cl\u00e9 de l'application. Chaque message poss\u00e8de un vecteur d'initialisation (IV) unique et des cl\u00e9s chiffr\u00e9es par participant pour un stockage s\u00e9curis\u00e9."
+            "encryption_tooltip": "Les messages sont chiffrés en AES-256-CBC avec la clé de l'application. Chaque message possède un vecteur d'initialisation (IV) unique et des clés chiffrées par participant pour un stockage sécurisé."
         },
         "portal": {
             "login_title": "Connexion",

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Core\Audit\AuditLogger;
+use App\Core\Cache\Listeners\InvalidateCacheListener;
 use App\Core\Context\AppContext;
 use App\Core\Context\SharedPropsResolver;
 use App\Core\Extensions\Console\ExtensionsCheckUpdatesCommand;
@@ -14,7 +15,10 @@ use App\Core\Extensions\Console\ExtensionsScanCommand;
 use App\Core\Extensions\Console\ExtensionsSyncCommand;
 use App\Core\Extensions\Console\ExtensionsUninstallCommand;
 use App\Core\Extensions\Console\ExtensionsUpdateCommand;
+use App\Core\Extensions\Events\ExtensionDisabled;
 use App\Core\Extensions\Events\ExtensionEnabled;
+use App\Core\Extensions\Events\ExtensionInstalled;
+use App\Core\Extensions\Events\ExtensionUninstalled;
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Extensions\ExtensionScanner;
 use App\Core\Extensions\Installer\ZipInstaller;
@@ -135,6 +139,13 @@ class AppServiceProvider extends ServiceProvider
 
         // Domain event listeners (Grafikart.fr pattern: Event → Listener)
         Event::listen(ExtensionEnabled::class, SyncTeamPermissionsListener::class);
+
+        // Cache invalidation on extension lifecycle events
+        $cacheListener = InvalidateCacheListener::class;
+        Event::listen(ExtensionEnabled::class, [$cacheListener, 'handleExtensionEnabled']);
+        Event::listen(ExtensionDisabled::class, [$cacheListener, 'handleExtensionDisabled']);
+        Event::listen(ExtensionInstalled::class, [$cacheListener, 'handleExtensionInstalled']);
+        Event::listen(ExtensionUninstalled::class, [$cacheListener, 'handleExtensionUninstalled']);
 
         require_once app_path('Core/Support/helpers.php');
 

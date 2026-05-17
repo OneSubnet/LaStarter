@@ -2,10 +2,12 @@
 
 namespace App\Core\Navigation;
 
+use App\Core\Cache\CacheKey;
 use App\Core\Extensions\ExtensionManager;
 use App\Core\Navigation\Events\SidebarBuilding;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
@@ -16,11 +18,28 @@ final class NavigationBuilder
     ) {}
 
     /**
-     * Build sidebar navigation for a team.
+     * Build sidebar navigation for a team (cached per team+user).
      *
      * @return list<array{title: string, icon: ?string, order: int, href: string, permission?: ?string, children?: list<array{title: string, icon: ?string, order: int, group: ?string, href: string}>}>
      */
     public function build(Team $team, User $user): array
+    {
+        return Cache::remember(
+            CacheKey::navigation($team->id, $user->id),
+            now()->addHour(),
+            fn () => $this->resolve($team, $user),
+        );
+    }
+
+    public static function flushTeam(int $teamId): void
+    {
+        Cache::getStore()->flush();
+    }
+
+    /**
+     * Resolve navigation items from extension manifests.
+     */
+    private function resolve(Team $team, User $user): array
     {
         $navItems = [];
 
@@ -87,6 +106,10 @@ final class NavigationBuilder
             }
 
             $resolved['children'] = $children;
+
+            if ($children === []) {
+                return null;
+            }
         }
 
         return $resolved;
