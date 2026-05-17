@@ -1,4 +1,9 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import type {
+    ColumnDef,
+    SortingState,
+    VisibilityState,
+} from '@tanstack/react-table';
 import {
     flexRender,
     getCoreRowModel,
@@ -7,18 +12,13 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import type {
-    ColumnDef,
-    SortingState,
-    VisibilityState,
-} from '@tanstack/react-table';
 import {
     ArrowUpDown,
-    ChevronLeft,
-    ChevronRight,
+    ChevronDown,
     ChevronsLeft,
     ChevronsRight,
-    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     Columns3,
     Download,
     Eye,
@@ -74,9 +74,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import UninstallExtensionModal from '@/components/uninstall-extension-modal';
 import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { extensions as extensionsUrl } from '@/routes/settings/team';
 import {
+    batchDisable as batchDisableUrl,
+    batchEnable as batchEnableUrl,
     checkUpdates as checkUpdatesUrl,
     disable as disableUrl,
     enable as enableUrl,
@@ -101,6 +104,179 @@ type Props = {
     extensions: Extension[];
 };
 
+function getDisplayState(ext: Extension): string {
+    if (ext.is_enabled) {
+        return 'enabled';
+    }
+
+    if (ext.state === 'enabled') {
+        return 'disabled';
+    }
+
+    return ext.state ?? 'installed';
+}
+
+function ExtensionDetailPanel({
+    extension: ext,
+    stateConfig,
+    teamSlug,
+    onAction,
+    onClose,
+}: {
+    extension: Extension;
+    stateConfig: Record<
+        string,
+        {
+            label: string;
+            variant: 'default' | 'secondary' | 'destructive' | 'outline';
+        }
+    >;
+    teamSlug: string;
+    onAction: (url: string) => void;
+    onClose: () => void;
+}) {
+    const { t } = useTranslation();
+    const displayState = getDisplayState(ext);
+    const config = stateConfig[displayState] ?? stateConfig.installed;
+
+    const act = (url: string) => {
+        onAction(url);
+        onClose();
+    };
+
+    return (
+        <>
+            <SheetHeader>
+                <SheetTitle>{ext.name}</SheetTitle>
+                <SheetDescription>{ext.description}</SheetDescription>
+            </SheetHeader>
+
+            <div className="flex flex-col gap-6 px-4 pb-6">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">
+                            {t('settings.extensions.type')}
+                        </p>
+                        <Badge variant="outline" className="mt-1 capitalize">
+                            {ext.type}
+                        </Badge>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">
+                            {t('settings.extensions.table_status')}
+                        </p>
+                        <Badge variant={config.variant} className="mt-1">
+                            {config.label}
+                        </Badge>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                        <p className="text-xs text-muted-foreground">
+                            {t('settings.extensions.version')}
+                        </p>
+                        <p className="mt-1 text-sm font-medium">
+                            {ext.version ? `v${ext.version}` : '—'}
+                        </p>
+                    </div>
+                    {ext.author ? (
+                        <div className="rounded-lg border p-3">
+                            <p className="text-xs text-muted-foreground">
+                                {t('settings.extensions.author')}
+                            </p>
+                            <p className="mt-1 text-sm font-medium">
+                                {ext.author}
+                            </p>
+                        </div>
+                    ) : null}
+                </div>
+
+                <Separator />
+
+                <div>
+                    <p className="text-xs text-muted-foreground">
+                        {t('settings.extensions.identifier')}
+                    </p>
+                    <code className="mt-1 block rounded bg-muted px-2 py-1 text-sm">
+                        {ext.identifier}
+                    </code>
+                </div>
+
+                <div className="flex gap-2">
+                    <Guard permission="extension.manage">
+                        {!ext.state ? (
+                            <Button
+                                size="sm"
+                                onClick={() =>
+                                    act(
+                                        installUrl({
+                                            current_team: teamSlug,
+                                            extension: ext.identifier,
+                                        }).url,
+                                    )
+                                }
+                            >
+                                <Download className="h-4 w-4" />
+                                {t('settings.extensions.install')}
+                            </Button>
+                        ) : null}
+                        {ext.state &&
+                        !ext.is_enabled &&
+                        ext.state !== 'errored' ? (
+                            <Button
+                                size="sm"
+                                onClick={() =>
+                                    act(
+                                        enableUrl({
+                                            current_team: teamSlug,
+                                            extension: ext.identifier,
+                                        }).url,
+                                    )
+                                }
+                            >
+                                <Power className="h-4 w-4" />
+                                {t('settings.extensions.enable')}
+                            </Button>
+                        ) : null}
+                        {ext.is_enabled ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    act(
+                                        disableUrl({
+                                            current_team: teamSlug,
+                                            extension: ext.identifier,
+                                        }).url,
+                                    )
+                                }
+                            >
+                                <PowerOff className="h-4 w-4" />
+                                {t('settings.extensions.disable')}
+                            </Button>
+                        ) : null}
+                        {ext.state && ext.state !== 'errored' ? (
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() =>
+                                    act(
+                                        uninstallUrl({
+                                            current_team: teamSlug,
+                                            extension: ext.identifier,
+                                        }).url,
+                                    )
+                                }
+                            >
+                                <PackageX className="h-4 w-4" />
+                                {t('settings.extensions.uninstall')}
+                            </Button>
+                        ) : null}
+                    </Guard>
+                </div>
+            </div>
+        </>
+    );
+}
+
 export default function Extensions({ extensions }: Props) {
     const { t } = useTranslation();
     const { currentTeam } = usePage<SharedData>().props;
@@ -112,6 +288,9 @@ export default function Extensions({ extensions }: Props) {
         {},
     );
     const [detailExtension, setDetailExtension] = useState<Extension | null>(
+        null,
+    );
+    const [uninstallTarget, setUninstallTarget] = useState<Extension | null>(
         null,
     );
     const [typeFilter, setTypeFilter] = useState<'all' | 'module' | 'theme'>(
@@ -156,21 +335,19 @@ export default function Extensions({ extensions }: Props) {
         return extensions.filter((ext) => ext.type === typeFilter);
     }, [extensions, typeFilter]);
 
+    const columnLabels = useMemo<Record<string, string>>(
+        () => ({
+            type: t('settings.extensions.table_type'),
+            author: t('settings.extensions.table_author'),
+            version: t('settings.extensions.table_version'),
+            state: t('settings.extensions.table_status'),
+        }),
+        [t],
+    );
+
     const postAction = useCallback((url: string) => {
         router.post(url, {}, { preserveScroll: true });
     }, []);
-
-    const getDisplayState = (ext: Extension): string => {
-        if (ext.is_enabled) {
-            return 'enabled';
-        }
-
-        if (ext.state === 'enabled') {
-            return 'disabled';
-        }
-
-        return ext.state ?? 'installed';
-    };
 
     const columns = useMemo<ColumnDef<Extension>[]>(
         () => [
@@ -187,7 +364,7 @@ export default function Extensions({ extensions }: Props) {
                             onCheckedChange={(value) =>
                                 table.toggleAllPageRowsSelected(!!value)
                             }
-                            aria-label="Select all"
+                            aria-label={t('a11y.select_all')}
                         />
                     </div>
                 ),
@@ -198,7 +375,7 @@ export default function Extensions({ extensions }: Props) {
                             onCheckedChange={(value) =>
                                 row.toggleSelected(!!value)
                             }
-                            aria-label="Select row"
+                            aria-label={t('a11y.select_row')}
                         />
                     </div>
                 ),
@@ -460,15 +637,7 @@ export default function Extensions({ extensions }: Props) {
                                                 <DropdownMenuItem
                                                     variant="destructive"
                                                     onClick={() =>
-                                                        postAction(
-                                                            uninstallUrl({
-                                                                current_team:
-                                                                    teamSlug ??
-                                                                    '',
-                                                                extension:
-                                                                    ext.identifier,
-                                                            }).url,
-                                                        )
+                                                        setUninstallTarget(ext)
                                                     }
                                                 >
                                                     <PackageX className="h-4 w-4" />
@@ -507,684 +676,129 @@ export default function Extensions({ extensions }: Props) {
     });
 
     return (
-        <TeamSettingsLayout
-            activeTab="Extensions"
-            wide
-            breadcrumbs={[
-                {
-                    title: t('settings.extensions.title'),
-                    href: extensionsUrl(teamSlug ?? '').url,
-                },
-            ]}
-        >
-            <Head title={t('settings.extensions.title')} />
-            <h1 className="sr-only">{t('settings.extensions.title')}</h1>
-
-            {extensions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                    <Puzzle className="mb-4 h-12 w-12 opacity-20" />
-                    <p className="text-sm">
-                        {t('settings.extensions.no_extensions')}
-                    </p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2">
-                            <Guard permission="extension.manage">
-                                {table.getFilteredSelectedRowModel().rows
-                                    .length > 0 && (
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                table
-                                                    .getFilteredSelectedRowModel()
-                                                    .rows.forEach((row) => {
-                                                        if (
-                                                            row.original
-                                                                .state &&
-                                                            !row.original
-                                                                .is_enabled
-                                                        ) {
-                                                            postAction(
-                                                                enableUrl({
-                                                                    current_team:
-                                                                        teamSlug ??
-                                                                        '',
-                                                                    extension:
-                                                                        row
-                                                                            .original
-                                                                            .identifier,
-                                                                }).url,
-                                                            );
-                                                        }
-                                                    });
-                                                setRowSelection({});
-                                            }}
-                                        >
-                                            <Power className="h-4 w-4" />
-                                            {t('settings.extensions.enable')}
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                table
-                                                    .getFilteredSelectedRowModel()
-                                                    .rows.forEach((row) => {
-                                                        if (
-                                                            row.original
-                                                                .is_enabled
-                                                        ) {
-                                                            postAction(
-                                                                disableUrl({
-                                                                    current_team:
-                                                                        teamSlug ??
-                                                                        '',
-                                                                    extension:
-                                                                        row
-                                                                            .original
-                                                                            .identifier,
-                                                                }).url,
-                                                            );
-                                                        }
-                                                    });
-                                                setRowSelection({});
-                                            }}
-                                        >
-                                            <PowerOff className="h-4 w-4" />
-                                            {t('settings.extensions.disable')}
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() => {
-                                                table
-                                                    .getFilteredSelectedRowModel()
-                                                    .rows.forEach((row) => {
-                                                        if (
-                                                            row.original
-                                                                .state &&
-                                                            row.original
-                                                                .state !==
-                                                                'errored'
-                                                        ) {
-                                                            postAction(
-                                                                uninstallUrl({
-                                                                    current_team:
-                                                                        teamSlug ??
-                                                                        '',
-                                                                    extension:
-                                                                        row
-                                                                            .original
-                                                                            .identifier,
-                                                                }).url,
-                                                            );
-                                                        }
-                                                    });
-                                                setRowSelection({});
-                                            }}
-                                        >
-                                            <PackageX className="h-4 w-4" />
-                                            {t('settings.extensions.uninstall')}
-                                        </Button>
-                                        <Separator
-                                            orientation="vertical"
-                                            className="h-6"
-                                        />
-                                    </div>
-                                )}
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                        postAction(
-                                            checkUpdatesUrl({
-                                                current_team: teamSlug ?? '',
-                                            }).url,
-                                        )
-                                    }
-                                >
-                                    <RefreshCw className="h-4 w-4" />
-                                    {t('settings.extensions.check_updates')}
-                                </Button>
-                            </Guard>
-                            <Select
-                                value={typeFilter}
-                                onValueChange={(v) =>
-                                    setTypeFilter(
-                                        v as 'all' | 'module' | 'theme',
-                                    )
-                                }
-                            >
-                                <SelectTrigger
-                                    size="sm"
-                                    className="h-9 w-[140px]"
-                                >
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        {t('settings.extensions.filter_all')}
-                                    </SelectItem>
-                                    <SelectItem value="module">
-                                        {t(
-                                            'settings.extensions.filter_modules',
-                                        )}
-                                    </SelectItem>
-                                    <SelectItem value="theme">
-                                        {t('settings.extensions.filter_themes')}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <div className="relative">
-                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder={t(
-                                        'settings.extensions.search_placeholder',
-                                    )}
-                                    value={globalFilter}
-                                    onChange={(e) =>
-                                        setGlobalFilter(e.target.value)
-                                    }
-                                    className="h-9 w-[200px] pl-9 lg:w-[260px]"
-                                />
-                            </div>
-                            <DropdownMenu>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                >
-                                                    <Columns3 className="h-4 w-4" />
-                                                    <span className="hidden lg:inline">
-                                                        {t(
-                                                            'settings.extensions.columns',
-                                                        )}
-                                                    </span>
-                                                    <ChevronDown className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            {t(
-                                                'settings.extensions.customize_tooltip',
-                                            )}
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                                <DropdownMenuContent
-                                    align="end"
-                                    className="w-48"
-                                >
-                                    {table
-                                        .getAllColumns()
-                                        .filter(
-                                            (col) =>
-                                                typeof col.accessorFn !==
-                                                    'undefined' &&
-                                                col.getCanHide(),
-                                        )
-                                        .map((col) => (
-                                            <DropdownMenuCheckboxItem
-                                                key={col.id}
-                                                className="capitalize"
-                                                checked={col.getIsVisible()}
-                                                onCheckedChange={(v) =>
-                                                    col.toggleVisibility(!!v)
-                                                }
-                                            >
-                                                {col.id === 'type'
-                                                    ? t(
-                                                          'settings.extensions.table_type',
-                                                      )
-                                                    : col.id === 'author'
-                                                      ? t(
-                                                            'settings.extensions.table_author',
-                                                        )
-                                                      : col.id === 'version'
-                                                        ? t(
-                                                              'settings.extensions.table_version',
-                                                          )
-                                                        : col.id === 'state'
-                                                          ? t(
-                                                                'settings.extensions.table_status',
-                                                            )
-                                                          : col.id}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
-
-                    {filteredData.length > 0 && (
-                        <div className="space-y-4">
-                            <div className="rounded-lg border">
-                                <Table>
-                                    <TableHeader>
-                                        {table.getHeaderGroups().map((hg) => (
-                                            <TableRow key={hg.id}>
-                                                {hg.headers.map((header) => (
-                                                    <TableHead
-                                                        key={header.id}
-                                                        colSpan={header.colSpan}
-                                                    >
-                                                        {header.isPlaceholder
-                                                            ? null
-                                                            : flexRender(
-                                                                  header.column
-                                                                      .columnDef
-                                                                      .header,
-                                                                  header.getContext(),
-                                                              )}
-                                                    </TableHead>
-                                                ))}
-                                            </TableRow>
-                                        ))}
-                                    </TableHeader>
-                                    <TableBody>
-                                        {table.getRowModel().rows.length > 0 ? (
-                                            table
-                                                .getRowModel()
-                                                .rows.map((row) => (
-                                                    <TableRow
-                                                        key={row.id}
-                                                        data-state={
-                                                            row.getIsSelected() &&
-                                                            'selected'
-                                                        }
-                                                    >
-                                                        {row
-                                                            .getVisibleCells()
-                                                            .map((cell) => (
-                                                                <TableCell
-                                                                    key={
-                                                                        cell.id
-                                                                    }
-                                                                >
-                                                                    {flexRender(
-                                                                        cell
-                                                                            .column
-                                                                            .columnDef
-                                                                            .cell,
-                                                                        cell.getContext(),
-                                                                    )}
-                                                                </TableCell>
-                                                            ))}
-                                                    </TableRow>
-                                                ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={columns.length}
-                                                    className="h-24 text-center text-muted-foreground"
-                                                >
-                                                    {t(
-                                                        'settings.extensions.no_results',
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-
-                            <div className="flex items-center justify-between px-1">
-                                <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-                                    {t('common.selected_rows', {
-                                        selected:
-                                            table.getFilteredSelectedRowModel()
-                                                .rows.length,
-                                        total: table.getFilteredRowModel().rows
-                                            .length,
-                                    })}
-                                </div>
-                                <div className="flex w-full items-center gap-8 lg:w-fit">
-                                    <div className="hidden items-center gap-2 lg:flex">
-                                        <Label
-                                            htmlFor="ext-rows"
-                                            className="text-sm font-medium"
-                                        >
-                                            {t('common.rows_per_page')}
-                                        </Label>
-                                        <Select
-                                            value={`${table.getState().pagination.pageSize}`}
-                                            onValueChange={(v) =>
-                                                table.setPageSize(Number(v))
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                size="sm"
-                                                className="w-20"
-                                                id="ext-rows"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent side="top">
-                                                {[10, 20, 30, 40, 50].map(
-                                                    (ps) => (
-                                                        <SelectItem
-                                                            key={ps}
-                                                            value={`${ps}`}
-                                                        >
-                                                            {ps}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="flex w-fit items-center justify-center text-sm font-medium">
-                                        {t('pagination.page_of', {
-                                            page:
-                                                table.getState().pagination
-                                                    .pageIndex + 1,
-                                            total: table.getPageCount(),
-                                        })}
-                                    </div>
-                                    <div className="ml-auto flex items-center gap-2 lg:ml-0">
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="hidden size-8 lg:flex"
-                                                        size="icon"
-                                                        onClick={() =>
-                                                            table.setPageIndex(
-                                                                0,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            !table.getCanPreviousPage()
-                                                        }
-                                                    >
-                                                        <ChevronsLeft className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            {t(
-                                                                'pagination.first',
-                                                            )}
-                                                        </span>
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {t('pagination.first')}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="size-8"
-                                                        onClick={() =>
-                                                            table.previousPage()
-                                                        }
-                                                        disabled={
-                                                            !table.getCanPreviousPage()
-                                                        }
-                                                    >
-                                                        <ChevronLeft className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            {t(
-                                                                'pagination.previous',
-                                                            )}
-                                                        </span>
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {t('pagination.previous')}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="size-8"
-                                                        onClick={() =>
-                                                            table.nextPage()
-                                                        }
-                                                        disabled={
-                                                            !table.getCanNextPage()
-                                                        }
-                                                    >
-                                                        <ChevronRight className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            {t(
-                                                                'pagination.next',
-                                                            )}
-                                                        </span>
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {t('pagination.next')}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="hidden size-8 lg:flex"
-                                                        size="icon"
-                                                        onClick={() =>
-                                                            table.setPageIndex(
-                                                                table.getPageCount() -
-                                                                    1,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            !table.getCanNextPage()
-                                                        }
-                                                    >
-                                                        <ChevronsRight className="h-4 w-4" />
-                                                        <span className="sr-only">
-                                                            {t(
-                                                                'pagination.last',
-                                                            )}
-                                                        </span>
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {t('pagination.last')}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <Sheet
-                open={!!detailExtension}
-                onOpenChange={(open) => !open && setDetailExtension(null)}
+        <>
+            <TeamSettingsLayout
+                activeTab="Extensions"
+                wide
+                breadcrumbs={[
+                    {
+                        title: t('settings.extensions.title'),
+                        href: extensionsUrl(teamSlug ?? '').url,
+                    },
+                ]}
             >
-                <SheetContent
-                    side="right"
-                    className="overflow-y-auto sm:max-w-lg"
-                >
-                    {detailExtension &&
-                        (() => {
-                            const ext = detailExtension;
-                            const displayState = getDisplayState(ext);
-                            const config =
-                                stateConfig[displayState] ??
-                                stateConfig.installed;
+                <Head title={t('settings.extensions.title')} />
+                <h1 className="sr-only">{t('settings.extensions.title')}</h1>
 
-                            return (
-                                <>
-                                    <SheetHeader>
-                                        <SheetTitle>{ext.name}</SheetTitle>
-                                        <SheetDescription>
-                                            {ext.description}
-                                        </SheetDescription>
-                                    </SheetHeader>
+                {extensions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                        <Puzzle className="mb-4 h-12 w-12 opacity-20" />
+                        <p className="text-sm">
+                            {t('settings.extensions.no_extensions')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <div className="flex items-center gap-2">
+                                <Guard permission="extension.manage">
+                                    {table.getFilteredSelectedRowModel().rows
+                                        .length > 0 && (
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const identifiers = table
+                                                        .getFilteredSelectedRowModel()
+                                                        .rows.filter(
+                                                            (row) =>
+                                                                row.original
+                                                                    .state &&
+                                                                !row.original
+                                                                    .is_enabled,
+                                                        )
+                                                        .map(
+                                                            (row) =>
+                                                                row.original
+                                                                    .identifier,
+                                                        );
 
-                                    <div className="flex flex-col gap-6 px-4 pb-6">
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">
-                                                    {t(
-                                                        'settings.extensions.type',
-                                                    )}
-                                                </p>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="mt-1 capitalize"
-                                                >
-                                                    {ext.type}
-                                                </Badge>
-                                            </div>
-                                            <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">
-                                                    {t(
-                                                        'settings.extensions.table_status',
-                                                    )}
-                                                </p>
-                                                <Badge
-                                                    variant={config.variant}
-                                                    className="mt-1"
-                                                >
-                                                    {config.label}
-                                                </Badge>
-                                            </div>
-                                            <div className="rounded-lg border p-3">
-                                                <p className="text-xs text-muted-foreground">
-                                                    {t(
-                                                        'settings.extensions.version',
-                                                    )}
-                                                </p>
-                                                <p className="mt-1 text-sm font-medium">
-                                                    {ext.version
-                                                        ? `v${ext.version}`
-                                                        : '—'}
-                                                </p>
-                                            </div>
-                                            {ext.author && (
-                                                <div className="rounded-lg border p-3">
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {t(
-                                                            'settings.extensions.author',
-                                                        )}
-                                                    </p>
-                                                    <p className="mt-1 text-sm font-medium">
-                                                        {ext.author}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
+                                                    if (
+                                                        identifiers.length > 0
+                                                    ) {
+                                                        router.post(
+                                                            batchEnableUrl(
+                                                                teamSlug ?? '',
+                                                            ).url,
+                                                            { identifiers },
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
+                                                        );
+                                                    }
 
-                                        <Separator />
-
-                                        <div>
-                                            <p className="text-xs text-muted-foreground">
+                                                    setRowSelection({});
+                                                }}
+                                            >
+                                                <Power className="h-4 w-4" />
                                                 {t(
-                                                    'settings.extensions.identifier',
+                                                    'settings.extensions.enable',
                                                 )}
-                                            </p>
-                                            <code className="mt-1 block rounded bg-muted px-2 py-1 text-sm">
-                                                {ext.identifier}
-                                            </code>
-                                        </div>
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const identifiers = table
+                                                        .getFilteredSelectedRowModel()
+                                                        .rows.filter(
+                                                            (row) =>
+                                                                row.original
+                                                                    .is_enabled,
+                                                        )
+                                                        .map(
+                                                            (row) =>
+                                                                row.original
+                                                                    .identifier,
+                                                        );
 
-                                        <div className="flex gap-2">
-                                            <Guard permission="extension.manage">
-                                                {!ext.state && (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            postAction(
-                                                                installUrl({
-                                                                    current_team:
-                                                                        teamSlug ??
-                                                                        '',
-                                                                    extension:
-                                                                        ext.identifier,
-                                                                }).url,
-                                                            );
-                                                            setDetailExtension(
-                                                                null,
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Download className="h-4 w-4" />
-                                                        {t(
-                                                            'settings.extensions.install',
-                                                        )}
-                                                    </Button>
+                                                    if (
+                                                        identifiers.length > 0
+                                                    ) {
+                                                        router.post(
+                                                            batchDisableUrl(
+                                                                teamSlug ?? '',
+                                                            ).url,
+                                                            { identifiers },
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
+                                                        );
+                                                    }
+
+                                                    setRowSelection({});
+                                                }}
+                                            >
+                                                <PowerOff className="h-4 w-4" />
+                                                {t(
+                                                    'settings.extensions.disable',
                                                 )}
-                                                {ext.state &&
-                                                    !ext.is_enabled &&
-                                                    ext.state !== 'errored' && (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                postAction(
-                                                                    enableUrl({
-                                                                        current_team:
-                                                                            teamSlug ??
-                                                                            '',
-                                                                        extension:
-                                                                            ext.identifier,
-                                                                    }).url,
-                                                                );
-                                                                setDetailExtension(
-                                                                    null,
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Power className="h-4 w-4" />
-                                                            {t(
-                                                                'settings.extensions.enable',
-                                                            )}
-                                                        </Button>
-                                                    )}
-                                                {ext.is_enabled && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            postAction(
-                                                                disableUrl({
-                                                                    current_team:
-                                                                        teamSlug ??
-                                                                        '',
-                                                                    extension:
-                                                                        ext.identifier,
-                                                                }).url,
-                                                            );
-                                                            setDetailExtension(
-                                                                null,
-                                                            );
-                                                        }}
-                                                    >
-                                                        <PowerOff className="h-4 w-4" />
-                                                        {t(
-                                                            'settings.extensions.disable',
-                                                        )}
-                                                    </Button>
-                                                )}
-                                                {ext.state &&
-                                                    ext.state !== 'errored' && (
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => {
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => {
+                                                    table
+                                                        .getFilteredSelectedRowModel()
+                                                        .rows.forEach((row) => {
+                                                            if (
+                                                                row.original
+                                                                    .state &&
+                                                                row.original
+                                                                    .state !==
+                                                                    'errored'
+                                                            ) {
                                                                 postAction(
                                                                     uninstallUrl(
                                                                         {
@@ -1192,29 +806,438 @@ export default function Extensions({ extensions }: Props) {
                                                                                 teamSlug ??
                                                                                 '',
                                                                             extension:
-                                                                                ext.identifier,
+                                                                                row
+                                                                                    .original
+                                                                                    .identifier,
                                                                         },
                                                                     ).url,
                                                                 );
-                                                                setDetailExtension(
-                                                                    null,
-                                                                );
-                                                            }}
-                                                        >
-                                                            <PackageX className="h-4 w-4" />
+                                                            }
+                                                        });
+                                                    setRowSelection({});
+                                                }}
+                                            >
+                                                <PackageX className="h-4 w-4" />
+                                                {t(
+                                                    'settings.extensions.uninstall',
+                                                )}
+                                            </Button>
+                                            <Separator
+                                                orientation="vertical"
+                                                className="h-6"
+                                            />
+                                        </div>
+                                    )}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            postAction(
+                                                checkUpdatesUrl({
+                                                    current_team:
+                                                        teamSlug ?? '',
+                                                }).url,
+                                            )
+                                        }
+                                    >
+                                        <RefreshCw className="h-4 w-4" />
+                                        {t('settings.extensions.check_updates')}
+                                    </Button>
+                                </Guard>
+                                <Select
+                                    value={typeFilter}
+                                    onValueChange={(v) =>
+                                        setTypeFilter(
+                                            v as 'all' | 'module' | 'theme',
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        size="sm"
+                                        className="h-9 w-[140px]"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">
+                                            {t(
+                                                'settings.extensions.filter_all',
+                                            )}
+                                        </SelectItem>
+                                        <SelectItem value="module">
+                                            {t(
+                                                'settings.extensions.filter_modules',
+                                            )}
+                                        </SelectItem>
+                                        <SelectItem value="theme">
+                                            {t(
+                                                'settings.extensions.filter_themes',
+                                            )}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <div className="relative">
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder={t(
+                                            'settings.extensions.search_placeholder',
+                                        )}
+                                        aria-label={t('a11y.search')}
+                                        value={globalFilter}
+                                        onChange={(e) =>
+                                            setGlobalFilter(e.target.value)
+                                        }
+                                        className="h-9 w-[200px] pl-9 lg:w-[260px]"
+                                    />
+                                </div>
+                                <DropdownMenu>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        <Columns3 className="h-4 w-4" />
+                                                        <span className="hidden lg:inline">
                                                             {t(
-                                                                'settings.extensions.uninstall',
+                                                                'settings.extensions.columns',
                                                             )}
-                                                        </Button>
+                                                        </span>
+                                                        <ChevronDown className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                {t(
+                                                    'settings.extensions.customize_tooltip',
+                                                )}
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <DropdownMenuContent
+                                        align="end"
+                                        className="w-48"
+                                    >
+                                        {table
+                                            .getAllColumns()
+                                            .filter(
+                                                (col) =>
+                                                    typeof col.accessorFn !==
+                                                        'undefined' &&
+                                                    col.getCanHide(),
+                                            )
+                                            .map((col) => (
+                                                <DropdownMenuCheckboxItem
+                                                    key={col.id}
+                                                    className="capitalize"
+                                                    checked={col.getIsVisible()}
+                                                    onCheckedChange={(v) =>
+                                                        col.toggleVisibility(
+                                                            !!v,
+                                                        )
+                                                    }
+                                                >
+                                                    {columnLabels[col.id] ??
+                                                        col.id}
+                                                </DropdownMenuCheckboxItem>
+                                            ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+
+                        {filteredData.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="rounded-lg border">
+                                    <Table>
+                                        <TableHeader>
+                                            {table
+                                                .getHeaderGroups()
+                                                .map((hg) => (
+                                                    <TableRow key={hg.id}>
+                                                        {hg.headers.map(
+                                                            (header) => (
+                                                                <TableHead
+                                                                    key={
+                                                                        header.id
+                                                                    }
+                                                                    colSpan={
+                                                                        header.colSpan
+                                                                    }
+                                                                >
+                                                                    {header.isPlaceholder
+                                                                        ? null
+                                                                        : flexRender(
+                                                                              header
+                                                                                  .column
+                                                                                  .columnDef
+                                                                                  .header,
+                                                                              header.getContext(),
+                                                                          )}
+                                                                </TableHead>
+                                                            ),
+                                                        )}
+                                                    </TableRow>
+                                                ))}
+                                        </TableHeader>
+                                        <TableBody>
+                                            {table.getRowModel().rows.length >
+                                            0 ? (
+                                                table
+                                                    .getRowModel()
+                                                    .rows.map((row) => (
+                                                        <TableRow
+                                                            key={row.id}
+                                                            data-state={
+                                                                row.getIsSelected() &&
+                                                                'selected'
+                                                            }
+                                                        >
+                                                            {row
+                                                                .getVisibleCells()
+                                                                .map((cell) => (
+                                                                    <TableCell
+                                                                        key={
+                                                                            cell.id
+                                                                        }
+                                                                    >
+                                                                        {flexRender(
+                                                                            cell
+                                                                                .column
+                                                                                .columnDef
+                                                                                .cell,
+                                                                            cell.getContext(),
+                                                                        )}
+                                                                    </TableCell>
+                                                                ))}
+                                                        </TableRow>
+                                                    ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell
+                                                        colSpan={columns.length}
+                                                        className="h-24 text-center text-muted-foreground"
+                                                    >
+                                                        {t(
+                                                            'settings.extensions.no_results',
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
+                                <div className="flex items-center justify-between px-1">
+                                    <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
+                                        {t('common.selected_rows', {
+                                            selected:
+                                                table.getFilteredSelectedRowModel()
+                                                    .rows.length,
+                                            total: table.getFilteredRowModel()
+                                                .rows.length,
+                                        })}
+                                    </div>
+                                    <div className="flex w-full items-center gap-8 lg:w-fit">
+                                        <div className="hidden items-center gap-2 lg:flex">
+                                            <Label
+                                                htmlFor="ext-rows"
+                                                className="text-sm font-medium"
+                                            >
+                                                {t('common.rows_per_page')}
+                                            </Label>
+                                            <Select
+                                                value={`${table.getState().pagination.pageSize}`}
+                                                onValueChange={(v) =>
+                                                    table.setPageSize(Number(v))
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    size="sm"
+                                                    className="w-20"
+                                                    id="ext-rows"
+                                                >
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent side="top">
+                                                    {[10, 20, 30, 40, 50].map(
+                                                        (ps) => (
+                                                            <SelectItem
+                                                                key={ps}
+                                                                value={`${ps}`}
+                                                            >
+                                                                {ps}
+                                                            </SelectItem>
+                                                        ),
                                                     )}
-                                            </Guard>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="flex w-fit items-center justify-center text-sm font-medium">
+                                            {t('common.page_of', {
+                                                current:
+                                                    table.getState().pagination
+                                                        .pageIndex + 1,
+                                                total: table.getPageCount(),
+                                            })}
+                                        </div>
+                                        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            className="hidden size-8 lg:flex"
+                                                            size="icon"
+                                                            onClick={() =>
+                                                                table.setPageIndex(
+                                                                    0,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                !table.getCanPreviousPage()
+                                                            }
+                                                            aria-label={t(
+                                                                'common.first_page',
+                                                            )}
+                                                        >
+                                                            <ChevronsLeft className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {t('common.first_page')}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="size-8"
+                                                            onClick={() =>
+                                                                table.previousPage()
+                                                            }
+                                                            disabled={
+                                                                !table.getCanPreviousPage()
+                                                            }
+                                                            aria-label={t(
+                                                                'common.previous',
+                                                            )}
+                                                        >
+                                                            <ChevronLeft className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {t('common.previous')}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="size-8"
+                                                            onClick={() =>
+                                                                table.nextPage()
+                                                            }
+                                                            disabled={
+                                                                !table.getCanNextPage()
+                                                            }
+                                                            aria-label={t(
+                                                                'common.next',
+                                                            )}
+                                                        >
+                                                            <ChevronRight className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {t('common.next')}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            className="hidden size-8 lg:flex"
+                                                            size="icon"
+                                                            onClick={() =>
+                                                                table.setPageIndex(
+                                                                    table.getPageCount() -
+                                                                        1,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                !table.getCanNextPage()
+                                                            }
+                                                            aria-label={t(
+                                                                'common.last_page',
+                                                            )}
+                                                        >
+                                                            <ChevronsRight className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {t('common.last_page')}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </div>
                                     </div>
-                                </>
-                            );
-                        })()}
-                </SheetContent>
-            </Sheet>
-        </TeamSettingsLayout>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                <Sheet
+                    open={!!detailExtension}
+                    onOpenChange={(open) => !open && setDetailExtension(null)}
+                >
+                    <SheetContent
+                        side="right"
+                        className="overflow-y-auto sm:max-w-lg"
+                    >
+                        {detailExtension ? (
+                            <ExtensionDetailPanel
+                                extension={detailExtension}
+                                stateConfig={stateConfig}
+                                teamSlug={teamSlug ?? ''}
+                                onAction={postAction}
+                                onClose={() => setDetailExtension(null)}
+                            />
+                        ) : null}
+                    </SheetContent>
+                </Sheet>
+            </TeamSettingsLayout>
+
+            {uninstallTarget && (
+                <UninstallExtensionModal
+                    extension={{
+                        identifier: uninstallTarget.identifier,
+                        name: uninstallTarget.name,
+                    }}
+                    uninstallUrl={
+                        uninstallUrl({
+                            current_team: teamSlug ?? '',
+                            extension: uninstallTarget.identifier,
+                        }).url
+                    }
+                    open={!!uninstallTarget}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setUninstallTarget(null);
+                        }
+                    }}
+                />
+            )}
+        </>
     );
 }

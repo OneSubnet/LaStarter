@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { SharedData } from '@/types';
 
@@ -13,14 +14,15 @@ export default function Guard({
     fallback = null,
     children,
 }: GuardProps) {
-    const permissions = usePage<SharedData>().props.auth?.permissions;
+    const raw = usePage<SharedData>().props.auth?.permissions;
+    const permissions = useMemo(() => new Set(raw ?? []), [raw]);
 
-    if (!permissions) {
+    if (!raw) {
         return <>{fallback}</>;
     }
 
     const required = Array.isArray(permission) ? permission : [permission];
-    const hasPermission = required.every((p) => permissions.includes(p));
+    const hasPermission = required.every((p) => permissions.has(p));
 
     return hasPermission ? <>{children}</> : <>{fallback}</>;
 }

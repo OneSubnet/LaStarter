@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Settings\BackupController;
 use App\Http\Controllers\Settings\ExtensionController;
 use App\Http\Controllers\Settings\MarketplaceController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -17,11 +18,11 @@ use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::redirect('/', '/login')->name('home');
+
+// Signed backup download — no session auth, validated via HMAC + encrypted payload
+Route::get('backups/download', [BackupController::class, 'download'])->name('backups.download');
 
 // Account settings — global routes (no team slug in URL)
 Route::prefix('settings')
@@ -110,6 +111,8 @@ Route::prefix('{current_team}')
             Route::post('extensions/{extension}/disable', [ExtensionController::class, 'disable'])->name('settings.team.extensions.disable');
             Route::post('extensions/{extension}/update', [ExtensionController::class, 'update'])->name('settings.team.extensions.update');
             Route::post('extensions/check-updates', [ExtensionController::class, 'checkUpdates'])->name('settings.team.extensions.check-updates');
+            Route::post('extensions/batch-enable', [ExtensionController::class, 'batchEnable'])->name('settings.team.extensions.batch-enable');
+            Route::post('extensions/batch-disable', [ExtensionController::class, 'batchDisable'])->name('settings.team.extensions.batch-disable');
 
             // Marketplace
             Route::get('marketplace', [MarketplaceController::class, 'index'])->name('settings.team.marketplace');
@@ -122,12 +125,15 @@ Route::prefix('{current_team}')
             Route::patch('mail', [TeamMailController::class, 'update'])->name('settings.team.mail.update');
             Route::post('mail/test', [TeamMailController::class, 'test'])->name('settings.team.mail.test');
 
-            // System
+            // System (core updates + backups)
             Route::get('system', [SystemUpdateController::class, 'index'])->name('settings.team.system');
             Route::post('system/check-core', [SystemUpdateController::class, 'checkCore'])->name('settings.team.system.check-core');
             Route::post('system/update-core', [SystemUpdateController::class, 'updateCore'])->name('settings.team.system.update-core');
-            Route::post('system/check-extensions', [SystemUpdateController::class, 'checkExtensions'])->name('settings.team.system.check-extensions');
-            Route::post('system/update-extension', [SystemUpdateController::class, 'updateExtension'])->name('settings.team.system.update-extension');
+            Route::post('system/backups/core', [BackupController::class, 'storeCore'])->name('settings.team.system.backups.core');
+            Route::post('system/backups/database', [BackupController::class, 'storeDatabase'])->name('settings.team.system.backups.database');
+            Route::post('system/backups/delete', [BackupController::class, 'destroy'])->name('settings.team.system.backups.delete');
+            Route::post('system/backups/restore', [BackupController::class, 'restore'])->name('settings.team.system.backups.restore');
+            Route::post('system/backups/download-url', [BackupController::class, 'generateDownloadUrl'])->name('settings.team.system.backups.download-url');
         });
     });
 
@@ -135,5 +141,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('invitations/{invitation_code}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
 });
 
-Route::get('invitations/{invitation_code}', [TeamInvitationController::class, 'show'])->name('invitations.show');
-Route::post('invitations/{invitation_code}/register', [TeamInvitationController::class, 'register'])->name('invitations.register');
+Route::middleware(['throttle:10,1'])->group(function () {
+    Route::get('invitations/{invitation_code}', [TeamInvitationController::class, 'show'])->name('invitations.show');
+    Route::post('invitations/{invitation_code}/register', [TeamInvitationController::class, 'register'])->name('invitations.register');
+});

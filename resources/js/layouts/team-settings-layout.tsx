@@ -19,7 +19,7 @@ export default function TeamSettingsLayout({
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
-            <div className="px-6 py-6">
+            <div className="px-6 pt-4 pb-6">
                 <Heading
                     title={`${teamName} ${t('common.settings').toLowerCase()}`}
                     description={t('layouts.team_settings.description')}

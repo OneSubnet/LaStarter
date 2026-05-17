@@ -18,17 +18,9 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getInitials } from '@/lib/format';
 import { switchMethod } from '@/routes/settings/teams';
 import type { SharedData } from '@/types';
-
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-}
 
 export function TeamSwitcher() {
     const { t } = useTranslation();

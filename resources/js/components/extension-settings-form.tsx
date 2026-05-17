@@ -50,6 +50,7 @@ export default function ExtensionSettingsForm({
             case 'select':
                 return (
                     <select
+                        id={field.key}
                         value={String(value)}
                         onChange={(e) =>
                             setForm({ ...form, [field.key]: e.target.value })
@@ -67,6 +68,7 @@ export default function ExtensionSettingsForm({
                 return (
                     <button
                         type="button"
+                        id={field.key}
                         role="switch"
                         aria-checked={Boolean(value)}
                         onClick={() =>
@@ -88,6 +90,7 @@ export default function ExtensionSettingsForm({
             case 'number':
                 return (
                     <input
+                        id={field.key}
                         type="number"
                         value={String(value)}
                         onChange={(e) =>
@@ -102,6 +105,7 @@ export default function ExtensionSettingsForm({
             default:
                 return (
                     <input
+                        id={field.key}
                         type="text"
                         value={String(value)}
                         onChange={(e) =>
@@ -124,7 +128,9 @@ export default function ExtensionSettingsForm({
             </h3>
             {settings.map((field) => (
                 <div key={field.key}>
-                    <label className="text-sm font-medium">{field.label}</label>
+                    <label htmlFor={field.key} className="text-sm font-medium">
+                        {field.label}
+                    </label>
                     {renderField(field)}
                 </div>
             ))}

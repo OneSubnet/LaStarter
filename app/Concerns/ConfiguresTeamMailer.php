@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Models\TeamSetting;
+use Illuminate\Support\Facades\Crypt;
 
 trait ConfiguresTeamMailer
 {
@@ -21,6 +22,17 @@ trait ConfiguresTeamMailer
             return;
         }
 
+        $encryptedPassword = $settings->get('mail_password');
+        $password = '';
+
+        if ($encryptedPassword) {
+            try {
+                $password = Crypt::decryptString($encryptedPassword);
+            } catch (\Throwable) {
+                $password = $encryptedPassword;
+            }
+        }
+
         config([
             'mail.default' => 'team',
             'mail.mailers.team' => [
@@ -28,7 +40,7 @@ trait ConfiguresTeamMailer
                 'host' => $host,
                 'port' => (int) ($settings->get('mail_port') ?? 587),
                 'username' => $settings->get('mail_username'),
-                'password' => $settings->get('mail_password'),
+                'password' => $password,
                 'encryption' => $settings->get('mail_encryption', 'tls'),
                 'timeout' => 15,
             ],

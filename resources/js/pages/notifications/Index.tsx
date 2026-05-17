@@ -3,6 +3,7 @@ import { Bell, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { timeAgo } from '@/lib/format';
 import {
     index as notificationsIndex,
     read,
@@ -27,32 +28,6 @@ type Props = {
         last_page: number;
     };
 };
-
-function timeAgo(dateStr: string): string {
-    const seconds = Math.floor(
-        (Date.now() - new Date(dateStr).getTime()) / 1000,
-    );
-
-    if (seconds < 60) {
-        return 'now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    return `${days}d`;
-}
 
 export default function NotificationsIndex({ notifications }: Props) {
     const { t } = useTranslation();
@@ -117,6 +92,13 @@ export default function NotificationsIndex({ notifications }: Props) {
                             <button
                                 key={notification.id}
                                 type="button"
+                                aria-label={
+                                    notification.title ||
+                                    t('notifications.title')
+                                }
+                                aria-current={
+                                    notification.read_at ? undefined : 'true'
+                                }
                                 onClick={() => {
                                     if (!notification.read_at) {
                                         markRead(notification.id);

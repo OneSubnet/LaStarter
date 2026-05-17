@@ -1,32 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import {
-    Bell,
-    Calculator,
-    Calendar,
-    CheckSquare,
-    Check,
-    Feather,
-    FileText,
-    FolderKanban,
-    FolderOpen,
-    LayoutDashboard,
-    LayoutGrid,
-    Lock,
-    Mail,
-    MessageCircle,
-    MessageSquare,
-    Package,
-    Palette,
-    Puzzle,
-    Receipt,
-    Settings,
-    Shield,
-    ShieldCheck,
-    Store,
-    Server,
-    Users,
-    Megaphone,
-} from 'lucide-react';
+import { Bell, Check, CheckCircle2, FileText, Megaphone } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +25,8 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { timeAgo } from '@/lib/format';
+import { iconMap, DEFAULT_ICON } from '@/lib/icon-map';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -71,30 +46,17 @@ import {
     roles,
 } from '@/routes/settings/team';
 import type { SharedData } from '@/types';
+import type { ExtensionNavItem } from '@/types/navigation';
+import type { ContextualSidebar } from '@/types/shared-data';
 
 // ── Types ──────────────────────────────────────────────
-
-type ExtensionNavChild = {
-    title: string;
-    href: string;
-    icon: string | null;
-    order: number;
-    group?: string | null;
-};
-
-type ExtensionNavItem = {
-    title: string;
-    href?: string;
-    icon: string | null;
-    order: number;
-    children?: ExtensionNavChild[];
-};
 
 type NavItem = {
     label: string;
     icon: LucideIcon;
     href: string;
     permission?: string;
+    badge?: number | null;
 };
 
 type NavSection = {
@@ -110,60 +72,7 @@ type NavModule = {
     urlPatterns: string[];
 };
 
-// ── Icon map ───────────────────────────────────────────
-
-const iconMap: Record<string, LucideIcon> = {
-    LayoutGrid,
-    LayoutDashboard,
-    FolderKanban,
-    FolderOpen,
-    CheckSquare,
-    Feather,
-    Lock,
-    FileText,
-    Settings,
-    Users,
-    ShieldCheck,
-    Puzzle,
-    Mail,
-    Shield,
-    Palette,
-    MessageSquare,
-    MessageCircle,
-    Package,
-    Calendar,
-    Receipt,
-    Calculator,
-    Store,
-};
-
 // ── Helpers ────────────────────────────────────────────
-
-function timeAgo(dateStr: string): string {
-    const seconds = Math.floor(
-        (Date.now() - new Date(dateStr).getTime()) / 1000,
-    );
-
-    if (seconds < 60) {
-        return 'now';
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    return `${days}d`;
-}
 
 function NotificationBell({ teamSlug }: { teamSlug: string }) {
     const { t } = useTranslation();
@@ -197,11 +106,11 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                     className="relative h-8 w-8 shrink-0"
                 >
                     <Bell className="size-4" />
-                    {unreadCount > 0 && (
+                    {unreadCount > 0 ? (
                         <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
                             {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
-                    )}
+                    ) : null}
                 </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0">
@@ -209,7 +118,7 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                     <p className="text-sm font-semibold">
                         {t('notifications.title')}
                     </p>
-                    {unreadCount > 0 && (
+                    {unreadCount > 0 ? (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -219,7 +128,7 @@ function NotificationBell({ teamSlug }: { teamSlug: string }) {
                             <Check className="size-3" />
                             {t('notifications.mark_all_read')}
                         </Button>
-                    )}
+                    ) : null}
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                     {notifications.length === 0 ? (
@@ -320,7 +229,7 @@ function ModulePanel({ module }: { module: NavModule }) {
                             const badge =
                                 isMessaging && unreadMessageCount > 0
                                     ? unreadMessageCount
-                                    : null;
+                                    : (item.badge ?? null);
 
                             return (
                                 <SidebarMenuItem
@@ -335,11 +244,11 @@ function ModulePanel({ module }: { module: NavModule }) {
                                         <Link href={item.href} prefetch>
                                             <Icon className="size-4" />
                                             <span>{item.label}</span>
-                                            {badge !== null && (
+                                            {badge !== null ? (
                                                 <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
                                                     {badge > 99 ? '99+' : badge}
                                                 </span>
-                                            )}
+                                            ) : null}
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -352,6 +261,116 @@ function ModulePanel({ module }: { module: NavModule }) {
     );
 }
 
+// ── Contextual Panel (injected by modules via Hook) ────
+
+function contextualIcon(icon: string) {
+    switch (icon) {
+        case 'check':
+            return <Check className="size-3.5 shrink-0 text-green-500" />;
+        case 'video':
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="size-3.5 shrink-0 text-muted-foreground"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                >
+                    <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+            );
+        case 'quiz':
+            return (
+                <CheckCircle2 className="size-3.5 shrink-0 text-muted-foreground" />
+            );
+        default:
+            return (
+                <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+            );
+    }
+}
+
+function ContextualPanel({ data }: { data: ContextualSidebar }) {
+    const { header, sections } = data;
+
+    return (
+        <div className="flex flex-col">
+            {header && (
+                <div className="border-b px-3 py-3">
+                    {header.href ? (
+                        <Link
+                            href={header.href}
+                            className="text-sm leading-snug font-semibold hover:underline"
+                        >
+                            {header.title}
+                        </Link>
+                    ) : (
+                        <p className="text-sm leading-snug font-semibold">
+                            {header.title}
+                        </p>
+                    )}
+                    {header.progress != null && (
+                        <div className="mt-2 flex items-center gap-2">
+                            <div className="h-1.5 flex-1 rounded-full bg-muted">
+                                <div
+                                    className={`h-1.5 rounded-full transition-all ${header.progress >= 100 ? 'bg-green-500' : 'bg-primary'}`}
+                                    style={{ width: `${header.progress}%` }}
+                                />
+                            </div>
+                            <span className="shrink-0 text-[11px] text-muted-foreground tabular-nums">
+                                {header.progress}%
+                            </span>
+                        </div>
+                    )}
+                    {header.subtitle && header.progress == null && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            {header.subtitle}
+                        </p>
+                    )}
+                </div>
+            )}
+            <div className="flex-1 overflow-y-auto">
+                {sections.map((section, i) => (
+                    <div key={i}>
+                        {section.title && (
+                            <p className="px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
+                                {section.title}
+                            </p>
+                        )}
+                        <div className="space-y-px">
+                            {section.items.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={cn(
+                                        'flex items-center gap-2 px-3 py-1.5 text-[13px] transition-colors',
+                                        item.active
+                                            ? 'bg-accent font-medium text-accent-foreground'
+                                            : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                                    )}
+                                >
+                                    {contextualIcon(item.icon)}
+                                    <span className="min-w-0 flex-1 truncate">
+                                        {item.title}
+                                    </span>
+                                    {item.meta && (
+                                        <span className="shrink-0 text-[11px] text-muted-foreground/70">
+                                            {item.meta}
+                                        </span>
+                                    )}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // ── App Sidebar (dual-panel) ───────────────────────────
 
 export function AppSidebar() {
@@ -360,9 +379,15 @@ export function AppSidebar() {
     const { setOpen, isMobile } = useSidebar();
 
     const teamSlug = page.props.currentTeam?.slug ?? '';
-    const permissions = page.props.auth?.permissions ?? [];
-    const can = (perm: string | undefined) =>
-        !perm || permissions.includes(perm);
+    const permissions = new Set(page.props.auth?.permissions ?? []);
+    const can = (perm: string | undefined) => !perm || permissions.has(perm);
+
+    const coreUpdateAvailable = page.props.coreUpdateAvailable;
+    const extensionUpdateCount = page.props.extensionUpdateCount;
+    const systemBadgeCount =
+        coreUpdateAvailable || extensionUpdateCount > 0
+            ? (coreUpdateAvailable ? 1 : 0) + extensionUpdateCount
+            : null;
 
     const extensionNav =
         (page.props.navigation as ExtensionNavItem[] | undefined) ?? [];
@@ -377,7 +402,7 @@ export function AppSidebar() {
         result.push({
             id: 'dashboard',
             label: t('common.dashboard'),
-            icon: LayoutGrid,
+            icon: iconMap.LayoutGrid,
             urlPatterns: [dashUrl],
             sections: [
                 {
@@ -385,7 +410,7 @@ export function AppSidebar() {
                     items: [
                         {
                             label: t('common.dashboard'),
-                            icon: LayoutGrid,
+                            icon: iconMap.LayoutGrid,
                             href: dashUrl,
                         },
                     ],
@@ -399,15 +424,14 @@ export function AppSidebar() {
             href: string;
             icon: string | null;
         }[] = [];
+        const groupedHrefs = new Set<string>();
 
         for (const ext of extensionNav) {
             if (ext.children && ext.children.length > 0) {
-                // Each grouped extension becomes its own module in the icon rail
                 const extIcon = ext.icon
-                    ? (iconMap[ext.icon] ?? Puzzle)
-                    : Puzzle;
+                    ? (iconMap[ext.icon] ?? DEFAULT_ICON)
+                    : DEFAULT_ICON;
 
-                // Group children by their `group` field
                 const groupMap = new Map<string, typeof ext.children>();
 
                 for (const child of ext.children) {
@@ -418,29 +442,21 @@ export function AppSidebar() {
                     }
 
                     groupMap.get(key)!.push(child);
+                    groupedHrefs.add(child.href);
                 }
-
-                const groupLabelMap: Record<string, string> = {
-                    overview: t('ai.nav.overview'),
-                    crm: t('ai.nav.crm'),
-                    produits: t('ai.nav.products'),
-                    operations: t('ai.nav.operations'),
-                    finance: t('ai.nav.finance'),
-                    communication: t('ai.nav.communication'),
-                };
 
                 const sections: NavSection[] = [];
 
                 for (const [groupKey, children] of groupMap) {
                     sections.push({
                         title: groupKey
-                            ? (groupLabelMap[groupKey] ?? groupKey)
+                            ? t(`nav.groups.${groupKey}`, groupKey)
                             : undefined,
                         items: children.map((child) => ({
                             label: child.title,
                             icon: child.icon
-                                ? (iconMap[child.icon] ?? Puzzle)
-                                : Puzzle,
+                                ? (iconMap[child.icon] ?? DEFAULT_ICON)
+                                : DEFAULT_ICON,
                             href: child.href,
                         })),
                     });
@@ -453,7 +469,6 @@ export function AppSidebar() {
                     urlPatterns: ext.children.map((child) => child.href),
                     sections,
                 });
-                flatExtItems.push(...ext.children);
             } else if (ext.href) {
                 flatExtItems.push({
                     title: ext.title,
@@ -465,19 +480,14 @@ export function AppSidebar() {
 
         // Generic Extensions module — flat nav items + management (Modules, Themes, Marketplace)
         const extSections: NavSection[] = flatExtItems
-            .filter(
-                (item) =>
-                    !extensionNav.some((ext) =>
-                        ext.children?.some((c) => c.href === item.href),
-                    ),
-            )
+            .filter((item) => !groupedHrefs.has(item.href))
             .map((item) => ({
                 items: [
                     {
                         label: item.title,
                         icon: item.icon
-                            ? (iconMap[item.icon] ?? Puzzle)
-                            : Puzzle,
+                            ? (iconMap[item.icon] ?? DEFAULT_ICON)
+                            : DEFAULT_ICON,
                         href: item.href,
                     },
                 ],
@@ -486,13 +496,14 @@ export function AppSidebar() {
         const manageItems: NavItem[] = [
             {
                 label: t('common.extensions_and_themes'),
-                icon: Puzzle,
+                icon: DEFAULT_ICON,
                 href: extensions(teamSlug).url,
                 permission: 'extension.view',
+                badge: extensionUpdateCount > 0 ? extensionUpdateCount : null,
             },
             {
                 label: t('common.marketplace'),
-                icon: Store,
+                icon: iconMap.Store,
                 href: marketplace(teamSlug).url,
                 permission: 'extension.view',
             },
@@ -514,19 +525,12 @@ export function AppSidebar() {
             result.push({
                 id: 'extensions',
                 label: t('common.extensions_and_themes'),
-                icon: Puzzle,
+                icon: DEFAULT_ICON,
                 urlPatterns: [
                     extensions(teamSlug).url,
                     marketplace(teamSlug).url,
                     ...flatExtItems
-                        .filter(
-                            (item) =>
-                                !extensionNav.some((ext) =>
-                                    ext.children?.some(
-                                        (c) => c.href === item.href,
-                                    ),
-                                ),
-                        )
+                        .filter((item) => !groupedHrefs.has(item.href))
                         .map((ext) => ext.href),
                 ],
                 sections,
@@ -537,49 +541,50 @@ export function AppSidebar() {
         const settingsItems: NavItem[] = [
             {
                 label: t('common.general'),
-                icon: Settings,
+                icon: iconMap.Settings,
                 href: general(teamSlug).url,
             },
             {
                 label: t('common.members'),
-                icon: Users,
+                icon: iconMap.Users,
                 href: members(teamSlug).url,
                 permission: 'member.view',
             },
             {
                 label: t('common.roles'),
-                icon: ShieldCheck,
+                icon: iconMap.ShieldCheck,
                 href: roles(teamSlug).url,
                 permission: 'role.view',
             },
             {
                 label: t('common.mail'),
-                icon: Mail,
+                icon: iconMap.Mail,
                 href: mail(teamSlug).url,
                 permission: 'team.update',
             },
             {
                 label: t('common.system'),
-                icon: Server,
+                icon: iconMap.Server,
                 href: `/${teamSlug}/settings/system`,
                 permission: 'system.update',
+                badge: systemBadgeCount,
             },
         ].filter((item) => can(item.permission));
 
         const accountItems: NavItem[] = [
             {
                 label: t('common.profile'),
-                icon: Users,
+                icon: iconMap.Users,
                 href: editProfile().url,
             },
             {
                 label: t('common.security'),
-                icon: Shield,
+                icon: iconMap.Shield,
                 href: editSecurity().url,
             },
             {
                 label: t('common.appearance'),
-                icon: Palette,
+                icon: iconMap.Palette,
                 href: editAppearance().url,
             },
         ];
@@ -587,7 +592,7 @@ export function AppSidebar() {
         result.push({
             id: 'settings',
             label: t('common.settings'),
-            icon: Settings,
+            icon: iconMap.Settings,
             urlPatterns: [
                 general(teamSlug).url,
                 members(teamSlug).url,
@@ -608,7 +613,14 @@ export function AppSidebar() {
         });
 
         return result;
-    }, [teamSlug, extensionNav, permissions, can, t]);
+    }, [
+        teamSlug,
+        extensionNav,
+        permissions,
+        t,
+        systemBadgeCount,
+        extensionUpdateCount,
+    ]);
 
     // Derive active module from current URL
     const urlActiveKey = useMemo(() => {
@@ -708,9 +720,14 @@ export function AppSidebar() {
                 <SidebarContent className="overflow-hidden">
                     <SidebarGroup className="px-0">
                         <SidebarGroupContent>
-                            {activeModule && (
+                            {page.props.contextualSidebar &&
+                            !effectiveManualKey ? (
+                                <ContextualPanel
+                                    data={page.props.contextualSidebar}
+                                />
+                            ) : activeModule ? (
                                 <ModulePanel module={activeModule} />
-                            )}
+                            ) : null}
                         </SidebarGroupContent>
                     </SidebarGroup>
                 </SidebarContent>

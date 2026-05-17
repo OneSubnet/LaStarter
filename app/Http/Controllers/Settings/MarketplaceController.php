@@ -7,11 +7,21 @@ use App\Core\Extensions\Marketplace\MarketplaceClient;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class MarketplaceController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            Gate::authorize('system.update');
+
+            return $next($request);
+        });
+    }
+
     public function index(Request $request): Response
     {
         $client = app(MarketplaceClient::class);
@@ -72,12 +82,13 @@ final class MarketplaceController extends Controller
         try {
             $installer = app(ZipInstaller::class);
             $manifest = $installer->installFromGithub($validated['owner'], $validated['repo']);
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension :name installed.', ['name' => $manifest->name])]);
 
-            return redirect()
-                ->route('settings.team.extensions.show', ['extension' => $manifest->identifier])
-                ->with('toast', ['type' => 'success', 'message' => __('Extension :name installed.', ['name' => $manifest->name])]);
+            return redirect()->route('settings.team.extensions.show', ['extension' => $manifest->identifier]);
         } catch (\Throwable $e) {
-            return back()->with('toast', ['type' => 'error', 'message' => __('Installation failed: :error', ['error' => $e->getMessage()])]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Installation failed: :error', ['error' => $e->getMessage()])]);
+
+            return back();
         }
     }
 
@@ -90,12 +101,13 @@ final class MarketplaceController extends Controller
         try {
             $installer = app(ZipInstaller::class);
             $manifest = $installer->install($validated['file']->path());
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Extension :name installed.', ['name' => $manifest->name])]);
 
-            return redirect()
-                ->route('settings.team.extensions.show', ['extension' => $manifest->identifier])
-                ->with('toast', ['type' => 'success', 'message' => __('Extension :name installed.', ['name' => $manifest->name])]);
+            return redirect()->route('settings.team.extensions.show', ['extension' => $manifest->identifier]);
         } catch (\Throwable $e) {
-            return back()->with('toast', ['type' => 'error', 'message' => __('Upload failed: :error', ['error' => $e->getMessage()])]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Upload failed: :error', ['error' => $e->getMessage()])]);
+
+            return back();
         }
     }
 }

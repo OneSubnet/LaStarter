@@ -41,6 +41,9 @@ php artisan extensions:enable {id}               # Enable extension globally
 php artisan extensions:enable {id} --team=ID     # Enable for specific team
 php artisan extensions:disable {id}              # Disable globally or per team
 php artisan extensions:uninstall {id}            # Rollback migrations, remove from registry
+php artisan core:version                          # Show current core version
+php artisan core:update --check                   # Check for core updates
+php artisan core:update                           # Run core update
 ```
 
 ## Architecture
@@ -67,12 +70,15 @@ Used in middleware (`HandleInertiaRequests`, `SetAppLocale`) and controllers ins
 
 - **Extensions** live in `/extensions/{type}/{slug}/` with an `extension.json` manifest
 - **Types**: `module` (business logic), `theme` (UI overrides), `language` (translations)
-- **Active modules**: `ailes-invisibles` (CRM/messaging), `projects`; theme: `default`
-- **ExtensionManager** (`app/Core/Extensions/ExtensionManager.php`): singleton that scans, syncs, enables/disables extensions
+- **Active modules**: `ailes-invisibles` (CRM/messaging); theme: `default`
+- **ExtensionManager** (`app/Core/Extensions/ExtensionManager.php`): singleton that scans, syncs, enables/disables extensions. `sync()` also calls `syncOwnerPermissions()` to ensure owner roles get all permissions.
 - **Module ServiceProvider**: abstract base at `app/Core/Modules/ModuleServiceProvider.php`. Each module extends it and implements `registerModule()` + `bootModule()`
+- **Module route protection**: `EnsureExtensionEnabled` middleware (aliased as `extension`) is automatically added to module routes via `ModuleRouteRegistrar`. Disabled extension routes return 404.
 - **Module autoloading**: uses `spl_autoload_register` in ExtensionManager — no `composer dump-autoload` needed after adding modules
 - **Database**: `extensions` table (global registry), `team_extensions` pivot (per-team activation), `team_settings` (per-team key-value settings)
 - **Marketplace**: `MarketplaceClient` (`app/Core/Extensions/Marketplace/MarketplaceClient.php`) handles extension discovery and installation from a GitHub-based marketplace
+- **Extension uninstall**: `ExtensionManager::uninstall()` accepts optional `$backup` parameter. If true, creates an extension backup before rolling back migrations and deleting files. Frontend shows a confirmation modal requiring the extension name to be typed.
+- **Compatibility**: `CompatibilityChecker` validates that manifest evolution (provides, permissions) never shrinks — only grows. Blocks updates that break the API contract.
 
 ### Page Resolution (Inertia + React)
 
@@ -131,10 +137,27 @@ Used in middleware (`HandleInertiaRequests`, `SetAppLocale`) and controllers ins
 - Auto-fills `team_id` and `user_id` from current auth context
 - Shared via Inertia as `auditLogs`
 
+### System Update
+
+- **Core version**: `config/lastarter.php` stores `version`, `update_repo`, `update_channel`. `CoreVersion` DTO reads current version.
+- **CoreUpdater** (`app/Core/System/CoreUpdater.php`): checks GitHub releases, validates compatibility with all installed extensions, creates backup, downloads/extracts ZIP, runs migrations.
+- **CompatibilityChecker** (`app/Core/System/CompatibilityChecker.php`): validates `provides`/`permissions` never shrink, checks `minimum_core_version`, enforces semver progression.
+- **Console commands**: `php artisan core:update` (with `--check`, `--force`, `--no-backup` flags) and `php artisan core:version`.
+- **Permission**: `system.update` required for all system/backup/update actions. Seeded to Owner/Admin by default.
+
+### Backup Management
+
+- **BackupManager** (`app/Core/System/BackupManager.php`): creates, lists, downloads, and deletes backups stored in `storage/backups/`.
+- **Backup types**: Core (app code + extensions/themes), Extension (per-module), Database (SQLite file copy, PostgreSQL `pg_dump`, MySQL `mysqldump`).
+- **File naming**: `{type}_{timestamp}.zip` (e.g. `core_20260507_143000.zip`, `ext_ai_20260507_143000.zip`, `db_20260507_143000.zip`).
+- **Signed downloads**: `SignedDownloadUrl` generates HMAC-SHA256 URLs with encrypted payload (filename + expiration). No session auth required.
+- **Frontend**: Merged into Settings > System page alongside core/extension updates. All actions gated by `system.update` permission.
+- **Sidebar badge**: Red badge count on System sidebar item when core or extension updates are available (cached 12h).
+
 ### Shared Inertia Props
 
 `HandleInertiaRequests` shares these props to every page:
-`auth.user`, `auth.permissions`, `currentTeam`, `teams`, `navigation`, `teamMembers` (with online status), `auditLogs`, `theme`, `locale`, `fallbackLocale`, `availableLocales`, `footerLinks`, `unreadNotifications`, `recentNotifications`, `unreadMessageCount`, `sidebarOpen`
+`auth.user`, `auth.permissions`, `currentTeam`, `teams`, `navigation`, `teamMembers` (with online status), `auditLogs`, `theme`, `locale`, `fallbackLocale`, `availableLocales`, `footerLinks`, `unreadNotifications`, `recentNotifications`, `unreadMessageCount`, `sidebarOpen`, `coreVersion`, `coreUpdateAvailable`, `extensionUpdateCount`
 
 ### Key Models
 
@@ -150,10 +173,10 @@ Used in middleware (`HandleInertiaRequests`, `SetAppLocale`) and controllers ins
 
 ### Backend Structure
 
-- **Core**: `app/Core/` — `Context/`, `Extensions/`, `Modules/`, `Navigation/`, `Settings/`, `Hooks/`, `Themes/`
+- **Core**: `app/Core/` — `Context/`, `Extensions/`, `Modules/`, `Navigation/`, `Settings/`, `Hooks/`, `Themes/`, `System/`
 - **Controllers**: `app/Http/Controllers/Teams/` — TeamController, TeamMemberController, TeamInvitationController, RoleController
 - **Policies**: `app/Policies/` — TeamPolicy, RolePolicy (all use `hasPermissionTo`, never role name checks)
-- **Middleware**: `SetPermissionsTeamId` (Spatie context), `ConfigureTeamMailer` (team-specific mail config), `EnsureTeamMembership` (team access + optional permission check), `SetAppLocale`, `SetTeamUrlDefaults`
+- **Middleware**: `SetPermissionsTeamId` (Spatie context), `ConfigureTeamMailer` (team-specific mail config), `EnsureTeamMembership` (team access + optional permission check), `EnsureExtensionEnabled` (blocks disabled extension routes with 404), `SetAppLocale`, `SetTeamUrlDefaults`
 - **Actions**: `app/Actions/Teams/CreateTeam` — creates team + owner role + assigns all permissions
 - **Extensions**: `extensions/modules/{slug}/` and `extensions/themes/{slug}/` with `extension.json` manifest
 
@@ -185,7 +208,7 @@ Three workflows on push/PR to `main` and `develop`:
 - **tests.yml**: Pest tests on PHP 8.4/8.5 × SQLite/PostgreSQL matrix. Also builds assets and runs `types:check`.
 - **release.yml**: Asset compilation + GitHub release on tags
 
-Both lint and test workflows run `extensions:scan`, `extensions:sync`, enable all modules, and run `wayfinder:generate` before checks.
+Both lint and test workflows run `extensions:scan`, `extensions:sync`, and `wayfinder:generate` before checks.
 
 ### Adding a New Module
 
@@ -214,4 +237,6 @@ Both lint and test workflows run `extensions:scan`, `extensions:sync`, enable al
 - Permissions are global (not per-team). Roles are per-team.
 - Module pages must use `@/` imports (resolved by Vite relative to `resources/js/`).
 - Module routes are auto-registered via ServiceProvider, wrapped in `{current_team}` prefix with `EnsureTeamMembership` middleware.
+- Disabled extension routes return 404 via `EnsureExtensionEnabled` middleware — data is preserved but pages are inaccessible.
+- Extension manifests must follow the API contract: `provides` and `permissions` can only grow, never shrink. `CompatibilityChecker` blocks updates that violate this.
 - Run `php artisan wayfinder:generate` after adding/modifying routes to keep frontend route helpers in sync.

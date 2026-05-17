@@ -2,12 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use App\Core\Cache\CacheKey;
 use App\Core\Context\AppContext;
 use App\Core\Context\SharedPropsResolver;
+use App\Core\Extensions\Updater\UpdateService;
+use App\Core\Hooks\Hook;
 use App\Core\Navigation\NavigationBuilder;
+use App\Core\Settings\SettingManager;
+use App\Core\Sidebar\ContextualSidebarPayload;
 use App\Core\System\CoreVersion;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 final class HandleInertiaRequests extends Middleware
@@ -26,6 +32,9 @@ final class HandleInertiaRequests extends Middleware
         $team = $ctx->team();
         $resolver = app(SharedPropsResolver::class);
 
+        $contextualSidebar = new ContextualSidebarPayload;
+        Hook::dispatch(Hook::SIDEBAR_BUILD, $contextualSidebar);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -34,7 +43,7 @@ final class HandleInertiaRequests extends Middleware
                 'permissions' => fn () => $ctx->permissions(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'currentTeam' => fn () => $user ? $user->toUserTeam($team) : null,
+            'currentTeam' => fn () => $user && $team ? $user->toUserTeam($team) : null,
             'teams' => fn () => $user ? $user->toUserTeams(includeCurrent: true) : [],
             'navigation' => fn () => $this->buildNavigation($ctx),
             'teamMembers' => fn () => $team ? $resolver->teamMembers($team) : [],
@@ -49,6 +58,23 @@ final class HandleInertiaRequests extends Middleware
             'unreadMessageCount' => fn () => 0,
             'availableWidgets' => fn () => ($user && $team) ? $resolver->availableWidgets($team, $user) : [],
             'coreVersion' => fn () => CoreVersion::current()->current,
+            'coreUpdateAvailable' => fn () => Cache::remember(CacheKey::coreUpdateAvailable(), now()->addHours(12), function () {
+                try {
+                    return CoreVersion::current()->updateAvailable;
+                } catch (\Throwable) {
+                    return false;
+                }
+            }),
+            'extensionUpdateCount' => fn () => Cache::remember(CacheKey::extensionUpdates(), now()->addHours(12), function () {
+                try {
+                    return count(app(UpdateService::class)->checkForUpdates());
+                } catch (\Throwable) {
+                    return 0;
+                }
+            }),
+            'mailConfigured' => fn () => $team
+                && (bool) app(SettingManager::class)->get('mail_host'),
+            'contextualSidebar' => $contextualSidebar->isEmpty() ? null : $contextualSidebar->toArray(),
         ];
     }
 

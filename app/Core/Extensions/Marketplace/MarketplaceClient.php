@@ -110,7 +110,16 @@ final readonly class MarketplaceClient
             return null;
         }
 
-        $zipResponse = Http::get($asset['browser_download_url']);
+        // Validate download URL origin to prevent redirect to malicious host
+        $downloadUrl = $asset['browser_download_url'];
+        $allowedHosts = ['github.com', 'objects.githubusercontent.com', 'api.github.com'];
+        $host = parse_url($downloadUrl, PHP_URL_HOST);
+
+        if (! $host || ! (str_ends_with($host, 'github.com') || in_array($host, $allowedHosts, true))) {
+            return null;
+        }
+
+        $zipResponse = Http::get($downloadUrl);
 
         if (! $zipResponse->successful()) {
             return null;

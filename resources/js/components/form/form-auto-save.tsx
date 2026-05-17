@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import type { ReactNode } from 'react';
 
 type FormAutoSaveContextValue = {
@@ -24,37 +31,44 @@ export function useFormAutoSave() {
     return ctx;
 }
 
-type FormAutoSaveProviderProps = {
-    children: ReactNode;
-    form: {
-        store: {
-            state: {
-                values: Record<string, unknown>;
-                isSubmitting: boolean;
-                isDirty: boolean;
-            };
-            subscribe: (callback: () => void) => { unsubscribe: () => void };
-        };
-        handleSubmit: (onSubmit?: () => void) => void;
-        reset: () => void;
+type FormApi<T extends Record<string, unknown>> = {
+    store: {
         state: {
-            values: Record<string, unknown>;
+            values: T;
             isSubmitting: boolean;
             isDirty: boolean;
         };
+        subscribe: (callback: () => void) => { unsubscribe: () => void };
     };
+    handleSubmit: () => void;
+    reset: (values?: T, opts?: { keepDefaultValues?: boolean }) => void;
+    state: {
+        values: T;
+        isSubmitting: boolean;
+        isDirty: boolean;
+    };
+};
+
+type FormAutoSaveProviderProps<T extends Record<string, unknown>> = {
+    children: ReactNode;
+    form: FormApi<T>;
     onSubmit: () => void | Promise<void>;
     autoSaveMs?: number;
 };
 
-export function FormAutoSaveProvider({
+export function FormAutoSaveProvider<T extends Record<string, unknown>>({
     children,
     form,
     onSubmit,
     autoSaveMs = 2000,
-}: FormAutoSaveProviderProps) {
+}: FormAutoSaveProviderProps<T>) {
     const submitCallback = useRef<VoidFunction | null>(null);
+    const onSubmitRef = useRef(onSubmit);
     const [isDirty, setIsDirty] = useState(form.store.state.isDirty);
+
+    useEffect(() => {
+        onSubmitRef.current = onSubmit;
+    });
     const [isLoading, setIsLoading] = useState(form.store.state.isSubmitting);
 
     useEffect(() => {
@@ -66,15 +80,14 @@ export function FormAutoSaveProvider({
         return unsubscribe;
     }, [form.store]);
 
-    const submit = () => {
-        form.handleSubmit(() => {
-            submitCallback.current = onSubmit;
-        });
-    };
+    const submit = useCallback(() => {
+        submitCallback.current = onSubmitRef.current;
+        form.handleSubmit();
+    }, [form]);
 
-    const cancel = () => {
+    const cancel = useCallback(() => {
         form.reset();
-    };
+    }, [form]);
 
     useEffect(() => {
         if (!isDirty) {
@@ -120,9 +133,11 @@ export function FormAutoSaveProvider({
         if (!isLoading && submitCallback.current) {
             const cb = submitCallback.current;
             submitCallback.current = null;
-            cb();
+            Promise.resolve(cb()).then(() => {
+                form.reset(form.state.values);
+            });
         }
-    }, [isLoading]);
+    }, [isLoading, form]);
 
     return (
         <FormAutoSaveContext.Provider

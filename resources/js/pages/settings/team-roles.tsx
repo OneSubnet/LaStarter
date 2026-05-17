@@ -310,7 +310,7 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                             onCheckedChange={(value) =>
                                 table.toggleAllPageRowsSelected(!!value)
                             }
-                            aria-label="Select all"
+                            aria-label={t('a11y.select_all')}
                         />
                     </div>
                 ),
@@ -321,7 +321,7 @@ export default function TeamRoles({ team, roles, allPermissions }: Props) {
                             onCheckedChange={(value) =>
                                 row.toggleSelected(!!value)
                             }
-                            aria-label="Select row"
+                            aria-label={t('a11y.select_row')}
                         />
                     </div>
                 ),

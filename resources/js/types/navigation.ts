@@ -12,3 +12,19 @@ export type NavItem = {
     icon?: LucideIcon | null;
     isActive?: boolean;
 };
+
+export type ExtensionNavChild = {
+    title: string;
+    href: string;
+    icon: string | null;
+    order: number;
+    group?: string | null;
+};
+
+export type ExtensionNavItem = {
+    title: string;
+    href?: string;
+    icon: string | null;
+    order: number;
+    children?: ExtensionNavChild[];
+};

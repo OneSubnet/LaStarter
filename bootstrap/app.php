@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ConfigureTeamMailer;
+use App\Http\Middleware\EnsureExtensionEnabled;
 use App\Http\Middleware\EnsureTeamMembership;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -24,6 +25,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'team.permission' => EnsureTeamMembership::class,
+            'extension' => EnsureExtensionEnabled::class,
         ]);
 
         $middleware->web(append: [

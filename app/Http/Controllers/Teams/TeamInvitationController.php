@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Teams;
 
 use App\Actions\Invitations\AcceptTeamInvitation;
 use App\Actions\Invitations\CreateTeamInvitation;
+use App\Actions\Invitations\RegisterInvitedUser;
 use App\Concerns\PasswordValidationRules;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\AcceptTeamInvitationRequest;
 use App\Http\Requests\Teams\CreateTeamInvitationRequest;
 use App\Models\TeamInvitation;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 
@@ -100,7 +99,7 @@ final class TeamInvitationController extends Controller
         ]);
     }
 
-    public function register(Request $request, AcceptTeamInvitation $acceptInvitation)
+    public function register(Request $request, AcceptTeamInvitation $acceptInvitation, RegisterInvitedUser $registerUser)
     {
         $invitation = TeamInvitation::where('code', $request->route('invitation_code'))
             ->with('team')
@@ -120,11 +119,7 @@ final class TeamInvitationController extends Controller
             return back()->withErrors(['email' => __('This email does not match the invitation.')]);
         }
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        $user = $registerUser->handle($validated);
 
         auth()->login($user);
 

@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import i18n from 'i18next';
 import { Activity, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CreateTeamModal from '@/components/create-team-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -28,18 +29,9 @@ import {
     SidebarHeader,
     SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { formatDateTime as fmtDateTimeLib } from '@/lib/format';
+import { formatDateTime as fmtDateTimeLib, getInitials } from '@/lib/format';
 import { switchMethod } from '@/routes/settings/teams';
 import type { SharedData } from '@/types';
-
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-}
 
 type AuditEntry = {
     id: number;
@@ -59,22 +51,22 @@ function formatTimeAgo(dateStr: string | null): string {
     const minutes = Math.floor(diff / 60000);
 
     if (minutes < 1) {
-        return 'just now';
+        return i18n.t('common.just_now');
     }
 
     if (minutes < 60) {
-        return `${minutes}m ago`;
+        return i18n.t('common.minutes_ago', { count: minutes });
     }
 
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-        return `${hours}h ago`;
+        return i18n.t('common.hours_ago', { count: hours });
     }
 
     const days = Math.floor(hours / 24);
 
-    return `${days}d ago`;
+    return i18n.t('common.days_ago', { count: days });
 }
 
 function formatDateTime(dateStr: string | null): string {
@@ -92,7 +84,7 @@ function formatDateTime(dateStr: string | null): string {
 }
 
 export function SidebarRight() {
-    const t = i18n.t.bind(i18n);
+    const { t } = useTranslation();
     const page = usePage<SharedData>();
 
     const currentTeam = page.props.currentTeam;
@@ -288,7 +280,10 @@ export function SidebarRight() {
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs leading-snug">
                                                     <span className="font-medium">
-                                                        {entry.user ?? 'System'}
+                                                        {entry.user ??
+                                                            i18n.t(
+                                                                'common.system',
+                                                            )}
                                                     </span>{' '}
                                                     <span className="text-muted-foreground">
                                                         {entry.action}
@@ -329,15 +324,20 @@ export function SidebarRight() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        User
+                                        {t(
+                                            'components.sidebar_right.audit.user',
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm font-medium">
-                                        {selectedLog.user ?? 'System'}
+                                        {selectedLog.user ??
+                                            i18n.t('common.system')}
                                     </p>
                                 </div>
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        Action
+                                        {t(
+                                            'components.sidebar_right.audit.action',
+                                        )}
                                     </p>
                                     <Badge variant="secondary" className="mt-1">
                                         {selectedLog.action}
@@ -345,7 +345,9 @@ export function SidebarRight() {
                                 </div>
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        Module
+                                        {t(
+                                            'components.sidebar_right.audit.module',
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {selectedLog.module ?? '—'}
@@ -353,7 +355,9 @@ export function SidebarRight() {
                                 </div>
                                 <div className="rounded-lg border p-3">
                                     <p className="text-xs text-muted-foreground">
-                                        Date
+                                        {t(
+                                            'components.sidebar_right.audit.date',
+                                        )}
                                     </p>
                                     <p className="mt-1 text-sm font-medium">
                                         {formatDateTime(selectedLog.created_at)}
@@ -368,7 +372,9 @@ export function SidebarRight() {
                                         <Separator />
                                         <div>
                                             <p className="mb-2 text-xs text-muted-foreground">
-                                                Details
+                                                {t(
+                                                    'components.sidebar_right.audit.details',
+                                                )}
                                             </p>
                                             <pre className="max-h-60 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
                                                 {JSON.stringify(

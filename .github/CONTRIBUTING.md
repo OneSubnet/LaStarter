@@ -1,151 +1,93 @@
-# Guide de Contribution
+# Contribuer a LaStarter
 
-Merci de votre intérêt pour LaStarter ! Ce document vous guidera dans le processus de contribution.
+Merci de votre interet pour LaStarter ! Ce document decrit les guidelines pour contribuer au projet.
 
-## Développement Local
+## Installation pour le developpement
 
-### Prérequis
+1. Forkez et clonez le depot
+2. Lancez `composer setup` pour une installation complete
+3. Copiez `.env.example` vers `.env` et configurez votre base de donnees
+4. Lancez `composer dev` pour demarrer le serveur de developpement
 
-* PHP 8.2+
-* Node.js 18+
-* Composer
-* SQLite (pour les tests) ou MySQL/PostgreSQL
+## Style de code
 
-### Installation
+### PHP
+- Suivre les standards PSR-12
+- Lancer `composer run lint` pour auto-fixer avec Pint
+- Lancer `composer run lint:check` pour verifier sans modifier
 
-```bash
-git clone https://github.com/OneSubnet/LaStarter.git
-cd LaStarter
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-npm run build
-composer dev
-```
+### TypeScript / React
+- Suivre la configuration ESLint + Prettier existante
+- Lancer `npm run lint` pour auto-fixer
+- Lancer `npm run format` pour formater avec Prettier
+- Lancer `npm run types:check` pour verifier les types TypeScript
 
-### Commandes Utiles
+## Nommage des branches
 
-```bash
-composer dev          # Démarrer le serveur + queue + Vite
-composer run lint     # Pint (PHP)
-composer run test     # Pint check + Pest
-npm run dev           # Vite dev server
-npm run lint          # ESLint
-npm run types:check   # TypeScript check
-```
+- `feature/` — nouvelles fonctionnalites (ex : `feature/extension-marketplace`)
+- `fix/` — corrections de bugs (ex : `fix/team-switching-redirect`)
+- `docs/` — changements de documentation (ex : `docs/update-readme`)
+- `refactor/` — refactoring de code (ex : `refactor/extract-actions`)
 
-## Processus de Contribution
+## Messages de commit
 
-### 1. Fork & Branch
-
-```bash
-# Fork le dépôt sur GitHub, puis :
-git clone https://github.com/VOTRE-USER/LaStarter.git
-cd LaStarter
-git checkout -b feature/ma-nouvelle-fonctionnalite
-```
-
-### 2. Développement
-
-* Suivez les conventions de code existantes
-* Ajoutez des tests pour les nouvelles fonctionnalités
-* Assurez-vous que `composer run lint` et `npm run types:check` passent
-
-### 3. Commit
-
-Utilisez des messages de commit clairs et descriptifs en français ou anglais :
+Ecrire des messages clairs et descriptifs qui expliquent le **pourquoi** et non le **quoi** :
 
 ```
-feat: ajout du module de formulaires
-fix: correction de la pagination sur la page des extensions
-docs: mise à jour du guide d'extension
+Add signed URL downloads for backup files
+
+Backups are now downloaded via HMAC-SHA256 signed URLs with encrypted
+payloads instead of direct session-auth routes. This allows downloads
+without active sessions and supports expiration.
 ```
 
-### 4. Pull Request
+## Tests
 
-* Ouvrez une PR vers la branche `main`
-* Décrivez clairement les changements effectués
-* Référencez les issues concernées
-* Assurez-vous que les checks CI passent
+Toute contribution doit inclure les tests appropries :
 
-## Créer une Extension
+- **Tests PHP** : Utiliser Pest. Lancer `composer run test`
+- **Tests d'autorisation** : Chaque verification de permission doit avoir un test
+- **Tests d'integration** : Les changements de fonctionnalite doivent avoir des tests HTTP
+- **Verification de types** : Lancer `npm run types:check` — zero erreur requise
 
-LaStarter supporte deux types d'extensions : les **modules** (logique métier) et les **thèmes** (surcharges UI).
+## Processus de Pull Request
 
-### Structure d'un Module
+1. Creer une branche feature depuis `main`
+2. Faire les changements avec les tests appropries
+3. S'assurer que tous les checks passent :
+   - `composer run lint:check` — zero warning
+   - `composer run test` — zero echec
+   - `npm run types:check` — zero erreur
+   - `npm run lint` — zero erreur
+4. Ouvrir une PR avec une description claire du changement et de sa justification
+5. Repondre aux retours de review
 
-```
-extensions/modules/{slug}/
-├── extension.json           # Manifeste obligatoire
-├── src/
-│   ├── {Name}ServiceProvider.php
-│   ├── Controllers/
-│   ├── Models/
-│   ├── Policies/
-│   └── Http/Requests/
-├── routes/
-│   └── web.php
-├── database/
-│   ├── migrations/
-│   └── seeders/
-└── resources/
-    └── js/
-        └── pages/
-```
+## Guidelines d'architecture
 
-### Manifeste (extension.json)
+- **Le backend est la source de verite** — le frontend ne fait que refleter l'etat
+- **Ne jamais hardcoder de noms de roles** — utiliser `hasPermissionTo()` et les Policies
+- **Ne jamais mettre de logique metier dans les controleurs** — utiliser des classes Action
+- **Ne jamais faire de requetes DB dans les vues/layouts/navigation** — resoudre le contexte en amont
+- **Utiliser les Form Requests** pour toute validation non-triviale
+- **Utiliser le trait `HasTeam`** sur tous les modeles de module pour le scope automatique
+- **Aucun texte hardcode** — utiliser le systeme de traduction `__()` (backend) et `t()` (frontend)
+- **Classes finales** — utiliser `final class` pour les controleurs, services et actions
+- **Inertia::flash()** pour les toasts — ne pas utiliser `->with()` qui ne declenche pas l'event frontend
 
-```json
-{
-    "identifier": "mon-module",
-    "name": "Mon Module",
-    "type": "module",
-    "version": "1.0.0",
-    "description": "Description du module",
-    "author": "Votre Nom",
-    "provider": "Modules\\MonModule\\MonModuleServiceProvider",
-    "namespace": "Modules\\MonModule",
-    "lastarterVersion": ">=1.0.0",
-    "permissions": ["mon-module.view", "mon-module.create"],
-    "navigation": {
-        "app": [{
-            "title": "Mon Module",
-            "icon": "FolderKanban",
-            "route": "mon-module.index",
-            "permission": "mon-module.view",
-            "order": 10
-        }]
-    },
-    "settings": []
-}
-```
+## Contributions d'extensions
 
-### Règles Importantes
+Les extensions sont developpees dans le depot [LaStarter-Marketplace](https://github.com/OneSubnet/LaStarter-Marketplace). Chaque extension doit :
 
-* **Toujours** utiliser `$user->hasPermissionTo()` pour les autorisations, jamais de vérification de rôle
-* **Toujours** utiliser le trait `HasTeam` sur les modèles de module
-* Les permissions sont globales, les rôles sont par équipe
-* Les pages de module utilisent les imports `@/` (résolus par Vite)
+1. Avoir un manifeste `extension.json` valide (voir le schema JSON dans `schemas/extension.schema.json`)
+2. Utiliser un ServiceProvider etendant `ModuleServiceProvider`
+3. Inclure des modeles avec le trait `HasTeam`
+4. Definir les permissions dans le manifeste
+5. Inclure une Policy utilisant `hasPermissionTo()`
+6. Fournir les traductions dans `resources/locales/{locale}.json`
+7. Valider la compatibilite — `provides` et `permissions` ne peuvent que grandir, jamais diminuer
 
-## Signaler un Bug
+Voir CLAUDE.md pour le guide complet de developpement d'extensions.
 
-Ouvrez une issue avec le label `bug` en utilisant le template fourni. Incluez :
+## Questions ?
 
-* Étapes pour reproduire
-* Comportement attendu vs observé
-* Version de PHP, Node, et LaStarter
-* Captures d'écran si pertinent
-
-## Proposer une Fonctionnalité
-
-Ouvrez une issue avec le label `enhancement` en décrivant :
-
-* Le besoin ou problème adressé
-* La solution proposée
-* Les alternatives envisagées
-
-## Licence
-
-En contribuant à LaStarter, vous acceptez que vos contributions soient sous licence MIT.
+Ouvrez une issue sur GitHub pour les bugs, demandes de fonctionnalites ou questions.

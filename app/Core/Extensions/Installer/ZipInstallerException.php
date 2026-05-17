@@ -6,7 +6,9 @@ final class ZipInstallerException extends \RuntimeException
 {
     public static function fileNotFound(string $path): self
     {
-        return new self("ZIP file not found: {$path}");
+        logger()->warning("ZIP file not found: {$path}");
+
+        return new self('The uploaded file could not be found.');
     }
 
     public static function fileTooLarge(int $maxBytes): self

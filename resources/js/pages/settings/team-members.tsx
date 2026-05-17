@@ -12,7 +12,6 @@ import type {
     SortingState,
     VisibilityState,
 } from '@tanstack/react-table';
-import i18n from 'i18next';
 import {
     ArrowUpDown,
     ChevronsLeft,
@@ -30,6 +29,7 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import Guard from '@/components/guard';
 import InviteMemberModal from '@/components/invite-member-modal';
@@ -90,7 +90,7 @@ export default function TeamMembers({
     permissions,
     availableRoles,
 }: Props) {
-    const t = i18n.t.bind(i18n);
+    const { t } = useTranslation();
     const getInitials = useInitials();
 
     const statusConfig = useMemo<
@@ -157,7 +157,7 @@ export default function TeamMembers({
                             onCheckedChange={(value) =>
                                 table.toggleAllPageRowsSelected(!!value)
                             }
-                            aria-label="Select all"
+                            aria-label={t('a11y.select_all')}
                         />
                     </div>
                 ),
@@ -168,7 +168,7 @@ export default function TeamMembers({
                             onCheckedChange={(value) =>
                                 row.toggleSelected(!!value)
                             }
-                            aria-label="Select row"
+                            aria-label={t('a11y.select_row')}
                         />
                     </div>
                 ),

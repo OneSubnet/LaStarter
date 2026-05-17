@@ -2,13 +2,16 @@
 
 namespace App\Mail;
 
-use Illuminate\Mail\Mailable;
+use App\Models\User;
 
-class TestMail extends Mailable
+class TestMail extends BaseMailable
 {
     public function __construct(
-        private string $teamName,
-    ) {}
+        private readonly string $teamName,
+        ?User $recipient = null,
+    ) {
+        parent::__construct($recipient);
+    }
 
     public function build(): self
     {

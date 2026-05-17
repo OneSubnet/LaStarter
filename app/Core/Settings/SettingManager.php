@@ -2,6 +2,7 @@
 
 namespace App\Core\Settings;
 
+use App\Core\Cache\CacheKey;
 use App\Core\Context\AppContext;
 use App\Models\TeamSetting;
 use Illuminate\Support\Facades\Cache;
@@ -19,11 +20,6 @@ final class SettingManager
         }
     }
 
-    private function cacheKey(int $teamId, string $key): string
-    {
-        return "settings.{$teamId}.{$key}";
-    }
-
     public function get(string $key, mixed $default = null): mixed
     {
         $teamId = $this->teamId();
@@ -33,7 +29,7 @@ final class SettingManager
         }
 
         return Cache::remember(
-            $this->cacheKey($teamId, $key),
+            CacheKey::settings($teamId, $key),
             now()->addHour(),
             fn () => TeamSetting::where('team_id', $teamId)
                 ->where('key', $key)
@@ -54,7 +50,7 @@ final class SettingManager
             ['value' => $value],
         );
 
-        Cache::forget($this->cacheKey($teamId, $key));
+        Cache::forget(CacheKey::settings($teamId, $key));
     }
 
     public function forget(string $key): void
@@ -66,6 +62,6 @@ final class SettingManager
         }
 
         TeamSetting::where('team_id', $teamId)->where('key', $key)->delete();
-        Cache::forget($this->cacheKey($teamId, $key));
+        Cache::forget(CacheKey::settings($teamId, $key));
     }
 }

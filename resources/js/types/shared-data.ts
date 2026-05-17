@@ -34,6 +34,29 @@ export type FooterLink = {
     href: string;
 };
 
+export type ContextualSidebarItem = {
+    title: string;
+    href: string;
+    icon: string;
+    meta?: string;
+    active: boolean;
+};
+
+export type ContextualSidebarSection = {
+    title: string;
+    items: ContextualSidebarItem[];
+};
+
+export type ContextualSidebar = {
+    header?: {
+        title: string;
+        subtitle?: string;
+        href?: string;
+        progress?: number;
+    } | null;
+    sections: ContextualSidebarSection[];
+};
+
 export type SharedData = {
     name: string;
     auth: Auth;
@@ -53,6 +76,10 @@ export type SharedData = {
     unreadMessageCount: number;
     availableWidgets: Record<string, unknown>[];
     coreVersion: string;
+    coreUpdateAvailable: boolean;
+    extensionUpdateCount: number;
+    mailConfigured: boolean;
+    contextualSidebar: ContextualSidebar | null;
     flash?: {
         toast?: FlashToast;
     };

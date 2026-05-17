@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/drawer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { timeAgo } from '@/lib/format';
 import type { SharedData } from '@/types';
 
 type Notification = {
@@ -24,32 +25,6 @@ type Notification = {
     created_at: string;
 };
 
-function timeAgo(dateStr: string): string {
-    const seconds = Math.floor(
-        (Date.now() - new Date(dateStr).getTime()) / 1000,
-    );
-
-    if (seconds < 60) {
-        return `${seconds}s`;
-    }
-
-    const minutes = Math.floor(seconds / 60);
-
-    if (minutes < 60) {
-        return `${minutes}m`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) {
-        return `${hours}h`;
-    }
-
-    const days = Math.floor(hours / 24);
-
-    return `${days}d`;
-}
-
 function NotificationItem({
     notification,
     onRead,
@@ -57,11 +32,13 @@ function NotificationItem({
     notification: Notification;
     onRead: (id: number) => void;
 }) {
+    const { t } = useTranslation();
     const isUnread = notification.read_at === null;
 
     return (
         <button
             type="button"
+            aria-label={notification.title || t('notifications.title')}
             className={`flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-accent ${isUnread ? 'bg-accent/50' : ''}`}
             onClick={() => {
                 if (isUnread) {
@@ -89,13 +66,13 @@ function NotificationItem({
             {isUnread && (
                 <div className="mt-1 flex items-center gap-1 text-[10px] text-primary">
                     <Check className="h-3 w-3" />
-                    Mark as read
+                    {t('notifications.mark_read')}
                 </div>
             )}
             {!isUnread && notification.data?.url && (
                 <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
                     <ExternalLink className="h-3 w-3" />
-                    Open
+                    {t('notifications.open')}
                 </div>
             )}
         </button>
@@ -143,7 +120,7 @@ export function NotificationBell() {
         }
     };
 
-    const handleMarkRead = async (id: number) => {
+    const handleMarkRead = (id: number) => {
         const notification = notifications.find((n) => n.id === id);
         setNotifications((prev) =>
             prev.map((n) =>
@@ -151,25 +128,24 @@ export function NotificationBell() {
             ),
         );
 
-        try {
-            await fetch(`/${teamSlug}/notifications/${id}/read`, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'same-origin',
-            });
-
-            if (notification?.data?.url) {
-                setOpen(false);
-                router.visit(notification.data.url);
-            } else {
-                router.reload({ only: ['unreadNotifications'] });
-            }
-        } catch {
-            // silent
-        }
+        router.post(
+            `/${teamSlug}/notifications/${id}/read`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    if (notification?.data?.url) {
+                        setOpen(false);
+                        router.visit(notification.data.url);
+                    } else {
+                        router.reload({ only: ['unreadNotifications'] });
+                    }
+                },
+            },
+        );
     };
 
-    const handleMarkAllRead = async () => {
+    const handleMarkAllRead = () => {
         setNotifications((prev) =>
             prev.map((n) => ({
                 ...n,
@@ -177,16 +153,16 @@ export function NotificationBell() {
             })),
         );
 
-        try {
-            await fetch(`/${teamSlug}/notifications/read-all`, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'same-origin',
-            });
-            router.reload({ only: ['unreadNotifications'] });
-        } catch {
-            // silent
-        }
+        router.post(
+            `/${teamSlug}/notifications/read-all`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload({ only: ['unreadNotifications'] });
+                },
+            },
+        );
     };
 
     return (

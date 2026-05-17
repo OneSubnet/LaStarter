@@ -1,6 +1,7 @@
 import { createInertiaApp, router } from '@inertiajs/react';
 import type { ResolvedComponent } from '@inertiajs/react';
 import i18n from 'i18next';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -24,9 +25,6 @@ const modulePages = import.meta.glob(
 const themeOverrides = import.meta.glob(
     '../../extensions/themes/*/resources/js/overrides/**/*.tsx',
 );
-const extensionLocales = import.meta.glob(
-    '../../extensions/modules/*/resources/locales/*.json',
-);
 
 function applyTheme(theme: string | null | undefined) {
     if (typeof document === 'undefined') {
@@ -46,26 +44,6 @@ function applyTheme(theme: string | null | undefined) {
     }
 
     html.classList.add(`theme-${theme}`);
-}
-
-async function loadExtensionLocales(locale: string) {
-    for (const path in extensionLocales) {
-        const match = path.match(
-            /extensions[/\\]modules[/\\]([^/\\]+)[/\\]resources[/\\]locales[/\\]([a-z]{2}(?:-[A-Z]{2})?)\.json$/,
-        );
-
-        if (match && match[2] === locale) {
-            const mod = (await extensionLocales[path]()) as {
-                default: Record<string, string>;
-            };
-            const ns = match[1];
-            const translations = mod.default ?? mod;
-
-            if (Object.keys(translations).length > 0) {
-                i18n.addResourceBundle(locale, ns, translations, true, true);
-            }
-        }
-    }
 }
 
 // Pre-build page map for O(1) resolution — core first, modules overwrite, themes overwrite (highest priority)
@@ -116,10 +94,12 @@ createInertiaApp({
     strictMode: true,
     withApp(app) {
         return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
+            <ErrorBoundary>
+                <TooltipProvider delayDuration={0}>
+                    {app}
+                    <Toaster />
+                </TooltipProvider>
+            </ErrorBoundary>
         );
     },
     progress: {
@@ -147,7 +127,6 @@ router.on('navigate', (event) => {
 
     if (locale && i18n.language !== locale) {
         i18n.changeLanguage(locale);
-        loadExtensionLocales(locale).catch(console.error);
     }
 
     applyTheme(event.detail.page.props.theme as string | null | undefined);
@@ -170,7 +149,6 @@ if (typeof document !== 'undefined') {
 
             if (locale && i18n.language !== locale) {
                 i18n.changeLanguage(locale);
-                loadExtensionLocales(locale).catch(console.error);
             }
 
             applyTheme(page.props?.theme as string | null | undefined);
