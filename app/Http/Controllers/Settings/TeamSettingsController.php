@@ -66,7 +66,7 @@ final class TeamSettingsController extends Controller
         Gate::authorize('update', $team);
 
         $validated = $request->validate([
-            'icon' => ['required', 'file', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120'],
+            'icon' => ['required', 'file', 'mimes:jpeg,png,webp,svg', 'max:5120'],
         ]);
 
         $file = $validated['icon'];
