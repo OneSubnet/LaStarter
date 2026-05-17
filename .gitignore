@@ -33,8 +33,11 @@ pnpm-lock.yaml
 extensions/*/node_modules/
 extensions/*/.env
 # All modules and themes are installed separately — never push to main repo
-extensions/modules/
-extensions/themes/
+# But keep the empty directories with .gitkeep
+extensions/modules/*
+!extensions/modules/.gitkeep
+extensions/themes/*
+!extensions/themes/.gitkeep
 
 # Internal/planning docs
 /Cahier_des_charges.md
