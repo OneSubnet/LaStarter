@@ -1,22 +1,25 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Responsive, useContainerWidth, type LayoutItem } from 'react-grid-layout';
+import { RotateCcw, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Responsive, useContainerWidth  } from 'react-grid-layout';
+import type {LayoutItem} from 'react-grid-layout';
 import { useTranslation } from 'react-i18next';
+import { DateRangePicker } from '@/components/dashboard/date-range-picker';
+import { SourcePicker } from '@/components/dashboard/source-picker';
+import { WidgetMap } from '@/components/dashboard/widget-map';
+import { WidgetPicker } from '@/components/dashboard/widget-picker';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import type { WidgetConfig, WidgetInstance, DisplayMode, DateRange, WidgetData, ChartType } from '@/types/dashboard';
-import { WidgetMap } from '@/components/dashboard/widget-map';
-import { WidgetPicker } from '@/components/dashboard/widget-picker';
-import { SourcePicker } from '@/components/dashboard/source-picker';
-import { DateRangePicker } from '@/components/dashboard/date-range-picker';
-import { Button } from '@/components/ui/button';
-import { RotateCcw, Plus } from 'lucide-react';
 
 const BREAKPOINTS = { lg: 1200, md: 996, sm: 768 };
 const COLS = { lg: 12, md: 8, sm: 4 };
 const ROW_HEIGHT = 60;
 const MARGIN = 8;
 const SAVE_DEBOUNCE = 500;
+const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const VISIBLE_THRESHOLD = 30 * 1000; // 30 seconds before reload on tab focus
 
 const DEFAULT_H: Record<DisplayMode, number> = { stat: 1, chart: 4, table: 4 };
 
@@ -51,6 +54,7 @@ export default function Dashboard() {
 
     const availableWidgets = useMemo<WidgetConfig[]>(() => {
         const raw = page.props.availableWidgets ?? [];
+
         return raw.map((w: Record<string, unknown>) => ({
             identifier: w.identifier as string,
             label: w.label as string,
@@ -64,16 +68,24 @@ export default function Dashboard() {
 
     const configMap = useMemo(() => {
         const map = new Map<string, WidgetConfig>();
+
         for (const w of availableWidgets) {
             map.set(w.identifier, w);
         }
+
         return map;
     }, [availableWidgets]);
 
     const persistLayout = useCallback(
         (newLayout: readonly LayoutItem[], newWidgets: WidgetInstance[]) => {
-            if (isInitialRender.current) return;
-            if (saveTimer.current) clearTimeout(saveTimer.current);
+            if (isInitialRender.current) {
+return;
+}
+
+            if (saveTimer.current) {
+clearTimeout(saveTimer.current);
+}
+
             saveTimer.current = setTimeout(() => {
                 router.put(
                     `/${teamSlug}/dashboard/layout`,
@@ -90,10 +102,59 @@ export default function Dashboard() {
 
     useEffect(() => {
         isInitialRender.current = false;
+
         return () => {
-            if (saveTimer.current) clearTimeout(saveTimer.current);
+            if (saveTimer.current) {
+clearTimeout(saveTimer.current);
+}
         };
     }, []);
+
+    // Auto-refresh widget data every REFRESH_INTERVAL, paused when tab is hidden
+    const refreshTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+    const lastRefresh = useRef<number>(Date.now());
+
+    const startRefreshInterval = useCallback(() => {
+        if (refreshTimer.current) {
+clearInterval(refreshTimer.current);
+}
+
+        refreshTimer.current = setInterval(() => {
+            router.reload({ only: ['dashboardLayout'] });
+            lastRefresh.current = Date.now();
+        }, REFRESH_INTERVAL);
+    }, []);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                if (refreshTimer.current) {
+                    clearInterval(refreshTimer.current);
+                    refreshTimer.current = null;
+                }
+            } else {
+                const elapsed = Date.now() - lastRefresh.current;
+
+                if (elapsed > VISIBLE_THRESHOLD) {
+                    router.reload({ only: ['dashboardLayout'] });
+                    lastRefresh.current = Date.now();
+                }
+
+                startRefreshInterval();
+            }
+        };
+
+        startRefreshInterval();
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+            if (refreshTimer.current) {
+clearInterval(refreshTimer.current);
+}
+        };
+    }, [startRefreshInterval]);
 
     const handleLayoutChange = useCallback(
         (newLayout: readonly LayoutItem[]) => {
@@ -105,7 +166,10 @@ export default function Dashboard() {
 
     const handleRemoveWidget = useCallback(
         (id: string) => {
-            if (saveTimer.current) clearTimeout(saveTimer.current);
+            if (saveTimer.current) {
+clearTimeout(saveTimer.current);
+}
+
             const newWidgets = widgetsRef.current.filter((w) => w.id !== id);
             const newLayout = layoutRef.current.filter((l) => l.i !== id);
             widgetsRef.current = newWidgets;
@@ -126,7 +190,10 @@ export default function Dashboard() {
 
     const handleAddWidget = useCallback(
         (widget: WidgetInstance) => {
-            if (saveTimer.current) clearTimeout(saveTimer.current);
+            if (saveTimer.current) {
+clearTimeout(saveTimer.current);
+}
+
             const config = configMap.get(widget.identifier);
             const maxY = layoutRef.current.reduce((max, l) => Math.max(max, l.y + l.h), 0);
             const newItem: LayoutItem = {
@@ -195,8 +262,13 @@ export default function Dashboard() {
 
     const handleCombineConfirm = useCallback(
         (sources: string[], chartType: ChartType) => {
-            if (combineTarget === null) return;
-            if (saveTimer.current) clearTimeout(saveTimer.current);
+            if (combineTarget === null) {
+return;
+}
+
+            if (saveTimer.current) {
+clearTimeout(saveTimer.current);
+}
 
             const newWidgets = widgetsRef.current.map((w) =>
                 w.id === combineTarget
@@ -228,7 +300,10 @@ export default function Dashboard() {
     );
 
     const handleReset = useCallback(() => {
-        if (saveTimer.current) clearTimeout(saveTimer.current);
+        if (saveTimer.current) {
+clearTimeout(saveTimer.current);
+}
+
         widgetsRef.current = [];
         layoutRef.current = [];
         setWidgets([]);
@@ -321,6 +396,9 @@ export default function Dashboard() {
                 existingSources={combineTarget
                     ? (widgetsRef.current.find((w) => w.id === combineTarget)?.config as { sources?: string[] } | undefined)?.sources ?? []
                     : []}
+                existingChartType={combineTarget
+                    ? (widgetsRef.current.find((w) => w.id === combineTarget)?.config as { chartType?: ChartType } | undefined)?.chartType
+                    : undefined}
                 onConfirm={handleCombineConfirm}
                 open={sourcePickerOpen}
                 onOpenChange={setSourcePickerOpen}

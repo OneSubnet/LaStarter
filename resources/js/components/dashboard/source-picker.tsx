@@ -1,3 +1,6 @@
+import { Check, Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
     Drawer,
@@ -6,9 +9,6 @@ import {
     DrawerTitle,
     DrawerFooter,
 } from '@/components/ui/drawer';
-import { Check, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { ChartType, WidgetConfig } from '@/types/dashboard';
 
 const CHART_TYPES: Array<{ value: ChartType; labelKey: string }> = [
@@ -42,20 +42,33 @@ const WIDGET_CATEGORIES: Record<string, string> = {
 type SourcePickerProps = {
     availableSources: WidgetConfig[];
     existingSources: string[];
+    existingChartType?: ChartType;
     onConfirm: (sources: string[], chartType: ChartType) => void;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
 
-export function SourcePicker({ availableSources, existingSources, onConfirm, open, onOpenChange }: SourcePickerProps) {
+export function SourcePicker({ availableSources, existingSources, existingChartType, onConfirm, open, onOpenChange }: SourcePickerProps) {
     const { t } = useTranslation();
     const [selected, setSelected] = useState<Set<string>>(new Set(existingSources));
-    const [chartType, setChartType] = useState<ChartType>('composed');
+    const [chartType, setChartType] = useState<ChartType>(existingChartType ?? 'composed');
     const [search, setSearch] = useState('');
 
+    useEffect(() => {
+        if (open) {
+            setSelected(new Set(existingSources));
+            setChartType(existingChartType ?? 'composed');
+            setSearch('');
+        }
+    }, [open, existingSources, existingChartType]);
+
     const filtered = useMemo(() => {
-        if (!search.trim()) return availableSources;
+        if (!search.trim()) {
+return availableSources;
+}
+
         const q = search.toLowerCase();
+
         return availableSources.filter(
             (w) => w.label.toLowerCase().includes(q) || w.identifier.toLowerCase().includes(q),
         );
@@ -63,31 +76,42 @@ export function SourcePicker({ availableSources, existingSources, onConfirm, ope
 
     const grouped = useMemo(() => {
         const groups: Record<string, WidgetConfig[]> = {};
+
         for (const w of filtered) {
             const key = WIDGET_CATEGORIES[w.identifier] ?? 'Other';
             (groups[key] ??= []).push(w);
         }
+
         const ordered: Record<string, WidgetConfig[]> = {};
+
         for (const cat of CATEGORY_ORDER) {
-            if (groups[cat]) ordered[cat] = groups[cat];
+            if (groups[cat]) {
+ordered[cat] = groups[cat];
+}
         }
+
         return ordered;
     }, [filtered]);
 
     const toggleSource = (identifier: string) => {
         setSelected((prev) => {
             const next = new Set(prev);
+
             if (next.has(identifier)) {
                 next.delete(identifier);
             } else if (next.size < 4) {
                 next.add(identifier);
             }
+
             return next;
         });
     };
 
     const handleConfirm = () => {
-        if (selected.size === 0) return;
+        if (selected.size === 0) {
+return;
+}
+
         onConfirm(Array.from(selected), chartType);
     };
 
@@ -120,6 +144,7 @@ export function SourcePicker({ availableSources, existingSources, onConfirm, ope
                                 {widgets.map((widget) => {
                                     const isSelected = selected.has(widget.identifier);
                                     const isFull = selected.size >= 4 && !isSelected;
+
                                     return (
                                         <button
                                             key={widget.identifier}
