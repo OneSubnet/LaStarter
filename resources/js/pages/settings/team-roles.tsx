@@ -88,14 +88,7 @@ import {
     update as updateUrl,
     destroy as destroyUrl,
 } from '@/routes/settings/team/roles';
-
-type Role = {
-    id: number;
-    name: string;
-    is_protected: boolean;
-    permissions: string[];
-    users_count: number;
-};
+import type { Role } from '@/types/teams';
 
 type Props = {
     team: {

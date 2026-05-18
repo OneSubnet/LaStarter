@@ -26,14 +26,14 @@ final class WidgetRegistry
     /**
      * Return widgets available to a user on a given team.
      *
-     * @return list<array{identifier: string, label: string, type: string, size: array{w: int, h: int}, permission: ?string}>
+     * @return list<array{identifier: string, label: string, type: string, size: array{w: int, h: int}, permission: ?string, description: ?string, modes: ?list<string>}>
      */
     public function forTeam(int $teamId, User $user): array
     {
         $enabled = app(ExtensionManager::class)->enabledIdentifiers($teamId);
 
-        return array_values(array_filter($this->widgets, function (WidgetDefinition $w) use ($enabled, $user) {
-            if (! in_array($w->module, $enabled, true)) {
+        $filtered = array_filter($this->widgets, function (WidgetDefinition $w) use ($enabled, $user) {
+            if ($w->module !== 'core' && ! in_array($w->module, $enabled, true)) {
                 return false;
             }
 
@@ -42,6 +42,16 @@ final class WidgetRegistry
             }
 
             return true;
-        }));
+        });
+
+        return array_values(array_map(fn (WidgetDefinition $w) => [
+            'identifier' => $w->identifier,
+            'label' => $w->label,
+            'type' => $w->type,
+            'size' => $w->size,
+            'permission' => $w->permission,
+            'description' => $w->description,
+            'modes' => $w->modes,
+        ], $filtered));
     }
 }

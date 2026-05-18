@@ -56,16 +56,16 @@ function ErrorFallback({
     const { t } = useTranslation();
 
     return (
-        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-8">
-            <AlertTriangle className="size-10 text-destructive" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">
+        <div className="flex flex-1 flex-col items-center justify-center p-8">
+            <AlertTriangle className="size-10 text-muted-foreground" />
+            <h2 className="mt-4 text-lg font-semibold">
                 {t('errors.boundary_title')}
             </h2>
             <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
                 {t('errors.boundary_message')}
             </p>
             {error && (
-                <pre className="mt-4 max-w-lg overflow-auto rounded bg-muted p-3 text-xs text-muted-foreground">
+                <pre className="mt-4 max-w-lg overflow-auto rounded border bg-card p-3 text-xs text-muted-foreground">
                     {error.message}
                 </pre>
             )}

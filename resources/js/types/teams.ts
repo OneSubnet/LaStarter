@@ -34,3 +34,11 @@ export type RoleOption = {
     value: string;
     label: string;
 };
+
+export type Role = {
+    id: number;
+    name: string;
+    is_protected: boolean;
+    permissions: string[];
+    users_count: number;
+};

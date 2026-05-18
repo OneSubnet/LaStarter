@@ -28,6 +28,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { timeAgo } from '@/lib/format';
 import { iconMap, DEFAULT_ICON } from '@/lib/icon-map';
 import { cn } from '@/lib/utils';
+import type { SidebarNavItem, SidebarNavSection, SidebarNavModule } from '@/types/navigation';
 import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
 import {
@@ -48,29 +49,6 @@ import {
 import type { SharedData } from '@/types';
 import type { ExtensionNavItem } from '@/types/navigation';
 import type { ContextualSidebar } from '@/types/shared-data';
-
-// ── Types ──────────────────────────────────────────────
-
-type NavItem = {
-    label: string;
-    icon: LucideIcon;
-    href: string;
-    permission?: string;
-    badge?: number | null;
-};
-
-type NavSection = {
-    title?: string;
-    items: NavItem[];
-};
-
-type NavModule = {
-    id: string;
-    label: string;
-    icon: LucideIcon;
-    sections: NavSection[];
-    urlPatterns: string[];
-};
 
 // ── Helpers ────────────────────────────────────────────
 
@@ -206,7 +184,7 @@ function urlMatches(currentUrl: string, patterns: string[]): boolean {
 
 // ── Module Panel (expanded panel content) ──────────────
 
-function ModulePanel({ module }: { module: NavModule }) {
+function ModulePanel({ module }: { module: SidebarNavModule }) {
     const { isCurrentUrl } = useCurrentUrl();
     const page = usePage<SharedData>();
     const unreadMessageCount = page.props.unreadMessageCount;
@@ -394,8 +372,8 @@ export function AppSidebar() {
 
     const currentUrl = page.url;
 
-    const modules: NavModule[] = useMemo(() => {
-        const result: NavModule[] = [];
+    const modules: SidebarNavModule[] = useMemo(() => {
+        const result: SidebarNavModule[] = [];
 
         // Dashboard
         const dashUrl = teamSlug ? dashboard(teamSlug).url : '/';
@@ -445,7 +423,7 @@ export function AppSidebar() {
                     groupedHrefs.add(child.href);
                 }
 
-                const sections: NavSection[] = [];
+                const sections: SidebarNavSection[] = [];
 
                 for (const [groupKey, children] of groupMap) {
                     sections.push({
@@ -479,7 +457,7 @@ export function AppSidebar() {
         }
 
         // Generic Extensions module — flat nav items + management (Modules, Themes, Marketplace)
-        const extSections: NavSection[] = flatExtItems
+        const extSections: SidebarNavSection[] = flatExtItems
             .filter((item) => !groupedHrefs.has(item.href))
             .map((item) => ({
                 items: [
@@ -493,7 +471,7 @@ export function AppSidebar() {
                 ],
             }));
 
-        const manageItems: NavItem[] = [
+        const manageItems: SidebarNavItem[] = [
             {
                 label: t('common.extensions_and_themes'),
                 icon: DEFAULT_ICON,
@@ -510,7 +488,7 @@ export function AppSidebar() {
         ].filter((item) => can(item.permission));
 
         if (extSections.length > 0 || manageItems.length > 0) {
-            const sections: NavSection[] = [
+            const sections: SidebarNavSection[] = [
                 ...extSections,
                 ...(manageItems.length > 0
                     ? [
@@ -538,7 +516,7 @@ export function AppSidebar() {
         }
 
         // Settings
-        const settingsItems: NavItem[] = [
+        const settingsItems: SidebarNavItem[] = [
             {
                 label: t('common.general'),
                 icon: iconMap.Settings,
@@ -569,9 +547,15 @@ export function AppSidebar() {
                 permission: 'system.update',
                 badge: systemBadgeCount,
             },
+            {
+                label: t('settings.audit.title'),
+                icon: iconMap.FileText,
+                href: `/${teamSlug}/settings/audit`,
+                permission: 'audit.view',
+            },
         ].filter((item) => can(item.permission));
 
-        const accountItems: NavItem[] = [
+        const accountItems: SidebarNavItem[] = [
             {
                 label: t('common.profile'),
                 icon: iconMap.Users,
@@ -599,6 +583,7 @@ export function AppSidebar() {
                 roles(teamSlug).url,
                 mail(teamSlug).url,
                 `/${teamSlug}/settings/system`,
+                `/${teamSlug}/settings/audit`,
                 editProfile().url,
                 editSecurity().url,
                 editAppearance().url,

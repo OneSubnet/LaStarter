@@ -49,6 +49,12 @@ parameters:
 			path: app/Actions/Invitations/CreateTeamInvitation.php
 
 		-
+			message: '#^Call to an undefined static method App\\Models\\User\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Actions/Invitations/RegisterInvitedUser.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 3
@@ -241,75 +247,159 @@ parameters:
 			path: app/Core/Context/AppContext.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$is_active\.$#'
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$action\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Core/Extensions/Console/ExtensionsSyncCommand.php
+			path: app/Core/Context/SharedPropsResolver.php
 
 		-
-			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:firstOrCreate\(\)\.$#'
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$module\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$properties\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$data\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$read_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$avatar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\AuditLog\:\:where\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
-			path: app/Core/Extensions/Console/ExtensionsSyncCommand.php
+			path: app/Core/Context/SharedPropsResolver.php
 
 		-
-			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:where\(\)\.$#'
+			message: '#^Call to an undefined static method App\\Models\\Notification\:\:forUser\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 2
-			path: app/Core/Extensions/Console/ExtensionsSyncCommand.php
+			path: app/Core/Context/SharedPropsResolver.php
 
 		-
-			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Role\:\:where\(\)\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\User\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Core/Context/SharedPropsResolver.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\Extension\:\:whereNotNull\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
-			path: app/Core/Extensions/Console/ExtensionsSyncCommand.php
+			path: app/Core/Extensions/DependencyResolver.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>dependencies" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Core/Extensions/DependencyResolver.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 4
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$identifier\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$is_active\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$path\.$#'
-			identifier: property.notFound
 			count: 3
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$provider_class\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Core/Extensions/ExtensionManager.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$state\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$type\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Call to an undefined static method App\\Models\\Extension\:\:create\(\)\.$#'
-			identifier: staticMethod.notFound
 			count: 2
+			path: app/Core/Extensions/ExtensionManager.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\Extension\:\:updateOrCreate\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
 			path: app/Core/Extensions/ExtensionManager.php
 
 		-
@@ -319,19 +409,7 @@ parameters:
 			path: app/Core/Extensions/ExtensionManager.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\Extension\:\:whereIn\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 2
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
 			message: '#^Call to an undefined static method App\\Models\\Extension\:\:whereNotIn\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Core/Extensions/ExtensionManager.php
-
-		-
-			message: '#^Call to an undefined static method App\\Models\\TeamExtension\:\:distinct\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
 			path: app/Core/Extensions/ExtensionManager.php
@@ -345,17 +423,17 @@ parameters:
 		-
 			message: '#^Call to an undefined static method App\\Models\\TeamExtension\:\:where\(\)\.$#'
 			identifier: staticMethod.notFound
-			count: 5
+			count: 2
 			path: app/Core/Extensions/ExtensionManager.php
 
 		-
-			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:firstOrCreate\(\)\.$#'
+			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:pluck\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
 			path: app/Core/Extensions/ExtensionManager.php
 
 		-
-			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:where\(\)\.$#'
+			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:upsert\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
 			path: app/Core/Extensions/ExtensionManager.php
@@ -367,19 +445,199 @@ parameters:
 			path: app/Core/Extensions/ExtensionManager.php
 
 		-
-			message: '#^Call to static method satisfies\(\) on an unknown class Composer\\Semver\\Semver\.$#'
+			message: '#^Call to method downloadRelease\(\) on an unknown class App\\Core\\Extensions\\Installer\\Marketplace\\MarketplaceClient\.$#'
 			identifier: class.notFound
 			count: 1
-			path: app/Core/Extensions/ExtensionManager.php
+			path: app/Core/Extensions/Installer/ZipInstaller.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>slug" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
+			message: '#^Class App\\Core\\Extensions\\Installer\\Marketplace\\MarketplaceClient not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Core/Extensions/Installer/ZipInstaller.php
+
+		-
+			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Permission\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Extensions/Listeners/SyncTeamPermissionsListener.php
+
+		-
+			message: '#^Call to an undefined static method Spatie\\Permission\\Models\\Role\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Extensions/Listeners/SyncTeamPermissionsListener.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\Extension\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Extensions/Marketplace/MarketplaceClient.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Http\:\:github\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 3
+			path: app/Core/Extensions/Marketplace/MarketplaceClient.php
+
+		-
+			message: '#^Readonly property App\\Core\\Extensions\\Marketplace\\MarketplaceClient\:\:\$http is already assigned\.$#'
+			identifier: assign.readOnlyProperty
+			count: 1
+			path: app/Core/Extensions/Marketplace/MarketplaceClient.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\Extension\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Extensions/Updater/UpdateService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Core/Mail/MailSender.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Mail/MailSender.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Mail/MailSender.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\EmailTemplate\:\:\$html_content\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\EmailTemplate\:\:\$subject\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\EmailTemplate\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\EmailTemplate\:\:forTeam\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 3
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Offset ''identifier'' does not exist on array\{variables\: array\<string, string\>, defaults\: array\<string, array\{subject\: string, html_content\: string\}\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Offset ''locales'' does not exist on array\{variables\: array\<string, string\>, defaults\: array\<string, array\{subject\: string, html_content\: string\}\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Offset ''locales'' on array\{variables\: array\<string, string\>, defaults\: array\<string, array\{subject\: string, html_content\: string\}\>\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Support\\Collection\<int, array\<string, array\<string, array\<string, string\>\|string\>\>\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, array\<string, array\<string, string\>\|string\>\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Result of \|\| is always true\.$#'
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Core/Mail/TemplateManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Database\\Eloquent\\Model\:\:findOrFail\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Call to an undefined static method Spatie\\LaravelData\\Data\:\:fromModel\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Property App\\Core\\Modules\\CmsController\:\:\$formData \(class\-string\<Spatie\\LaravelData\\Data\>\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Property App\\Core\\Modules\\CmsController\:\:\$requestData \(class\-string\<Spatie\\LaravelData\\Data\>\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Property App\\Core\\Modules\\CmsController\:\:\$rowData \(class\-string\<Spatie\\LaravelData\\Data\>\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between class\-string\<Spatie\\LaravelData\\Data\> and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 3
+			path: app/Core/Modules/CmsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Core/Navigation/NavigationBuilder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$slug\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Core/Navigation/NavigationBuilder.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$current_team_id\.$#'
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Navigation/NavigationBuilder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Core/Settings/SettingManager.php
@@ -393,26 +651,122 @@ parameters:
 		-
 			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
 			identifier: staticMethod.notFound
-			count: 3
+			count: 2
 			path: app/Core/Settings/SettingManager.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			message: '#^Call to an undefined static method App\\Models\\Extension\:\:whereNotNull\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/System/CompatibilityChecker.php
+
+		-
+			message: '#^Access to an undefined property App\\Core\\System\\ReleaseInfo\:\:\$zipHash\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/System/CoreUpdater.php
+
+		-
+			message: '#^Readonly property App\\Core\\System\\ReleaseClient\:\:\$http is already assigned\.$#'
+			identifier: assign.readOnlyProperty
+			count: 1
+			path: app/Core/System/ReleaseClient.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
+
+		-
+			message: '#^Argument of an invalid type Carbon\\CarbonPeriod supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 2
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\AuditLog\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 8
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\Notification\:\:forUser\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>count" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Core/Settings/SettingManager.php
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:updateOrCreate\(\)\.$#'
-			identifier: staticMethod.notFound
+			message: '#^Using nullsafe property access "\?\-\>joins" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Core/Themes/ComponentResolver.php
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
+			message: '#^Using nullsafe property access "\?\-\>read_count" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Core/Widgets/CoreWidgetDataProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DashboardLayout\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DashboardLayout\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$current_team_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\DashboardLayout\:\:create\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
-			path: app/Core/Themes/ComponentResolver.php
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\DashboardLayout\:\:forUser\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 6
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Parameter \#2 \$user of method App\\Core\\Widgets\\WidgetRegistry\:\:forTeam\(\) expects App\\Models\\User, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>widgets" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/DashboardController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Notification\:\:\$body\.$#'
@@ -475,56 +829,152 @@ parameters:
 			path: app/Http/Controllers/OnboardingController.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\Extension\:\:findOrFail\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 5
-			path: app/Http/Controllers/Settings/ExtensionController.php
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$action\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\Extension\:\:pluck\(\)\.$#'
-			identifier: staticMethod.notFound
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$ip_address\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$module\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$properties\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$subject_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$subject_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$trace_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/AuditController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Settings\\AuditController\:\:middleware\(\)\.$#'
+			identifier: method.notFound
 			count: 1
-			path: app/Http/Controllers/Settings/ExtensionController.php
+			path: app/Http/Controllers/Settings/AuditController.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
+			message: '#^Call to an undefined static method App\\Models\\AuditLog\:\:where\(\)\.$#'
 			identifier: staticMethod.notFound
-			count: 1
-			path: app/Http/Controllers/Settings/ExtensionController.php
+			count: 4
+			path: app/Http/Controllers/Settings/AuditController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>keywords" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Settings\\BackupController\:\:authorize\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Settings/BackupController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$author\.$#'
+			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Settings/ExtensionController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>permissions" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Settings/ExtensionController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>settings" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$description\.$#'
+			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Settings/ExtensionController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$id\.$#'
+			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Settings/ExtensionController.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\Extension\:\:pluck\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Http/Controllers/Settings/MarketplaceController.php
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$identifier\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$state\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$version\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Settings/ExtensionController.php
 
 		-
 			message: '#^Call to an undefined static method App\\Models\\Extension\:\:where\(\)\.$#'
 			identifier: staticMethod.notFound
+			count: 1
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: array\{id\: mixed, identifier\: mixed, name\: mixed, type\: mixed, version\: mixed, description\: mixed, author\: mixed, state\: mixed, is_enabled\: bool\}, Closure\(App\\Models\\Extension\)\: array\{id\: mixed, identifier\: mixed, name\: mixed, type\: mixed, version\: mixed, description\: mixed, author\: mixed, state\: mixed, is_enabled\: bool\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Settings/ExtensionController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Settings\\MarketplaceController\:\:middleware\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Settings/MarketplaceController.php
 
@@ -563,12 +1013,6 @@ parameters:
 			identifier: staticMethod.notFound
 			count: 1
 			path: app/Http/Controllers/Settings/TeamSettingsController.php
-
-		-
-			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Http/Controllers/Settings/ThemeController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
@@ -643,12 +1087,6 @@ parameters:
 			path: app/Http/Controllers/Teams/TeamInvitationController.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\User\:\:create\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Http/Controllers/Teams/TeamInvitationController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\Teams\\TeamInvitationController\:\:passwordRules\(\) should return array\<int, array\<mixed\>\|Illuminate\\Contracts\\Validation\\ValidationRule\|string\> but returns array\<int, Illuminate\\Validation\\Rules\\Password\|string\>\.$#'
 			identifier: return.type
 			count: 1
@@ -659,18 +1097,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Teams/TeamInvitationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Team\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Teams/TeamMemberController.php
-
-		-
-			message: '#^Call to static method flash\(\) on an unknown class App\\Http\\Controllers\\Teams\\Inertia\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Teams/TeamMemberController.php
 
 		-
 			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
@@ -691,94 +1117,28 @@ parameters:
 			path: app/Http/Middleware/EnsureTeamMembership.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$action\.$#'
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$locale\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Middleware/HandleInertiaRequests.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$created_at\.$#'
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$locale\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Middleware/HandleInertiaRequests.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$id\.$#'
+			message: '#^Using nullsafe property access "\?\-\>locale" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$locale\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$module\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$properties\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$avatar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Call to an undefined static method App\\Models\\AuditLog\:\:where\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Call to an undefined static method App\\Models\\Notification\:\:forUser\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\User\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Middleware/HandleInertiaRequests.php
+			path: app/Http/Middleware/SetAppLocale.php
 
 		-
 			message: '#^Method App\\Http\\Requests\\Settings\\PasswordUpdateRequest\:\:passwordRules\(\) should return array\<int, array\<mixed\>\|Illuminate\\Contracts\\Validation\\ValidationRule\|string\> but returns array\<int, Illuminate\\Validation\\Rules\\Password\|string\>\.$#'
@@ -831,7 +1191,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$id on object\|string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Http/Requests/Teams/UpdateRoleRequest.php
 
 		-
@@ -865,6 +1225,24 @@ parameters:
 			path: app/Http/Responses/TwoFactorLoginResponse.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mail/BaseMailable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$locale\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mail/BaseMailable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>locale" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Mail/BaseMailable.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$created_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -883,21 +1261,39 @@ parameters:
 			path: app/Models/AuditLog.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$manifest_json\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Models/Extension.php
+			path: app/Models/DashboardLayout.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Factory\:\:user\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/DashboardLayout.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\EmailTemplate\:\:\$module\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/EmailTemplate.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/EmailTemplate.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Factory\:\:user\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/EmailTemplate.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$path\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Models/Extension.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Extension\:\:\$state\.$#'
-			identifier: property.notFound
-			count: 3
 			path: app/Models/Extension.php
 
 		-
@@ -977,18 +1373,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Models/TeamInvitation.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/TeamSetting.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Factory\:\:user\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/TeamSetting.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Membership\:\:\$role\.$#'
@@ -1075,6 +1459,12 @@ parameters:
 			path: app/Notifications/Teams/TeamInvitation.php
 
 		-
+			message: '#^Call to an undefined method Illuminate\\Notifications\\Messages\\MailMessage\:\:locale\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Notifications/Teams/TeamInvitation.php
+
+		-
 			message: '#^Call to an undefined static method App\\Models\\TeamSetting\:\:where\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
@@ -1097,12 +1487,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Policies/TeamPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Team\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Providers/AppServiceProvider.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$email\.$#'

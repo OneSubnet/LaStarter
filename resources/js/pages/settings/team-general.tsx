@@ -21,11 +21,7 @@ import {
     icon as iconUrl,
 } from '@/routes/settings/team';
 import { remove as iconRemoveUrl } from '@/routes/settings/team/icon';
-
-type FooterLink = {
-    title: string;
-    href: string;
-};
+import type { FooterLink } from '@/types';
 
 type Props = {
     team: {

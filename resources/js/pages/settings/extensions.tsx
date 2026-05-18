@@ -87,18 +87,7 @@ import {
     uninstall as uninstallUrl,
 } from '@/routes/settings/team/extensions';
 import type { SharedData } from '@/types';
-
-type Extension = {
-    id: number;
-    identifier: string;
-    name: string;
-    type: 'module' | 'theme';
-    version: string | null;
-    description: string | null;
-    author: string | null;
-    state: 'installed' | 'enabled' | 'disabled' | 'errored' | null;
-    is_enabled: boolean;
-};
+import type { Extension } from '@/types/extensions';
 
 type Props = {
     extensions: Extension[];

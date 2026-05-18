@@ -8,19 +8,7 @@ import TeamSettingsLayout from '@/layouts/team-settings-layout';
 import { marketplace as marketplaceUrl } from '@/routes/settings/team';
 import { install as installUrl } from '@/routes/settings/team/marketplace';
 import type { SharedData } from '@/types';
-
-type MarketplaceDetail = {
-    identifier: string;
-    name: string;
-    description: string;
-    type: 'module' | 'theme';
-    version: string | null;
-    author: string | null;
-    owner: string;
-    repo: string;
-    github_url: string | null;
-    permissions: string[];
-};
+import type { MarketplaceDetail } from '@/types/extensions';
 
 type Props = {
     extension: MarketplaceDetail;

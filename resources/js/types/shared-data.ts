@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { DashboardLayoutData, WidgetConfig } from '@/types/dashboard';
 import type { Team } from '@/types/teams';
 import type { FlashToast } from '@/types/ui';
 
@@ -74,7 +75,8 @@ export type SharedData = {
     unreadNotifications: number;
     recentNotifications: NotificationItem[];
     unreadMessageCount: number;
-    availableWidgets: Record<string, unknown>[];
+    availableWidgets: WidgetConfig[];
+    dashboardLayout: DashboardLayoutData | null;
     coreVersion: string;
     coreUpdateAvailable: boolean;
     extensionUpdateCount: number;

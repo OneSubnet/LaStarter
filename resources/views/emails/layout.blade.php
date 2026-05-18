@@ -70,6 +70,23 @@
             </tr>
             @endisset
 
+            {{-- Secondary button --}}
+            @isset($secondaryButtonUrl)
+            <tr>
+                <td style="background-color:#ffffff; padding:8px 40px 0; text-align:center;">
+                    <table class="email-button" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+                        <tr>
+                            <td style="border-radius:8px; background-color:#f3f4f6; border:1px solid #d1d5db;">
+                                <a href="{{ $secondaryButtonUrl }}" style="display:inline-block; padding:12px 28px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; font-weight:600; color:#374151; text-decoration:none; border-radius:8px;">
+                                    {{ $secondaryButtonText }}
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            @endisset
+
             {{-- Secondary text (below button) --}}
             @isset($subtext)
             <tr>

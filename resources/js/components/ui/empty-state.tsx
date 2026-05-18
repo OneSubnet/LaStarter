@@ -1,13 +1,5 @@
 import { cn } from '@/lib/utils';
-import type { LucideIcon } from 'lucide-react';
-
-type EmptyStateProps = {
-    icon: LucideIcon;
-    title: string;
-    description?: string;
-    action?: React.ReactNode;
-    className?: string;
-};
+import type { EmptyStateProps } from '@/types/ui';
 
 export function EmptyState({
     icon: Icon,

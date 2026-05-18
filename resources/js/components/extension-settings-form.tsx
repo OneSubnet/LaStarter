@@ -2,16 +2,7 @@ import { router } from '@inertiajs/react';
 import { Save } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-type SelectOption = { label: string; value: string };
-
-interface SettingField {
-    key: string;
-    label: string;
-    type: 'text' | 'select' | 'switch' | 'number';
-    options?: SelectOption[];
-    default?: string | number | boolean;
-}
+import type { SettingField } from '@/types/extensions';
 
 interface Props {
     extensionIdentifier: string;

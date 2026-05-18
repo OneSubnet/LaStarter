@@ -13,27 +13,22 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { timeAgo } from '@/lib/format';
-import type { SharedData } from '@/types';
+import type { SharedData, NotificationItem } from '@/types';
 
-type Notification = {
-    id: number;
-    type: string;
-    title: string;
-    body: string | null;
-    data: { url?: string } | null;
-    read_at: string | null;
-    created_at: string;
-};
+function getNotificationUrl(data: Record<string, unknown> | null): string | undefined {
+    return data?.['url'] as string | undefined;
+}
 
-function NotificationItem({
+function NotificationRow({
     notification,
     onRead,
 }: {
-    notification: Notification;
-    onRead: (id: number) => void;
+    notification: NotificationItem;
+    onRead: (id: string) => void;
 }) {
     const { t } = useTranslation();
     const isUnread = notification.read_at === null;
+    const url = getNotificationUrl(notification.data);
 
     return (
         <button
@@ -43,8 +38,8 @@ function NotificationItem({
             onClick={() => {
                 if (isUnread) {
                     onRead(notification.id);
-                } else if (notification.data?.url) {
-                    router.visit(notification.data.url);
+                } else if (url) {
+                    router.visit(url);
                 }
             }}
         >
@@ -54,9 +49,11 @@ function NotificationItem({
                 >
                     {notification.title}
                 </span>
-                <span className="shrink-0 text-[10px] text-muted-foreground">
-                    {timeAgo(notification.created_at)}
-                </span>
+                {notification.created_at && (
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                        {timeAgo(notification.created_at)}
+                    </span>
+                )}
             </div>
             {notification.body && (
                 <p className="line-clamp-2 text-xs text-muted-foreground">
@@ -69,7 +66,7 @@ function NotificationItem({
                     {t('notifications.mark_read')}
                 </div>
             )}
-            {!isUnread && notification.data?.url && (
+            {!isUnread && url && (
                 <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
                     <ExternalLink className="h-3 w-3" />
                     {t('notifications.open')}
@@ -84,7 +81,7 @@ export function NotificationBell() {
     const page = usePage<SharedData>();
     const unreadCount = page.props.unreadNotifications;
     const [open, setOpen] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [loading, setLoading] = useState(false);
 
     const teamSlug = page.props.currentTeam?.slug ?? '';
@@ -120,7 +117,7 @@ export function NotificationBell() {
         }
     };
 
-    const handleMarkRead = (id: number) => {
+    const handleMarkRead = (id: string) => {
         const notification = notifications.find((n) => n.id === id);
         setNotifications((prev) =>
             prev.map((n) =>
@@ -134,9 +131,10 @@ export function NotificationBell() {
             {
                 preserveScroll: true,
                 onSuccess: () => {
-                    if (notification?.data?.url) {
+                    const url = getNotificationUrl(notification?.data ?? null);
+                    if (url) {
                         setOpen(false);
-                        router.visit(notification.data.url);
+                        router.visit(url);
                     } else {
                         router.reload({ only: ['unreadNotifications'] });
                     }
@@ -205,7 +203,7 @@ export function NotificationBell() {
                     ) : notifications.length > 0 ? (
                         <div className="space-y-1">
                             {notifications.map((n) => (
-                                <NotificationItem
+                                <NotificationRow
                                     key={n.id}
                                     notification={n}
                                     onRead={handleMarkRead}
